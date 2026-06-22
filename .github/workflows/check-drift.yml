@@ -1,0 +1,27 @@
+name: Check targets drift
+
+# data/targets.json is the single source of truth for the site's test-target
+# wall. This guards it against drifting from README.md → Test targets. Runs only
+# when either side changes; pure read-only check, never writes back.
+
+on:
+  push:
+    paths:
+      - data/targets.json
+      - README.md
+      - scripts/check-targets-drift.mjs
+  pull_request:
+    paths:
+      - data/targets.json
+      - README.md
+      - scripts/check-targets-drift.mjs
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: node scripts/check-targets-drift.mjs

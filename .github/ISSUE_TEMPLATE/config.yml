@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: "Submit a dApp for testing (project owners)"
+    url: https://github.com/0gfoundation/0g-testing-hub/issues/2
+    about: "Are you a project owner who wants their dApp tested? Post in Issue #2 instead — this form is for testers reporting defects."
+  - name: "Test sign-up"
+    url: https://forms.gle/KFjtdnLNucAF8B2k7
+    about: "Join as a tester. Everyone starts at L0 and climbs the levels (L0→L5)."
+  - name: "0G Private Computer Feedback"
+    url: https://forms.gle/TTxahPjziQskiJUC6
+    about: "Required at every level — UX feedback on running a model on 0G Compute. The program's #1 deliverable."

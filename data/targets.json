@@ -1,0 +1,73 @@
+{
+  "note": "Single source of truth for the test-target wall. Edit here; the site renders from this and CI checks it against README.md (scripts/check-targets-drift.mjs). Mirror of README → Test targets.",
+  "buckets": [
+    {
+      "key": "app",
+      "label": "0G App Suite",
+      "ownership": "App Suite",
+      "pill": "App Suite · escalate",
+      "pillKind": "app",
+      "recordOnly": false,
+      "focus": "Focus: onboarding, wallet connect, the main journey end to end. The richest bugs hide in repeat-user behavior — stale-session re-entry, captcha/token-expiry resubmits, reusing one wallet across apps, mid-flow Chain ID switches.",
+      "notice": "Double deliverable — App Suite testers submit a bug report AND the dedicated 0G Studio Feedback form. One Feedback form covers all four apps.",
+      "forms": [
+        { "label": "Report a bug", "url": "https://github.com/0gfoundation/0g-testing-hub/issues/new?template=defect-report.yml" },
+        { "label": "0G Studio Feedback", "url": "https://forms.gle/inicY6BCbEgwxYQk8" }
+      ],
+      "items": [
+        { "name": "0G App", "desc": "Flagship app builder, live on mainnet", "url": "https://app.0g.ai/" },
+        { "name": "Genome", "desc": "Paste a URL/screenshot → production-grade design DNA", "url": "https://dev.0g-vibe.pages.dev/genome" },
+        { "name": "0G Chat", "desc": "End-to-end encrypted private chat (UI WIP)", "url": "https://dev.0g-vibe.pages.dev/private-chat" },
+        { "name": "PandaClaw", "desc": "Agent launchpad + skill marketplace (Hermes + OpenClaw harness)", "url": "https://dev.0g-vibe.pages.dev/agents" }
+      ]
+    },
+    {
+      "key": "infra",
+      "label": "0G Infra",
+      "ownership": "0G Infra",
+      "pill": "0G Infra · escalate",
+      "pillKind": "infra",
+      "recordOnly": false,
+      "focus": "Focus: correctness, not polish — bridge / swap / faucet (stop at the confirm screen), explorer data accuracy, RPC / Chain ID handling, and 0g-cc's inference + storage paths.",
+      "items": [
+        { "name": "0G Hub", "desc": "Bridge / swap / faucet / portfolio", "url": "https://hub.0g.ai/" },
+        { "name": "0G Storage Scan", "desc": "Storage explorer", "url": "https://storagescan-newton.0g.ai/" },
+        { "name": "Chain Scan", "desc": "Block explorer", "url": "https://chainscan.0g.ai/" },
+        { "name": "0G Code to Coin (0g-cc)", "desc": "Official MCP server → 0G Compute. CLI, not a web app. claude mcp add 0g-cc npx @0gfoundation/0g-cc", "url": "https://www.npmjs.com/package/@0gfoundation/0g-cc", "note": "Testing it doubles as the primary 0G Private Computer Feedback deliverable." }
+      ]
+    },
+    {
+      "key": "eco",
+      "label": "Ecosystem dApps",
+      "ownership": "Ecosystem",
+      "pill": "record-only",
+      "pillKind": "record",
+      "recordOnly": true,
+      "focus": "Confirm it loads + connects a wallet on 0G, walk the main flow once, log obvious breakage. Bugs here are not on 0G's account.",
+      "items": [
+        { "name": "TradeGPT", "desc": "AI-driven DEX", "url": "https://tradegpt.finance/" },
+        { "name": "Jaine", "desc": "DEX / liquidity (LIC)", "url": "https://jaine.fi/" },
+        { "name": "Oku", "desc": "Concentrated liquidity DEX", "url": "https://oku.trade/" },
+        { "name": "AI Arena", "desc": "PvP, train AI agents", "url": "https://aiarena.io/" },
+        { "name": "CARV", "desc": "Gamer identity", "url": "https://carv.io/" },
+        { "name": "Cygnus Finance", "desc": "RWA stablecoin", "url": "https://cygnus.finance/" },
+        { "name": "DataHive", "desc": "Personal data economy", "url": "https://datahive.network/" },
+        { "name": "Khalani", "desc": "Bridge to 0G", "url": "https://hub.0g.ai/khalani/transfer?network=mainnet" },
+        { "name": "Merkl", "desc": "Claim LIC rewards", "url": "https://app.merkl.xyz/" }
+      ]
+    },
+    {
+      "key": "hack",
+      "label": "Hackathon dApps",
+      "ownership": "Hackathon",
+      "pill": "record-only",
+      "pillKind": "record",
+      "recordOnly": true,
+      "focus": "Same as Ecosystem — does it load, connect, and run its core flow on 0G? Log what's clearly broken; no deep-dive.",
+      "items": [
+        { "name": "0g-kit", "desc": "TypeScript toolkit for 0G", "url": "https://www.0gkit.com/" },
+        { "name": "Blindmarket", "desc": "Privacy-preserving task marketplace on 0G", "url": "https://www.blindmarket.xyz/" }
+      ]
+    }
+  ]
+}

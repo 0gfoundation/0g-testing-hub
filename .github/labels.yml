@@ -1,0 +1,57 @@
+# Label taxonomy for 0G Test Week defect tracking — the source of record.
+# Apply/refresh on GitHub with: scripts/setup-labels-and-board.sh
+#
+# Axes are orthogonal: every triaged defect carries one area:, one sev:, and a
+# status:. `rc:` labels are created on demand to group a shared root cause.
+
+# --- Ownership (routing bucket) ---
+- name: "area:app-suite"
+  color: "1d76db"
+  description: "0G App / Genome / 0G Chat / PandaClaw"
+- name: "area:0g-infra"
+  color: "0052cc"
+  description: "0G Hub / 0G Storage Scan / Chain Scan"
+- name: "area:ecosystem"
+  color: "5319e7"
+  description: "Ecosystem dApp — record-only, not a 0G defect"
+- name: "area:hackathon"
+  color: "b60205"
+  description: "Hackathon dApp — record-only, not a 0G defect"
+
+# --- Severity (impact-based; see defects/SEVERITY.md) ---
+- name: "sev:P1"
+  color: "b60205"
+  description: "Blocker — core flow halted / correctness / security / funds"
+- name: "sev:P2"
+  color: "d93f0b"
+  description: "Major — key feature broken, but completable another way"
+- name: "sev:P3"
+  color: "fbca04"
+  description: "Minor — degraded/recoverable, doesn't block core flow"
+- name: "sev:P4"
+  color: "c2e0c6"
+  description: "Trivial — cosmetic only, zero functional impact"
+
+# --- Status (defect state machine) ---
+- name: "status:filed"
+  color: "ededed"
+  description: "In Triage — not yet validated"
+- name: "status:accepted"
+  color: "0e8a16"
+  description: "Triage confirms real + reproducible (rewardable)"
+- name: "status:routed"
+  color: "1d76db"
+  description: "Tagged with ownership and sent upstream"
+- name: "status:closed"
+  color: "5a5a5a"
+  description: "Resolved, rejected, or duplicate"
+
+# --- Type / aggregation ---
+- name: "defect"
+  color: "e99695"
+  description: "A defect report (auto-applied by the issue form)"
+- name: "systemic"
+  color: "fef2c0"
+  description: "Confirmed cross-app root cause — the one issue N duplicates collapse into"
+# `rc:<CODE>` labels (e.g. rc:CHAIN_ID_MISSING) are created on demand at triage
+# to group every issue sharing a root cause. See .github/TRIAGE.md.

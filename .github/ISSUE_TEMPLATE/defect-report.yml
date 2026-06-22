@@ -1,0 +1,153 @@
+name: "Defect report"
+description: "File one reproducible defect found while testing a 0G ecosystem app. One defect per issue."
+title: "[defect]: "
+labels: ["defect"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for testing. **One defect per issue** — file a separate report for each.
+
+        Before you start, two rules from the program brief:
+        - **Reproduce it first.** "Felt off" is not a defect — if someone can't follow your steps and see the same result, it doesn't count.
+        - **Never touch funds or keys.** On swap / bridge / faucet / sign flows, stop at the transaction-confirmation screen. Do not sign, do not send.
+
+        The fields below mirror the defect template — triage uses them to label, route, and de-duplicate, so fill them precisely.
+
+  - type: dropdown
+    id: ownership
+    attributes:
+      label: Ownership
+      description: "Which bucket owns this? App Suite / 0G Infra → file the bug here. Ecosystem & Hackathon dApps are record-only — use this to log that you walked them (coverage); send actionable bugs to the dApp's own channel. Record-only entries are logged, not escalated as 0G defects."
+      options:
+        - "App Suite (0G App / Genome / 0G Chat / PandaClaw)"
+        - "0G Infra (0G Hub / 0G Storage Scan / Chain Scan)"
+        - "Ecosystem dApp (record-only)"
+        - "Hackathon dApp (record-only)"
+    validations:
+      required: true
+
+  - type: input
+    id: product
+    attributes:
+      label: Product
+      description: "The specific app, e.g. \"0G Hub\", \"Genome\", \"TradeGPT\"."
+      placeholder: "0G Hub"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      description: |
+        Impact-based — judge by what the user/dev cannot do, not by how hard the fix looks. Unsure between two? File the lower number (more severe) and let triage downgrade.
+        - **P1 Blocker** — core flow halted, or correctness/security/funds broken. Task cannot complete.
+        - **P2 Major** — key feature broken/visibly wrong, but completable another way.
+        - **P3 Minor** — degraded/recoverable, doesn't block the core flow.
+        - **P4 Trivial** — cosmetic only (copy, spacing, casing). Zero functional impact.
+      options:
+        - "P1 — Blocker"
+        - "P2 — Major"
+        - "P3 — Minor"
+        - "P4 — Trivial"
+    validations:
+      required: true
+
+  - type: input
+    id: env-browser
+    attributes:
+      label: "Environment — browser / OS"
+      placeholder: "Chrome 124 / macOS 14"
+    validations:
+      required: true
+
+  - type: input
+    id: env-wallet
+    attributes:
+      label: "Environment — wallet"
+      description: "Leave blank if not applicable."
+      placeholder: "MetaMask 11.x"
+    validations:
+      required: false
+
+  - type: input
+    id: env-chain-id
+    attributes:
+      label: "Environment — Chain ID"
+      description: "The chain involved, if any. Helps group recurring chain-mapping issues."
+      placeholder: "16661"
+    validations:
+      required: false
+
+  - type: input
+    id: env-network
+    attributes:
+      label: "Environment — network"
+      placeholder: "mainnet | galileo | aristotle"
+    validations:
+      required: false
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: Repro steps
+      description: "Numbered, complete enough for someone else to follow exactly."
+      placeholder: |
+        1.
+        2.
+        3.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected result
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual result
+    validations:
+      required: true
+
+  - type: textarea
+    id: screenshot
+    attributes:
+      label: Screenshot / recording
+      description: "Paste images or links. Optional but strongly recommended."
+    validations:
+      required: false
+
+  - type: textarea
+    id: root-cause-guess
+    attributes:
+      label: Root-cause guess
+      description: "Optional. Your best hypothesis for why this happens."
+    validations:
+      required: false
+
+  - type: input
+    id: root-cause-code
+    attributes:
+      label: Root-cause code
+      description: "Optional, ALL_CAPS slug. If several defects share one underlying cause, give them the same code so triage can collapse them into one systemic finding."
+      placeholder: "CHAIN_ID_MISSING"
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: gates
+    attributes:
+      label: Confirmations
+      description: "All required."
+      options:
+        - label: "I reproduced this myself and the repro steps above are complete."
+          required: true
+        - label: "I did not sign or send any transaction, and did not touch funds or private keys."
+          required: true
+        - label: "If this is an Ecosystem or Hackathon dApp, I understand it is logged as record-only (not a 0G defect)."
+          required: true

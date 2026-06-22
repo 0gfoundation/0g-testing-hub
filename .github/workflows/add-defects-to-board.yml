@@ -1,0 +1,68 @@
+name: Add defects to board
+
+# Replaces the UI-only "Auto-add to project" + "Item added -> set Status" built-in
+# Projects workflows (GitHub exposes no API for those). When an issue is opened or
+# labelled `defect`, add it to the board and drop it in the Triage column.
+#
+# Requires a repo secret `PROJECT_PAT` — a token with `project` (+ `repo`) scope.
+# The default GITHUB_TOKEN cannot write a user-owned Projects v2 board.
+
+on:
+  issues:
+    types: [opened, labeled]
+
+permissions:
+  contents: read
+
+jobs:
+  add-to-board:
+    if: contains(github.event.issue.labels.*.name, 'defect')
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.PROJECT_PAT }}
+      OWNER: lvxuan149
+      PROJECT_NUMBER: "1"
+      ISSUE_NODE_ID: ${{ github.event.issue.node_id }}
+      ISSUE_NUMBER: ${{ github.event.issue.number }}
+    steps:
+      - name: Add issue to board and set Status = Triage
+        run: |
+          set -euo pipefail
+
+          # Resolve the board id, Status field id, and the "Triage" option id at
+          # runtime, so this keeps working even if the board is recreated.
+          read -r PROJECT_ID FIELD_ID OPTION_ID < <(
+            gh api graphql -f query='
+              query($l:String!,$n:Int!){
+                user(login:$l){ projectV2(number:$n){
+                  id
+                  field(name:"Status"){
+                    ... on ProjectV2SingleSelectField { id options { id name } }
+                  }
+                }}
+              }' -F l="$OWNER" -F n="$PROJECT_NUMBER" \
+              --jq '.data.user.projectV2 | "\(.id) \(.field.id) \(.field.options[] | select(.name=="Triage") | .id)"'
+          )
+
+          if [ -z "${OPTION_ID:-}" ]; then
+            echo "Could not resolve the Triage column — is the board configured?" >&2
+            exit 1
+          fi
+
+          # Add the issue (no-op if already on the board) and capture the item id.
+          ITEM_ID=$(gh api graphql -f query='
+            mutation($p:ID!,$c:ID!){
+              addProjectV2ItemById(input:{projectId:$p,contentId:$c}){ item { id } }
+            }' -F p="$PROJECT_ID" -F c="$ISSUE_NODE_ID" \
+            --jq '.data.addProjectV2ItemById.item.id')
+
+          # Park it in Triage.
+          gh api graphql -f query='
+            mutation($p:ID!,$i:ID!,$f:ID!,$o:String!){
+              updateProjectV2ItemFieldValue(input:{
+                projectId:$p, itemId:$i, fieldId:$f,
+                value:{ singleSelectOptionId:$o }
+              }){ projectV2Item { id } }
+            }' -F p="$PROJECT_ID" -F i="$ITEM_ID" -F f="$FIELD_ID" -F o="$OPTION_ID" >/dev/null
+
+          echo "Issue #$ISSUE_NUMBER added to the board in Triage."
