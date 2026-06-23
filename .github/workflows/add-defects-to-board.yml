@@ -4,8 +4,8 @@ name: Add defects to board
 # Projects workflows (GitHub exposes no API for those). When an issue is opened or
 # labelled `defect`, add it to the board and drop it in the Triage column.
 #
-# Requires a repo secret `PROJECT_PAT` — a token with `project` (+ `repo`) scope.
-# The default GITHUB_TOKEN cannot write a user-owned Projects v2 board.
+# Requires a repo secret `PROJECT_PAT` — a token with `project` + `repo` +
+# `read:org` scope. The default GITHUB_TOKEN cannot write an org Projects v2 board.
 
 on:
   issues:
@@ -20,8 +20,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       GH_TOKEN: ${{ secrets.PROJECT_PAT }}
-      OWNER: lvxuan149
-      PROJECT_NUMBER: "1"
+      OWNER: 0gfoundation
+      PROJECT_NUMBER: "19"
       ISSUE_NODE_ID: ${{ github.event.issue.node_id }}
       ISSUE_NUMBER: ${{ github.event.issue.number }}
     steps:
@@ -34,14 +34,14 @@ jobs:
           read -r PROJECT_ID FIELD_ID OPTION_ID < <(
             gh api graphql -f query='
               query($l:String!,$n:Int!){
-                user(login:$l){ projectV2(number:$n){
+                organization(login:$l){ projectV2(number:$n){
                   id
                   field(name:"Status"){
                     ... on ProjectV2SingleSelectField { id options { id name } }
                   }
                 }}
               }' -F l="$OWNER" -F n="$PROJECT_NUMBER" \
-              --jq '.data.user.projectV2 | "\(.id) \(.field.id) \(.field.options[] | select(.name=="Triage") | .id)"'
+              --jq '.data.organization.projectV2 | "\(.id) \(.field.id) \(.field.options[] | select(.name=="Triage") | .id)"'
           )
 
           if [ -z "${OPTION_ID:-}" ]; then
