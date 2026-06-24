@@ -32,8 +32,7 @@ The ladder above clears **L0 -> L3** (Recruit to Master); here is the flow that 
 | Step | Link |
 |------|------|
 | **1. Register once** — testing intake | https://forms.gle/Mhm8YKXL9Kbvt11S8 |
-| **2. Clear L0** — 2 feedback forms only, no bug required: 0G Studio Feedback (App Suite, covers all four apps) | https://forms.gle/ymEdZrdTNs4giEm1A |
-| **2.** …and 0G Private Computer Feedback (every level) | https://forms.gle/G919xrbRyfVJxPZe8 |
+| **2. Clear L0** — 2 feedback forms only, no bug required | [0G Studio Feedback (App Suite, all four apps)](https://forms.gle/ymEdZrdTNs4giEm1A) · [0G Private Computer Feedback (every level)](https://forms.gle/G919xrbRyfVJxPZe8) |
 | **3. Climb from L1** with accepted, reproducible bugs — submit a bug / coverage log | [Defect report form](https://github.com/0gfoundation/0g-testing-hub/issues/new?template=defect-report.yml&labels=defect,status:filed) |
 | **4. Cover in order** — App Suite -> 0G Infra -> Ecosystem (record-only); track your issues | [Defect board #19](https://github.com/orgs/0gfoundation/projects/19) |
 
