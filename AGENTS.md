@@ -22,7 +22,7 @@ All live links stay in **How to get reward**.
 | **Sign up** (testing intake) | https://forms.gle/Mhm8YKXL9Kbvt11S8 |
 | **0G Studio Feedback** | https://forms.gle/ymEdZrdTNs4giEm1A |
 | **0G Private Computer Feedback** | https://forms.gle/G919xrbRyfVJxPZe8 |
-| **Submit a bug / coverage log** | [Defect report form](https://github.com/0gfoundation/0g-testing-hub/issues/new?template=defect-report.yml&labels=defect,status:filed,status:filed) |
+| **Submit a bug / coverage log** | [Defect report form](https://github.com/0gfoundation/0g-testing-hub/issues/new?template=defect-report.yml&labels=defect,status:filed) |
 | **Track issues** | [Defect board #19](https://github.com/orgs/0gfoundation/projects/19) |
 | **Level rules · rewards** | [`LEVELS.md`](./LEVELS.md) · [`rewards.md`](./seasons/2026-apac/rewards.md) |
 | **Signup export schema** | [`docs/signups.example.csv`](./docs/signups.example.csv) |
@@ -33,7 +33,7 @@ All live links stay in **How to get reward**.
   "appSuiteFeedback": "https://forms.gle/ymEdZrdTNs4giEm1A",
   "privateComputerFeedback": "https://forms.gle/G919xrbRyfVJxPZe8",
   "testingRepo": "https://github.com/0gfoundation/0g-testing-hub",
-  "bugReport": "https://github.com/0gfoundation/0g-testing-hub/issues/new?template=defect-report.yml&labels=defect,status:filed,status:filed",
+  "bugReport": "https://github.com/0gfoundation/0g-testing-hub/issues/new?template=defect-report.yml&labels=defect,status:filed",
   "signupSchema": "docs/signups.example.csv"
 }
 ```
@@ -44,10 +44,10 @@ The reward system depends on this chain. Do not bypass it:
 
 1. **Signup form** collects the tester's 0G mainnet EVM wallet and **GitHub username**. This external form is the prerequisite for reliable rewards; the GitHub username is the identity join key and the wallet is the payout destination.
 2. **Defect report / coverage log form** creates GitHub issues labelled `defect` + `status:filed`.
-3. **Workflow** adds every `defect` issue to Project #19, derives `area:*` / `sev:*` / `coverage-log` labels from the form body, and keeps the board's Triage state aligned with `status:filed`.
+3. **Workflow** adds every `defect` issue to Project #19, derives `area:*` / `sev:*` / `coverage-log` labels from the form body, and keeps the board's Triage state aligned with `status:filed`. If the form body can't be parsed, it applies `needs:manual-label` so the gap is visible instead of silently shipping unlabelled.
 4. **Triage** moves issues through `status:accepted` and `status:routed`, applies one `area:*`, one `sev:*`, optional `rc:*`, and `systemic` when appropriate.
-5. **Route evidence** is required before `status:routed`: add a comment containing `Routed to:` and `Upstream link:`.
-6. **Reward export** runs `node scripts/export-reward-report.mjs --signups <signup-export.csv> --format csv --out rewards.csv` and joins signup GitHub usernames to GitHub issue authors; output includes wallet.
+5. **Route evidence** is required before `status:routed`: add a comment containing `Routed to:` and `Upstream link:`. Look up the upstream owner in [`data/owners.json`](./data/owners.json) so routing doesn't depend on tribal knowledge.
+6. **Reward export** runs `node scripts/export-reward-report.mjs --signups <signup-export.csv> --format csv --out rewards.csv` and joins signup GitHub usernames to GitHub issue authors; output includes wallet. Add `--l0 <l0-export.csv>` to fold L0 feedback completion into the same report (L0-L3 in one pass), and `--strict` to fail before payout on unmatched issue authors, duplicate signup usernames, or rewardable users missing a wallet.
 
 Implemented chain:
 
@@ -64,7 +64,7 @@ Routed evidence check:
 node scripts/check-routed-evidence.mjs --repo 0gfoundation/0g-testing-hub
 ```
 
-**A bug is accepted only if it is** (a) **reproducible** from your steps, (b) a **divergence from documented/expected behavior** - not market state or your own misconfig, and (c) **measured against the current stack baseline**, not an imagined production target. Duplicates collapse to the first reporter via shared `rc:` root-cause codes.
+**A bug is accepted only if it is** (a) **reproducible** from your steps, (b) a **divergence from documented/expected behavior** - not market state or your own misconfig, and (c) **measured against the current stack baseline**, not an imagined production target. Duplicates collapse to the first reporter via shared `rc:` root-cause codes — register every code in [`data/root-causes.json`](./data/root-causes.json), and run `node scripts/find-duplicate-candidates.mjs` to surface clusters to collapse.
 
 **Won't be accepted / out of bounds:**
 
@@ -102,7 +102,7 @@ node scripts/check-targets-drift.mjs
 
 ## Defect template
 
-The [Defect report form](https://github.com/0gfoundation/0g-testing-hub/issues/new?template=defect-report.yml&labels=defect,status:filed,status:filed) collects these fields. The same structure lives in [`README.md`](./README.md#defect-template), [`defects/TEMPLATE.md`](./defects/TEMPLATE.md), and [`defects/SEVERITY.md`](./defects/SEVERITY.md).
+The [Defect report form](https://github.com/0gfoundation/0g-testing-hub/issues/new?template=defect-report.yml&labels=defect,status:filed) collects these fields. The same structure lives in [`README.md`](./README.md#defect-template), [`defects/TEMPLATE.md`](./defects/TEMPLATE.md), and [`defects/SEVERITY.md`](./defects/SEVERITY.md).
 
 ```text
 Title:
