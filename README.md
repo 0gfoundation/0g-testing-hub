@@ -37,8 +37,6 @@ The ladder above clears **L0 -> L3** (Recruit to Master); here is the flow that 
 | **3. Climb from L1** with accepted, reproducible bugs — submit a bug / coverage log | [Defect report form](https://github.com/0gfoundation/0g-testing-hub/issues/new?template=defect-report.yml&labels=defect,status:filed) |
 | **4. Cover in order** — App Suite -> 0G Infra -> Ecosystem (record-only); track your issues | [Defect board #19](https://github.com/orgs/0gfoundation/projects/19) |
 | Level rules · Season 1 rewards | [`LEVELS.md`](./LEVELS.md) · [`rewards.md`](./seasons/2026-apac/rewards.md) |
-| Workflow diagram (tester + maintainer) | [`docs/WORKFLOWS.md`](./docs/WORKFLOWS.md) |
-| Signup export schema | [`docs/signups.example.csv`](./docs/signups.example.csv) |
 
 Signup intake must collect the tester's **0G mainnet EVM wallet** and **GitHub username**. The GitHub username must match the account that files defect reports so reward export can join signup rows to issues and output the payout wallet.
 
