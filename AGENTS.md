@@ -6,16 +6,12 @@ This is the canonical AI agent instruction file for this repository. It mirrors 
 
 If a task drifts toward "write a script / set up a harness / refactor something here," stop and re-read the README. The work product is filed defects and feedback, not application code.
 
-## Quick start
+## How to get reward
 
 1. **Register once.**
 2. **Clear L0** with feedback only; no bug required.
 3. **Climb from L1** with accepted, reproducible bugs.
 4. **Cover in order:** App Suite -> 0G Infra -> Ecosystem dApps (record-only).
-
-All live links stay in **How to get reward**.
-
-## How to get reward
 
 | Need | Link |
 |------|------|

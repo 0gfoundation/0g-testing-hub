@@ -4,12 +4,11 @@
 
 ## Jump to
 
-- [Quick start](#quick-start)
 - [How to get reward](#how-to-get-reward)
 - [Levels & rewards](#levels--rewards)
 - [Test targets](#test-targets)
 
-## Quick start
+## How to get reward
 
 ![Reward workflow](./Assets/reward-workflow.png)
 
@@ -19,10 +18,6 @@ Levels run **L0 -> L3** (Recruit to Master); each clears for more 0G Compute Cre
 2. **Clear L0** with feedback only; no bug required.
 3. **Climb from L1** with accepted, reproducible bugs.
 4. **Cover in order:** App Suite -> 0G Infra -> Ecosystem (record-only).
-
-All live links are in [How to get reward](#how-to-get-reward).
-
-## How to get reward
 
 | Need | Link |
 |------|------|
