@@ -1,0 +1,7 @@
+# Local screenshots — not program assets (those live in Assets/ and are tracked)
+截屏*.png
+Screenshot*.png
+Screen Shot*.png
+
+# macOS
+.DS_Store
