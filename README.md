@@ -5,7 +5,7 @@
 ## Jump to
 
 - [Test, Report, Reward](#test-report-reward)
-- [Test targets](#test-targets)
+- [Test Targets](#test-targets)
 
 ## Test, Report, Reward
 
@@ -31,7 +31,7 @@ Track your filed issues on the [Defect board #19](https://github.com/orgs/0gfoun
 - **Record-only dApp bugs** - route to the dApp's own channel; the Hub only logs coverage. If you log Ecosystem coverage here, include the dApp report URL when there is an actionable bug.
 - **Funds / keys** - never sign or send; stop at the transaction-confirmation screen on swap / bridge / faucet / sign flows.
 
-## Test targets
+## Test Targets
 
 <!-- targets:start -->
 
