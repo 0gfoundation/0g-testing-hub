@@ -19,7 +19,7 @@ All rewards are **0G Compute Credit**; payout = the Credit of your **highest lev
 
 | Step | Reach | How it clears | Where to go | Credit |
 |------|-------|---------------|-------------|:------:|
-| **Sign up** | — | Register once: 0G wallet + GitHub username | [Testing Sign Up](https://forms.gle/Mhm8YKXL9Kbvt11S8) | — |
+| **0** | **Sign Up** | Register once: 0G wallet + GitHub username | [Testing Sign Up](https://forms.gle/Mhm8YKXL9Kbvt11S8) | — |
 | **1** | **L0** Recruit | Two feedback forms; no bug required | [0G Studio Feedback (App Suite, all four apps)](https://forms.gle/ymEdZrdTNs4giEm1A) · [0G Private Computer Feedback (every level)](https://forms.gle/G919xrbRyfVJxPZe8) | **10 0G Compute Credit** |
 | **2** | **L1** Tester | 1 accepted · App Suite | [Defect report form](https://github.com/0gfoundation/0g-testing-hub/issues/new?template=defect-report.yml&labels=defect,status:filed) | **20 0G Compute Credit** |
 | **3** | **L2** Infra Pioneer | +1 accepted · 0G Infra (2 total) | [Defect report form](https://github.com/0gfoundation/0g-testing-hub/issues/new?template=defect-report.yml&labels=defect,status:filed) | **40 0G Compute Credit** |
