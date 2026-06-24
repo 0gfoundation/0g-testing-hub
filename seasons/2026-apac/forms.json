@@ -21,12 +21,26 @@
     "appSuiteStudioFeedback": {
       "label": "0G App Suite Feedback / 0G Studio Feedback",
       "url": "https://forms.gle/ymEdZrdTNs4giEm1A",
-      "note": "Required for L0 Recruit."
+      "note": "Required for L0 Recruit. BOTH feedback forms must clear L0; the --l0 list fed to export-reward-report.mjs should contain only testers who completed both.",
+      "requiredFields": [
+        {
+          "key": "githubUsername",
+          "label": "GitHub username",
+          "purpose": "Same join key as the signup form — lets the L0 completion list be built and reconciled by GitHub username."
+        }
+      ]
     },
     "privateComputerFeedback": {
       "label": "0G Private Computer Feedback",
       "url": "https://forms.gle/G919xrbRyfVJxPZe8",
-      "note": "Required for L0 Recruit."
+      "note": "Required for L0 Recruit. BOTH feedback forms must clear L0; a tester counts for L0 only when present in both feedback exports.",
+      "requiredFields": [
+        {
+          "key": "githubUsername",
+          "label": "GitHub username",
+          "purpose": "Same join key as the signup form — lets the L0 completion list be built and reconciled by GitHub username."
+        }
+      ]
     },
     "defectReport": {
       "label": "Submit bug report",

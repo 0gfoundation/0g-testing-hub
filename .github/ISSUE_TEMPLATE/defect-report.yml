@@ -22,7 +22,7 @@ body:
       description: "Which bucket owns this? App Suite / 0G Infra → file the bug here. Ecosystem dApps → coverage log only; send actionable bugs to the dApp's own channel and paste the report URL below."
       options:
         - "App Suite (0G App / Genome / 0G Chat / PandaClaw)"
-        - "0G Infra (0G Hub / 0G Storage Scan / Chain Scan)"
+        - "0G Infra (0G Hub / 0G Storage Scan / Chain Scan / 0G Code to Coin)"
         - "Ecosystem dApp coverage log (record-only)"
     validations:
       required: true

@@ -17,7 +17,14 @@ permissions:
 
 jobs:
   add-to-board:
-    if: contains(github.event.issue.labels.*.name, 'defect')
+    # Only act on the intake events: a freshly opened issue, or someone manually
+    # adding the `defect` label to an existing issue. Without the second clause this
+    # job re-fires on *every* later `labeled` event (area:*, sev:*, status:accepted,
+    # rc:*, systemic…), each time re-stamping `status:filed` and forcing the board
+    # back to Triage — clobbering the maintainer's triage progress.
+    if: >-
+      contains(github.event.issue.labels.*.name, 'defect') &&
+      (github.event.action == 'opened' || github.event.label.name == 'defect')
     runs-on: ubuntu-latest
     env:
       GH_TOKEN: ${{ secrets.PROJECT_PAT }}
