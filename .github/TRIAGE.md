@@ -92,7 +92,8 @@ node scripts/check-routed-evidence.mjs --repo 0gfoundation/0g-testing-hub
 Don't guess the owner from memory — look the product up in
 [`data/owners.json`](../data/owners.json) (the per-product upstream owner, notify
 channel, and tracker). Keep that file current so routing never depends on who happens
-to be on triage.
+to be on triage. (Those values are still `TBD` — tracked as G2 in
+[`KNOWN-GAPS.md`](../KNOWN-GAPS.md).)
 
 ## De-duplication (and the reward rule)
 
