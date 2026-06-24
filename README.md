@@ -37,16 +37,12 @@ Track your filed issues on the [Defect board #19](https://github.com/orgs/0gfoun
 
 ### 0G App Suite · core (L0-L1)
 
-Focus: onboarding, wallet connect, the core journey, and repeat-user behavior - stale sessions, captcha/token expiry, Chain ID switches, refresh/back-button interrupts.
-
 - [**0G App**](https://app.0g.ai/) - flagship app builder, live on mainnet
 - [**Genome**](https://dev.0g-vibe.pages.dev/genome) - paste a URL/screenshot, produces production-grade design DNA
 - [**0G Chat**](https://dev.0g-vibe.pages.dev/private-chat) - end-to-end encrypted private chat (UI still WIP)
 - [**PandaClaw**](https://dev.0g-vibe.pages.dev/agents) - agent launchpad + skill marketplace (Hermes + OpenClaw harness)
 
 ### 0G Infra · core (L2)
-
-Focus: correctness over polish - explorer data accuracy, RPC / Chain ID handling, and 0g-cc inference / storage paths. For bridge / swap / faucet / sign flows, stop at confirmation.
 
 - [**0G Hub**](https://hub.0g.ai/) - bridge / swap / faucet / portfolio
 - [**0G Storage Scan**](https://storagescan-newton.0g.ai/) - storage explorer

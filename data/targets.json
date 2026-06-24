@@ -9,7 +9,6 @@
       "pill": "App Suite · escalate",
       "pillKind": "app",
       "recordOnly": false,
-      "focus": "Focus: onboarding, wallet connect, the core journey, and repeat-user behavior - stale sessions, captcha/token expiry, Chain ID switches, refresh/back-button interrupts.",
       "notice": "L0 Recruit is feedback-only: 0G Studio Feedback + 0G Private Computer Feedback, no bug required. From L1 upward, submit reproducible bugs through the GitHub defect form.",
       "forms": [
         {
@@ -48,7 +47,6 @@
       "pill": "0G Infra · escalate",
       "pillKind": "infra",
       "recordOnly": false,
-      "focus": "Focus: correctness over polish - explorer data accuracy, RPC / Chain ID handling, and 0g-cc inference / storage paths. For bridge / swap / faucet / sign flows, stop at confirmation.",
       "items": [
         {
           "name": "0G Hub",
