@@ -1,5 +1,7 @@
 # Triage runbook
 
+> For the visual version of both flows, see [`docs/WORKFLOWS.md`](../docs/WORKFLOWS.md).
+
 How a defect moves from intake to routed intel, and how rewards and de-duplication
 are decided. Companion to the [root README](../README.md) and the
 [defect template](../defects/TEMPLATE.md). There are two flows — the **tester** fills one

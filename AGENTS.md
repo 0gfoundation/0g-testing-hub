@@ -25,6 +25,7 @@ All live links stay in **How to get reward**.
 | **Submit a bug / coverage log** | [Defect report form](https://github.com/0gfoundation/0g-testing-hub/issues/new?template=defect-report.yml&labels=defect,status:filed) |
 | **Track issues** | [Defect board #19](https://github.com/orgs/0gfoundation/projects/19) |
 | **Level rules · rewards** | [`LEVELS.md`](./LEVELS.md) · [`rewards.md`](./seasons/2026-apac/rewards.md) |
+| **Workflow diagram** (tester + maintainer) | [`docs/WORKFLOWS.md`](./docs/WORKFLOWS.md) |
 | **Signup export schema** | [`docs/signups.example.csv`](./docs/signups.example.csv) |
 
 ```json

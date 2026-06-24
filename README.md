@@ -32,6 +32,7 @@ All live links are in [How to get reward](#how-to-get-reward).
 | **Submit a bug / coverage log** | [Defect report form](https://github.com/0gfoundation/0g-testing-hub/issues/new?template=defect-report.yml&labels=defect,status:filed) |
 | **Track issues** | [Defect board #19](https://github.com/orgs/0gfoundation/projects/19) |
 | **Level rules · Season 1 rewards** | [`LEVELS.md`](./LEVELS.md) · [`rewards.md`](./seasons/2026-apac/rewards.md) |
+| **Workflow diagram** (tester + maintainer) | [`docs/WORKFLOWS.md`](./docs/WORKFLOWS.md) |
 | **Signup export schema** | [`docs/signups.example.csv`](./docs/signups.example.csv) |
 
 Signup intake must collect the tester's **0G mainnet EVM wallet** and **GitHub username**. The GitHub username must match the account that files defect reports so reward export can join signup rows to issues and output the payout wallet.
