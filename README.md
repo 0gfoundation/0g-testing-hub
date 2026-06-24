@@ -54,9 +54,7 @@ Focus: correctness over polish - explorer data accuracy, RPC / Chain ID handling
 - [**0G Code to Coin (0g-cc)**](https://www.npmjs.com/package/@0gfoundation/0g-cc) - official MCP server routing AI inference / fine-tuning / storage to 0G Compute; install with `npm install @0gfoundation/0g-cc`
   - Note: `0g-cc` is a CLI / MCP server, not a web app. Add it (`claude mcp add 0g-cc npx @0gfoundation/0g-cc`), then walk one inference / storage flow plus one error path. The funds/keys boundary still applies.
 
-### Ecosystem dApps · record-only
-
-Focus: load, connect a wallet on 0G, walk the main flow once, log obvious breakage. Don't deep-dive.
+### 0G Ecosystem dApp
 
 - [**TradeGPT**](https://tradegpt.finance/) - AI-driven DEX
 - [**Jaine**](https://jaine.fi/) - DEX/liquidity (LIC)

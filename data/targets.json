@@ -76,12 +76,11 @@
     {
       "key": "eco",
       "label": "Ecosystem dApps",
-      "readmeTitle": "Ecosystem dApps · record-only",
+      "readmeTitle": "0G Ecosystem dApp",
       "ownership": "Ecosystem",
       "pill": "record-only",
       "pillKind": "record",
       "recordOnly": true,
-      "focus": "Focus: load, connect a wallet on 0G, walk the main flow once, log obvious breakage. Don't deep-dive.",
       "items": [
         {
           "name": "TradeGPT",
