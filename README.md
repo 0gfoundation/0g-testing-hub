@@ -16,7 +16,7 @@ All rewards are **0G Compute Credit** - no physical goods, no shipping. Payout =
 
 | Lv | Title | How it clears | Credit |
 |----|-------|---------------|:------:|
-| **L0** | Recruit | Two feedback forms; no bug | **10** |
+| **L0** | Recruit | Two feedback forms; no bug report required | **10** |
 | **L1** | Tester | 1 accepted · App Suite | **20** |
 | **L2** | Infra Pioneer | 2 accepted · App Suite + 0G Infra | **40** |
 | **L3** | Master | 5+ accepted · incl. 1 `systemic` | **100** |
