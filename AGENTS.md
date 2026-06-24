@@ -9,7 +9,7 @@ If a task drifts toward "write a script / set up a harness / refactor something 
 ## How to get reward
 
 1. **Register once.**
-2. **Clear L0** with feedback only; no bug required.
+2. **Clear L0** with 2 feedback forms only; no bug required.
 3. **Climb from L1** with accepted, reproducible bugs.
 4. **Cover in order:** App Suite -> 0G Infra -> Ecosystem dApps (record-only).
 

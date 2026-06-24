@@ -30,7 +30,7 @@ The more **accepted, deduped** defects you surface, the higher you climb - Maste
 The ladder above clears **L0 -> L3** (Recruit to Master); here is the flow that gets you up it.
 
 1. **Register once.**
-2. **Clear L0** with feedback only; no bug required.
+2. **Clear L0** with 2 feedback forms only; no bug required.
 3. **Climb from L1** with accepted, reproducible bugs.
 4. **Cover in order:** App Suite -> 0G Infra -> Ecosystem (record-only).
 
