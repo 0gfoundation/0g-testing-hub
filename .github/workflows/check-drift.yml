@@ -10,11 +10,13 @@ on:
       - data/targets.json
       - README.md
       - scripts/check-targets-drift.mjs
+      - scripts/render-targets-readme.mjs
   pull_request:
     paths:
       - data/targets.json
       - README.md
       - scripts/check-targets-drift.mjs
+      - scripts/render-targets-readme.mjs
 
 jobs:
   check:

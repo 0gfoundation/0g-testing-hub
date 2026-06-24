@@ -20,6 +20,7 @@ environment:
 root_cause_code: ""             # OPTIONAL stable tag for grouping, e.g. "CHAIN_ID_MISSING",
                                 # "CAPTCHA_TOKEN_EXPIRY", "STORAGE_ROOT_MISMATCH".
                                 # Two defects sharing this value are the SAME systemic issue.
+reported_to_dapp_url: ""        # Ecosystem only: URL for the dApp's own issue/form/support report.
 source: manual                  # manual | tool-generated   (how this defect was produced)
 ---
 
@@ -34,6 +35,8 @@ source: manual                  # manual | tool-generated   (how this defect was
 ## Actual result
 
 ## Screenshot / recording
+
+## Reported to dApp URL (Ecosystem only)
 
 ## Root-cause guess (optional)
 

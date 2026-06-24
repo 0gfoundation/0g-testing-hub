@@ -47,8 +47,14 @@
 - name: "defect"
   color: "e99695"
   description: "A defect report (auto-applied by the issue form)"
+- name: "coverage-log"
+  color: "bfdadc"
+  description: "Record-only Ecosystem dApp coverage log"
 - name: "systemic"
   color: "fef2c0"
   description: "Confirmed cross-app root cause — the one issue N duplicates collapse into"
+- name: "needs:manual-label"
+  color: "d4c5f9"
+  description: "Auto-labeller could not derive area/severity from the form — triage by hand"
 # `rc:<CODE>` labels (e.g. rc:CHAIN_ID_MISSING) are created on demand at triage
 # to group every issue sharing a root cause. See .github/TRIAGE.md.

@@ -1,0 +1,23 @@
+{
+  "_comment": "Canonical rc: code registry — the source of record for shared root causes. Before applying a new rc:<CODE> label at triage, add a row here so codes don't drift (CHAIN_ID_MISSING vs ChainIdMissing). scripts/find-duplicate-candidates.mjs flags any rc: label used on an issue that is missing from this list. See .github/TRIAGE.md.",
+  "codes": [
+    {
+      "code": "COOP_BREAKS_EMBEDDED_WALLET",
+      "description": "Cross-Origin-Opener-Policy header on the shared App Suite hosting breaks embedded / popup wallet connect.",
+      "products": ["0G App", "Genome", "0G Chat", "PandaClaw"],
+      "systemic": true
+    },
+    {
+      "code": "LEGACY_NEWTON_HOSTNAME",
+      "description": "Legacy 'newton' testnet hostnames still surface or redirect instead of the current galileo host.",
+      "products": ["0G Storage Scan"],
+      "systemic": false
+    },
+    {
+      "code": "CHAIN_ID_MISSING",
+      "description": "Chain ID not set or not propagated, producing wrong-network prompts or unclear errors.",
+      "products": [],
+      "systemic": false
+    }
+  ]
+}

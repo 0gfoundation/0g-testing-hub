@@ -1,0 +1,58 @@
+name: "Testing sign-up & tracker"
+description: "Register for the 0G testing program and track your journey: wallet, the level you're aiming for, and your progress."
+title: "[signup]: "
+labels: ["signup"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Opening this issue registers you and becomes **your personal tracker**. Your **GitHub account** — whoever opens this issue — is your identity and the join key for every reward, read automatically so there is nothing to type and nothing to mismatch.
+
+        Enter your **0G mainnet EVM wallet** below; it is your payout address. This is a **public** repo, so the address is visible — that is expected. **Never paste a private key or seed phrase** — only the public wallet address.
+
+        > Your **reward level is decided by triage** from your accepted, deduped bugs. The level and progress fields below are your own intent and checklist — not the source of truth. See [LEVELS.md](./LEVELS.md).
+
+  - type: input
+    id: wallet
+    attributes:
+      label: "0G mainnet EVM wallet address"
+      description: "Your payout address — the public 0x… address only, never a private key or seed phrase."
+      placeholder: "0x0000000000000000000000000000000000000000"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: target-level
+    attributes:
+      label: "Level you're aiming for"
+      description: "Informational — your actual level is awarded by triage from accepted bugs, not self-declared."
+      options:
+        - "L0 — Recruit (feedback only)"
+        - "L1 — Tester (1 accepted App Suite bug)"
+        - "L2 — Infra Pioneer (App Suite + 0G Infra)"
+        - "L3 — Master (5+ accepted, incl. 1 systemic)"
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: progress
+    attributes:
+      label: "My progress (self-tracked — tick as you go)"
+      description: "Edit this issue any time to update it. Rewards still depend on triage-accepted bugs, not on these ticks."
+      options:
+        - label: "Submitted 0G Studio Feedback"
+        - label: "Submitted 0G Private Computer Feedback"
+        - label: "Filed my first App Suite bug"
+        - label: "Filed my first 0G Infra bug"
+        - label: "Surfaced a systemic finding"
+
+  - type: checkboxes
+    id: gates
+    attributes:
+      label: Confirmations
+      description: "Both required."
+      options:
+        - label: "This is my 0G mainnet EVM wallet — a public 0x… address, not a private key or seed phrase."
+          required: true
+        - label: "I understand rewards are credited to this GitHub account and decided by triage, and that this repo is public."
+          required: true

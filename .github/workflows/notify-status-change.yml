@@ -1,0 +1,65 @@
+name: Notify status change
+
+# Close the feedback loop for testers. When triage moves a defect to
+# status:accepted / status:routed / status:closed, post a short comment on the
+# issue explaining the outcome and what it means for their reward — so a filer
+# doesn't have to read the board (or guess) to learn whether their bug counted.
+#
+# Uses the default GITHUB_TOKEN (issues: write) — no PAT needed, since this only
+# comments on issues in this repo.
+
+on:
+  issues:
+    types: [labeled]
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  comment:
+    if: >-
+      github.event.label.name == 'status:accepted' ||
+      github.event.label.name == 'status:routed' ||
+      github.event.label.name == 'status:closed'
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      REPO: ${{ github.repository }}
+      ISSUE_NUMBER: ${{ github.event.issue.number }}
+      LABEL: ${{ github.event.label.name }}
+    steps:
+      - name: Comment on the issue
+        run: |
+          set -euo pipefail
+
+          # The reward consequence of "accepted" depends on the issue's area, so a
+          # blanket "counts toward your reward tier" would lie to two groups:
+          #   - Ecosystem coverage logs are record-only — never rewardable.
+          #   - An accepted 0G Infra bug does NOT clear L1 on its own (L1 needs App
+          #     Suite); it only counts once paired with an accepted App Suite bug.
+          LABELS=$(gh issue view "$ISSUE_NUMBER" --repo "$REPO" --json labels --jq '.labels[].name' | tr '\n' ' ')
+          has() { case " $LABELS " in *" $1 "*) return 0 ;; *) return 1 ;; esac }
+
+          ACCEPTED_MSG="✅ **Accepted** — triage reproduced and confirmed this defect. It counts toward your reward tier (rewards are on **accepted, deduped** core findings). See [LEVELS.md](../../blob/main/LEVELS.md)."
+          if has "area:ecosystem" || has "coverage-log"; then
+            ACCEPTED_MSG="✅ **Coverage logged** — thanks for confirming this. Ecosystem dApps are **record-only**, so this does **not** count toward a reward tier; route the actionable bug to the dApp's own channel. See [LEVELS.md](../../blob/main/LEVELS.md)."
+          elif has "area:0g-infra"; then
+            ACCEPTED_MSG="✅ **Accepted** — triage reproduced and confirmed this **0G Infra** defect. Note: an Infra bug alone does **not** clear L1 (that needs an accepted **App Suite** bug); paired with one it gets you to L2. See [LEVELS.md](../../blob/main/LEVELS.md)."
+          elif has "area:app-suite"; then
+            ACCEPTED_MSG="✅ **Accepted** — triage reproduced and confirmed this **App Suite** defect; that clears **L1**. Add an accepted **0G Infra** bug to reach **L2**. Rewards are on **accepted, deduped** core findings. See [LEVELS.md](../../blob/main/LEVELS.md)."
+          fi
+
+          case "$LABEL" in
+            "status:accepted")
+              MSG="$ACCEPTED_MSG" ;;
+            "status:routed")
+              MSG="📤 **Routed upstream** to the owning team. If it was a rewardable core defect it still counts — routed and accepted are both rewardable states." ;;
+            "status:closed")
+              MSG="🔒 **Closed.** If this was a duplicate, the shared root cause is credited to the first filer. If it was not reproducible or out of bounds, it does not count toward a tier — see [TRIAGE.md](../../blob/main/.github/TRIAGE.md) for the rules." ;;
+            *)
+              echo "Unhandled label: $LABEL"; exit 0 ;;
+          esac
+
+          gh issue comment "$ISSUE_NUMBER" --repo "$REPO" --body "$MSG"
+          echo "Commented on #$ISSUE_NUMBER for $LABEL."

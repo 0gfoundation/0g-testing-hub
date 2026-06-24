@@ -1,0 +1,13 @@
+{
+  "_comment": "Upstream routing directory: who owns each core product, where to notify them, and where the tracking item lives. Maintainers fill owner/channel/tracker (left as TBD until confirmed — these are internal pointers). Used as the reference for the `Routed to:` / `Owner:` / `Upstream link:` evidence block in .github/TRIAGE.md so routing doesn't depend on tribal knowledge. Ecosystem dApps are record-only and route to the dApp's own channel, so they are not listed here.",
+  "owners": [
+    { "product": "0G App", "area": "app-suite", "owner": "TBD — App Suite product team", "channel": "TBD", "tracker": "" },
+    { "product": "Genome", "area": "app-suite", "owner": "TBD — App Suite product team", "channel": "TBD", "tracker": "" },
+    { "product": "0G Chat", "area": "app-suite", "owner": "TBD — App Suite product team", "channel": "TBD", "tracker": "" },
+    { "product": "PandaClaw", "area": "app-suite", "owner": "TBD — App Suite product team", "channel": "TBD", "tracker": "" },
+    { "product": "0G Hub", "area": "0g-infra", "owner": "TBD — Infra team", "channel": "TBD", "tracker": "" },
+    { "product": "0G Storage Scan", "area": "0g-infra", "owner": "TBD — Infra team", "channel": "TBD", "tracker": "" },
+    { "product": "Chain Scan", "area": "0g-infra", "owner": "TBD — Infra team", "channel": "TBD", "tracker": "" },
+    { "product": "0G Code to Coin (0g-cc)", "area": "0g-infra", "owner": "TBD — SDK / Compute team", "channel": "TBD", "tracker": "" }
+  ]
+}

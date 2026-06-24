@@ -1,0 +1,62 @@
+name: Check PROJECT_PAT health
+
+# add-defects-to-board.yml depends on the PROJECT_PAT secret to write the org
+# Projects v2 board. If that token is revoked or expires, auto-add silently stops
+# (issues still get the `defect` label, they just never reach the board). This
+# workflow makes that failure loud: a daily read-only probe of Project #19 that
+# fails visibly — and can email the repo admins via the normal Actions
+# failure notification — when the token can no longer reach the board.
+#
+# Rotate with: gh secret set PROJECT_PAT --repo 0gfoundation/0g-testing-hub
+# then re-run scripts/setup-labels-and-board.sh to back-fill any missed issues.
+
+on:
+  schedule:
+    - cron: "0 7 * * *" # daily 07:00 UTC
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.PROJECT_PAT }}
+      OWNER: 0gfoundation
+      PROJECT_NUMBER: "19"
+    steps:
+      - name: Probe Project #19 with PROJECT_PAT
+        run: |
+          set -euo pipefail
+
+          if [ -z "${GH_TOKEN:-}" ]; then
+            echo "::error::PROJECT_PAT is empty or unset — auto-add to the board cannot work." >&2
+            exit 1
+          fi
+
+          # Read-only: resolve the board id, Status field, and the Triage option.
+          # This is exactly what add-defects-to-board.yml needs at runtime, so if it
+          # succeeds here the auto-add path has a working token.
+          read -r PROJECT_ID OPTION_ID < <(
+            gh api graphql -f query='
+              query($l:String!,$n:Int!){
+                organization(login:$l){ projectV2(number:$n){
+                  id
+                  field(name:"Status"){
+                    ... on ProjectV2SingleSelectField { options { id name } }
+                  }
+                }}
+              }' -F l="$OWNER" -F n="$PROJECT_NUMBER" \
+              --jq '.data.organization.projectV2 | "\(.id) \(.field.options[] | select(.name=="Triage") | .id)"'
+          ) || {
+            echo "::error::PROJECT_PAT could not query Project #$PROJECT_NUMBER — token likely revoked, expired, or missing project+read:org scope." >&2
+            exit 1
+          }
+
+          if [ -z "${PROJECT_ID:-}" ] || [ -z "${OPTION_ID:-}" ]; then
+            echo "::error::Resolved an empty project/Triage id — token may lack scope or the board was reconfigured." >&2
+            exit 1
+          fi
+
+          echo "PROJECT_PAT healthy: resolved Project #$PROJECT_NUMBER ($PROJECT_ID) with a Triage column."

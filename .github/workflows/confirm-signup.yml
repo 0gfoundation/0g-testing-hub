@@ -1,0 +1,61 @@
+name: Confirm sign-up
+
+# When a tester opens a sign-up issue, validate the wallet address and confirm
+# registration. The issue author is the authenticated GitHub identity — the reward
+# join key — and the wallet in the body is the public payout address (Option A).
+#
+# Uses the default GITHUB_TOKEN (issues: write) — no PAT needed; it only comments
+# on and labels issues in this repo.
+
+on:
+  issues:
+    types: [opened, labeled]
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  confirm:
+    # Only act on intake: a freshly opened sign-up issue, or someone adding the
+    # `signup` label — not on every later label change.
+    if: >-
+      contains(github.event.issue.labels.*.name, 'signup') &&
+      (github.event.action == 'opened' || github.event.label.name == 'signup')
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      REPO: ${{ github.repository }}
+      ISSUE_NUMBER: ${{ github.event.issue.number }}
+      AUTHOR: ${{ github.event.issue.user.login }}
+    steps:
+      - name: Validate wallet and confirm registration
+        run: |
+          set -euo pipefail
+
+          BODY=$(gh issue view "$ISSUE_NUMBER" --repo "$REPO" --json body --jq .body)
+
+          # Pull the wallet field out of the issue-form markdown.
+          WALLET=$(awk '
+            $0 == "### 0G mainnet EVM wallet address" { found=1; next }
+            found && /^### / { exit }
+            found && NF { print; exit }
+          ' <<<"$BODY")
+
+          # Safety: a 64-hex string is a private key, never a wallet address. If one
+          # shows up, flag it loudly instead of leaving a secret in a public issue.
+          if printf '%s' "$BODY" | grep -Eiq '\b(0x)?[0-9a-f]{64}\b'; then
+            gh issue edit "$ISSUE_NUMBER" --repo "$REPO" --add-label "needs:fix" >/dev/null
+            gh issue comment "$ISSUE_NUMBER" --repo "$REPO" --body "⚠️ This looks like it may contain a **private key**. Please **edit it out immediately** and keep only your public \`0x…\` wallet address. Never share secrets."
+            echo "Flagged #$ISSUE_NUMBER for a possible private key."
+            exit 0
+          fi
+
+          if printf '%s' "$WALLET" | grep -Eiq '^0x[0-9a-f]{40}$'; then
+            gh issue comment "$ISSUE_NUMBER" --repo "$REPO" --body "✅ Registered **@$AUTHOR** → \`$WALLET\`. Your GitHub account is your testing identity and rewards pay to this wallet. Climb from L0 — see the [README](../../blob/main/README.md)."
+            echo "Confirmed sign-up #$ISSUE_NUMBER (@$AUTHOR -> $WALLET)."
+          else
+            gh issue edit "$ISSUE_NUMBER" --repo "$REPO" --add-label "needs:fix" >/dev/null
+            gh issue comment "$ISSUE_NUMBER" --repo "$REPO" --body "⚠️ Couldn't read a valid **0G mainnet EVM wallet** (expected \`0x\` + 40 hex characters). Please edit the issue and fix the wallet field so your reward can be paid."
+            echo "Flagged #$ISSUE_NUMBER for an invalid/missing wallet."
+          fi
