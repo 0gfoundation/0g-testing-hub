@@ -9,7 +9,7 @@
 
 ## Test, Report, Reward
 
-![Reward levels](./Assets/reward-level.png)
+![Reward workflow](./Assets/reward-workflow.png)
 
 All rewards are **0G Compute Credit**; payout = the Credit of your **highest level reached** (not cumulative).
 
