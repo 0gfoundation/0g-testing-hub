@@ -11,6 +11,10 @@
 
 ![Reward workflow](./Assets/reward-workflow.png)
 
+![Reward levels](./Assets/reward-level.png)
+
+The ladder you're climbing: **L0** Recruit → **L3** Master.
+
 All rewards are **0G Compute Credit**; payout = the Credit of your **highest level reached** (not cumulative).
 
 | Step | Reach | How it clears | Where to go | Credit |
