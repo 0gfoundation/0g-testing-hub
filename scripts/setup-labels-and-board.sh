@@ -111,7 +111,39 @@ REPO_ID=$(gh api graphql -f query='query($o:String!,$n:String!){repository(owner
 gh api graphql -f query='mutation($p:ID!,$r:ID!){linkProjectV2ToRepository(input:{projectId:$p,repositoryId:$r}){repository{nameWithOwner}}}' \
   -F p="$PROJECT_ID" -F r="$REPO_ID" >/dev/null 2>&1 || true
 
-# Add every open `defect` issue (addProjectV2ItemById is a no-op if already present).
+# Add `status:filed` and first-pass form-derived labels to every open `defect`
+# issue that may have bypassed the issue form, then add every open `defect` issue to the board
+# (addProjectV2ItemById is a no-op if already present).
+get_issue_field() {
+  local body="$1"
+  local name="$2"
+  awk -v name="$name" '
+    $0 == "### " name { found=1; next }
+    found && /^### / { exit }
+    found && NF { print; exit }
+  ' <<<"$body"
+}
+
+echo "==> Ensuring open 'defect' issues have status:filed and form-derived labels"
+while IFS= read -r number; do
+  [ -z "$number" ] && continue
+  gh issue edit "$number" --repo "$REPO" --add-label "status:filed" >/dev/null 2>&1 || true
+  body=$(gh issue view "$number" --repo "$REPO" --json body --jq .body 2>/dev/null || true)
+  ownership=$(get_issue_field "$body" "Ownership")
+  severity=$(get_issue_field "$body" "Severity")
+  case "$ownership" in
+    "App Suite"*) gh issue edit "$number" --repo "$REPO" --add-label "area:app-suite" >/dev/null 2>&1 || true ;;
+    "0G Infra"*) gh issue edit "$number" --repo "$REPO" --add-label "area:0g-infra" >/dev/null 2>&1 || true ;;
+    "Ecosystem dApp"*) gh issue edit "$number" --repo "$REPO" --add-label "area:ecosystem" --add-label "coverage-log" >/dev/null 2>&1 || true ;;
+  esac
+  case "$severity" in
+    "P1"*) gh issue edit "$number" --repo "$REPO" --add-label "sev:P1" >/dev/null 2>&1 || true ;;
+    "P2"*) gh issue edit "$number" --repo "$REPO" --add-label "sev:P2" >/dev/null 2>&1 || true ;;
+    "P3"*) gh issue edit "$number" --repo "$REPO" --add-label "sev:P3" >/dev/null 2>&1 || true ;;
+    "P4"*) gh issue edit "$number" --repo "$REPO" --add-label "sev:P4" >/dev/null 2>&1 || true ;;
+  esac
+done < <(gh issue list --repo "$REPO" --label "defect" --state open --json number --jq '.[].number')
+
 echo "==> Adding open 'defect' issues to the board"
 count=0
 while IFS= read -r iid; do

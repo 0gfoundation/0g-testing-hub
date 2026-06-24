@@ -2,7 +2,8 @@ name: Add defects to board
 
 # Replaces the UI-only "Auto-add to project" + "Item added -> set Status" built-in
 # Projects workflows (GitHub exposes no API for those). When an issue is opened or
-# labelled `defect`, add it to the board and drop it in the Triage column.
+# labelled `defect`, add it to the board, add `status:filed`, derive area/severity
+# labels from the issue form body, and drop it in the Triage column.
 #
 # Requires a repo secret `PROJECT_PAT` — a token with `project` + `repo` +
 # `read:org` scope. The default GITHUB_TOKEN cannot write an org Projects v2 board.
@@ -21,6 +22,7 @@ jobs:
     env:
       GH_TOKEN: ${{ secrets.PROJECT_PAT }}
       OWNER: 0gfoundation
+      REPO: ${{ github.repository }}
       PROJECT_NUMBER: "19"
       ISSUE_NODE_ID: ${{ github.event.issue.node_id }}
       ISSUE_NUMBER: ${{ github.event.issue.number }}
@@ -48,6 +50,37 @@ jobs:
             echo "Could not resolve the Triage column — is the board configured?" >&2
             exit 1
           fi
+
+          # Keep label state in sync with the board state. This is idempotent and
+          # covers issues that were manually labelled `defect` outside the form.
+          gh issue edit "$ISSUE_NUMBER" --repo "$REPO" --add-label "status:filed" >/dev/null
+
+          # Parse GitHub issue-form markdown and apply the first-pass routing labels.
+          # Maintainers can still correct these labels during triage.
+          BODY=$(gh issue view "$ISSUE_NUMBER" --repo "$REPO" --json body --jq .body)
+          get_field() {
+            awk -v name="$1" '
+              $0 == "### " name { found=1; next }
+              found && /^### / { exit }
+              found && NF { print; exit }
+            ' <<<"$BODY"
+          }
+
+          OWNERSHIP=$(get_field "Ownership")
+          SEVERITY=$(get_field "Severity")
+
+          case "$OWNERSHIP" in
+            "App Suite"*) gh issue edit "$ISSUE_NUMBER" --repo "$REPO" --add-label "area:app-suite" >/dev/null ;;
+            "0G Infra"*) gh issue edit "$ISSUE_NUMBER" --repo "$REPO" --add-label "area:0g-infra" >/dev/null ;;
+            "Ecosystem dApp"*) gh issue edit "$ISSUE_NUMBER" --repo "$REPO" --add-label "area:ecosystem" --add-label "coverage-log" >/dev/null ;;
+          esac
+
+          case "$SEVERITY" in
+            "P1"*) gh issue edit "$ISSUE_NUMBER" --repo "$REPO" --add-label "sev:P1" >/dev/null ;;
+            "P2"*) gh issue edit "$ISSUE_NUMBER" --repo "$REPO" --add-label "sev:P2" >/dev/null ;;
+            "P3"*) gh issue edit "$ISSUE_NUMBER" --repo "$REPO" --add-label "sev:P3" >/dev/null ;;
+            "P4"*) gh issue edit "$ISSUE_NUMBER" --repo "$REPO" --add-label "sev:P4" >/dev/null ;;
+          esac
 
           # Add the issue (no-op if already on the board) and capture the item id.
           ITEM_ID=$(gh api graphql -f query='

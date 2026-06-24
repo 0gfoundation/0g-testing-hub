@@ -23,6 +23,9 @@ change landed on the default branch.
   `Assets/` and updated `README.md` to load them from the shared asset folder.
 
 ### Changed
+- **Consolidated the README.** Merged repeated guidance about L0, accepted
+  defects, submission links, boundaries, and non-accepted reports into a
+  shorter six-section structure.
 - **Simplified the reward ladder.** Replaced the old L0→L5 unlock model with
   the current L0→L3 model: L0 feedback-only, L1 with 1 accepted App Suite
   defect, L2 with 2 accepted App Suite + 0G Infra defects, and L3 with 5+

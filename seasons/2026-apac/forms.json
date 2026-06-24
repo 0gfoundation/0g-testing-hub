@@ -4,8 +4,19 @@
   "forms": {
     "testingIntake": {
       "label": "Testing intake",
-      "url": null,
-      "status": "pending-current-url"
+      "url": "https://forms.gle/Mhm8YKXL9Kbvt11S8",
+      "requiredFields": [
+        {
+          "key": "walletAddress",
+          "label": "0G mainnet EVM wallet address",
+          "purpose": "Credit payout destination."
+        },
+        {
+          "key": "githubUsername",
+          "label": "GitHub username",
+          "purpose": "Join signup rows to GitHub issue authors in reward export."
+        }
+      ]
     },
     "appSuiteStudioFeedback": {
       "label": "0G App Suite Feedback / 0G Studio Feedback",
@@ -19,7 +30,7 @@
     },
     "defectReport": {
       "label": "Submit bug report",
-      "url": "https://github.com/0gfoundation/0g-testing-hub/issues/new?template=defect-report.yml&labels=defect"
+      "url": "https://github.com/0gfoundation/0g-testing-hub/issues/new?template=defect-report.yml&labels=defect,status:filed,status:filed"
     },
     "defectBoard": {
       "label": "Defect board",
@@ -28,6 +39,11 @@
     "testingRepo": {
       "label": "Open testing repo",
       "url": "https://github.com/0gfoundation/0g-testing-hub"
+    },
+    "signupExportSchema": {
+      "label": "Signup export schema",
+      "url": "docs/signups.example.csv",
+      "note": "Reward export requires github_username + wallet columns."
     }
   }
 }

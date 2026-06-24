@@ -1,28 +1,29 @@
-name: "Defect report"
-description: "File one reproducible defect found while testing a 0G ecosystem app. One defect per issue."
+name: "Defect report / coverage log"
+description: "File one reproducible core-product defect, or log record-only Ecosystem dApp coverage. One item per issue."
 title: "[defect]: "
-labels: ["defect"]
+labels: ["defect", "status:filed"]
 body:
   - type: markdown
     attributes:
       value: |
-        Thanks for testing. **One defect per issue** — file a separate report for each.
+        Thanks for testing. **One defect or coverage log per issue** — file a separate report for each.
 
         Before you start, two rules from the program brief:
         - **Reproduce it first.** "Felt off" is not a defect — if someone can't follow your steps and see the same result, it doesn't count.
         - **Never touch funds or keys.** On swap / bridge / faucet / sign flows, stop at the transaction-confirmation screen. Do not sign, do not send.
+        - **Ecosystem dApps are record-only.** Report actionable bugs to the dApp's own channel, then paste that report URL below.
 
-        The fields below mirror the defect template — triage uses them to label, route, and de-duplicate, so fill them precisely.
+        The fields below mirror the defect template — triage uses them to label, route, de-duplicate, and export rewards, so fill them precisely.
 
   - type: dropdown
     id: ownership
     attributes:
       label: Ownership
-      description: "Which bucket owns this? App Suite / 0G Infra → file the bug here. Ecosystem dApps are record-only — use this to log that you walked them (coverage); send actionable bugs to the dApp's own channel. Record-only entries are logged, not escalated as 0G defects."
+      description: "Which bucket owns this? App Suite / 0G Infra → file the bug here. Ecosystem dApps → coverage log only; send actionable bugs to the dApp's own channel and paste the report URL below."
       options:
         - "App Suite (0G App / Genome / 0G Chat / PandaClaw)"
         - "0G Infra (0G Hub / 0G Storage Scan / Chain Scan)"
-        - "Ecosystem dApp (record-only)"
+        - "Ecosystem dApp coverage log (record-only)"
     validations:
       required: true
 
@@ -34,6 +35,15 @@ body:
       placeholder: "0G Hub"
     validations:
       required: true
+
+  - type: input
+    id: reported-to
+    attributes:
+      label: "Reported to dApp URL (Ecosystem only)"
+      description: "For Ecosystem coverage logs with an actionable bug, paste the dApp's own issue/form/support URL. Use N/A if you only confirmed coverage and found no actionable bug."
+      placeholder: "https://github.com/example/project/issues/123 or N/A"
+    validations:
+      required: false
 
   - type: dropdown
     id: severity
@@ -148,5 +158,5 @@ body:
           required: true
         - label: "I did not sign or send any transaction, and did not touch funds or private keys."
           required: true
-        - label: "If this is an Ecosystem dApp, I understand it is logged as record-only (not a 0G defect)."
+        - label: "If this is an Ecosystem dApp, I understand this issue is a coverage log only and I pasted the dApp report URL above when there is an actionable bug."
           required: true
