@@ -4,15 +4,32 @@
 
 ## Jump to
 
-- [How to get reward](#how-to-get-reward)
 - [Levels & rewards](#levels--rewards)
+- [How to get reward](#how-to-get-reward)
 - [Test targets](#test-targets)
+
+## Levels & rewards
+
+![Reward levels](./Assets/reward-level.png)
+
+All rewards are **0G Compute Credit** - no physical goods, no shipping. Payout = the Credit of your **highest level reached** (not cumulative).
+
+| Lv | Title | How it clears | Credit |
+|----|-------|---------------|:------:|
+| **L0** | Recruit | Two feedback forms; no bug | **10** |
+| **L1** | Tester | 1 accepted · App Suite | **20** |
+| **L2** | Infra Pioneer | 2 accepted · App Suite + 0G Infra | **40** |
+| **L3** | Master | 5+ accepted · incl. 1 `systemic` | **100** |
+
+The more **accepted, deduped** defects you surface, the higher you climb - Master is the cap. Ecosystem dApps are **record-only** (log coverage, not a gate). Full mechanics: [`LEVELS.md`](./LEVELS.md).
+
+*House wording: "The Blockchain for AI Agents", "onchain"; avoid legacy names.*
 
 ## How to get reward
 
 ![Reward workflow](./Assets/reward-workflow.png)
 
-Levels run **L0 -> L3** (Recruit to Master); each clears for more 0G Compute Credit. Full table in [Levels & rewards](#levels--rewards).
+The ladder above clears **L0 -> L3** (Recruit to Master); here is the flow that gets you up it.
 
 1. **Register once.**
 2. **Clear L0** with feedback only; no bug required.
@@ -43,23 +60,6 @@ New issue reports start with `defect` + `status:filed`; automation derives `area
 - **P4 cosmetics** with no reproducible P1/P2.
 - **Record-only dApp bugs** - route to the dApp's own channel; the Hub only logs coverage. If you log Ecosystem coverage here, include the dApp report URL when there is an actionable bug.
 - **Funds / keys** - never sign or send; stop at the transaction-confirmation screen on swap / bridge / faucet / sign flows.
-
-## Levels & rewards
-
-![Reward levels](./Assets/reward-level.png)
-
-All rewards are **0G Compute Credit** - no physical goods, no shipping. Payout = the Credit of your **highest level reached** (not cumulative).
-
-| Lv | Title | How it clears | Credit |
-|----|-------|---------------|:------:|
-| **L0** | Recruit | Two feedback forms; no bug | **10** |
-| **L1** | Tester | 1 accepted · App Suite | **20** |
-| **L2** | Infra Pioneer | 2 accepted · App Suite + 0G Infra | **40** |
-| **L3** | Master | 5+ accepted · incl. 1 `systemic` | **100** |
-
-The more **accepted, deduped** defects you surface, the higher you climb - Master is the cap. Ecosystem dApps are **record-only** (log coverage, not a gate). Full mechanics: [`LEVELS.md`](./LEVELS.md).
-
-*House wording: "The Blockchain for AI Agents", "onchain"; avoid legacy names.*
 
 ## Test targets
 
