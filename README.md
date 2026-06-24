@@ -47,7 +47,7 @@ Track your filed issues on the [Defect board #19](https://github.com/orgs/0gfoun
 - [**0G Hub**](https://hub.0g.ai/) - bridge / swap / faucet / portfolio
 - [**0G Storage Scan**](https://storagescan-newton.0g.ai/) - storage explorer
 - [**Chain Scan**](https://chainscan.0g.ai/) - block explorer
-- [**0G Code to Coin (0g-cc)**](https://www.npmjs.com/package/@0gfoundation/0g-cc)
+- [**0G Code to Coin (0g-cc)**](https://www.npmjs.com/package/@0gfoundation/0g-cc) - MCP server for AI inference / storage on 0G Compute
   - Note: `0g-cc` is a CLI / MCP server, not a web app. Add it (`claude mcp add 0g-cc npx @0gfoundation/0g-cc`), then walk one inference / storage flow plus one error path. The funds/keys boundary still applies.
 
 ### 0G Ecosystem dApp
