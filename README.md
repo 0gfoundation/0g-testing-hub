@@ -36,12 +36,6 @@ The ladder above clears **L0 -> L3** (Recruit to Master); here is the flow that 
 | **3. Climb from L1** with accepted, reproducible bugs — submit a bug / coverage log | [Defect report form](https://github.com/0gfoundation/0g-testing-hub/issues/new?template=defect-report.yml&labels=defect,status:filed) |
 | **4. Cover in order** — App Suite -> 0G Infra -> Ecosystem (record-only); track your issues | [Defect board #19](https://github.com/orgs/0gfoundation/projects/19) |
 
-Signup intake must collect the tester's **0G mainnet EVM wallet** and **GitHub username**. The GitHub username must match the account that files defect reports so reward export can join signup rows to issues and output the payout wallet.
-
-New issue reports start with `defect` + `status:filed`; automation derives `area:*`, `sev:*`, and `coverage-log` labels from the issue form so maintainers correct labels instead of classifying from scratch. If the form can't be parsed, the issue gets `needs:manual-label` instead of shipping unlabelled.
-
-**A bug is accepted only if it is** (a) **reproducible** from your steps, (b) a **divergence from documented/expected behavior** - not market state or your own misconfig, and (c) **measured against the current stack baseline**, not an imagined production target. Duplicates collapse to the first reporter (shared `rc:` code); your level reads off triage labels. See [`.github/TRIAGE.md`](./.github/TRIAGE.md).
-
 **Won't be accepted / out of bounds:**
 
 - **Duplicates** or **not-reproducible** "felt off" reports.
