@@ -35,8 +35,10 @@ export async function renderTargets() {
   const lines = [];
 
   lines.push(START);
-  lines.push('');
-  lines.push(data.intro || 'Targets, in unlock order - generated from `data/targets.json`.');
+  if (data.intro) {
+    lines.push('');
+    lines.push(data.intro);
+  }
 
   for (const bucket of data.buckets || []) {
     lines.push('');

@@ -1,6 +1,5 @@
 {
   "note": "Single source of truth for README -> Test targets. Edit here, then run `node scripts/render-targets-readme.mjs --write`.",
-  "intro": "Season 1 targets, in unlock order - generated from `data/targets.json`.",
   "buckets": [
     {
       "key": "app",

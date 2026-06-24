@@ -46,11 +46,7 @@ The ladder above clears **L0 -> L3** (Recruit to Master); here is the flow that 
 
 ## Test targets
 
-Edit targets and checklists in [`data/targets.json`](./data/targets.json), then run `node scripts/render-targets-readme.mjs --write`.
-
 <!-- targets:start -->
-
-Season 1 targets, in unlock order - generated from `data/targets.json`.
 
 ### 0G App Suite · core (L0-L1)
 
