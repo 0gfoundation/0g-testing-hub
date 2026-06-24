@@ -25,9 +25,7 @@ if (args.help) {
 const repo = args.repo || process.env.REPO || '0gfoundation/0g-testing-hub';
 const format = args.format || 'md';
 const issues = await loadIssues(args.issues, repo, args.limit || '1000');
-const { users: signups, duplicates: signupDuplicates } = args.signups
-  ? await loadSignups(args.signups)
-  : { users: new Map(), duplicates: [] };
+const { users: signups, duplicates: signupDuplicates } = await loadSignupSource(args, repo);
 const l0Done = args.l0 ? await loadL0(args.l0) : new Set();
 const report = buildReport(issues, signups, l0Done);
 const output = render(report, format);
@@ -90,6 +88,9 @@ function printUsage() {
 Inputs:
   --issues   Optional JSON export from gh issue list. If omitted, the script calls gh.
   --signups  Optional CSV or JSON signup export. Must include GitHub username + wallet columns.
+  --signups-from-issues  Build the signup map from GitHub signup-labelled issues instead of a
+             CSV: the issue author is the GitHub username and the body carries the wallet. No
+             external form needed. Use --signup-issues <file> to read a JSON fixture instead of gh.
   --l0       Optional CSV or JSON export listing GitHub usernames that completed the
              required L0 feedback. Any user listed here clears L0 (credit 10) when they
              have no higher issue-driven level. Same username column aliases as --signups.
@@ -129,6 +130,60 @@ async function loadIssues(file, repoName, limit) {
     { encoding: 'utf8' },
   );
   return JSON.parse(raw);
+}
+
+async function loadSignupSource(args, repoName) {
+  if (typeof args['signup-issues'] === 'string') return loadSignupsFromIssues(args['signup-issues'], repoName, args.limit || '1000');
+  if (args['signups-from-issues']) return loadSignupsFromIssues(null, repoName, args.limit || '1000');
+  if (args.signups) return loadSignups(args.signups);
+  return { users: new Map(), duplicates: [] };
+}
+
+// Option A sign-up: each `signup`-labelled issue carries the authenticated GitHub
+// username (the issue author — the reward join key) and the 0G mainnet wallet in
+// its body. This reads that registry directly, so no external signup form/CSV is
+// needed. `file` is an optional JSON fixture (gh issue list shape); otherwise gh is called.
+async function loadSignupsFromIssues(file, repoName, limit) {
+  let signupIssues;
+  if (file) {
+    const parsed = JSON.parse(await readFile(file, 'utf8'));
+    signupIssues = Array.isArray(parsed) ? parsed : parsed.issues || [];
+  } else {
+    const raw = execFileSync(
+      'gh',
+      ['issue', 'list', '--repo', repoName, '--state', 'all', '--limit', String(limit), '--label', 'signup', '--json', 'number,author,body'],
+      { encoding: 'utf8' },
+    );
+    signupIssues = JSON.parse(raw);
+  }
+
+  const users = new Map();
+  const duplicates = new Set();
+  for (const issue of signupIssues) {
+    const normalized = normalizeUser(authorLogin(issue));
+    if (!normalized) continue;
+    if (users.has(normalized)) duplicates.add(normalized);
+    users.set(normalized, { row: issue, wallet: walletFromBody(issue.body) });
+  }
+  return { users, duplicates: [...duplicates] };
+}
+
+// Pull the wallet out of a sign-up issue body, accepting only a well-formed
+// address so a malformed entry surfaces as a missing-wallet diagnostic.
+function walletFromBody(body) {
+  const value = fieldFromBody(body, '0G mainnet EVM wallet address');
+  return /^0x[0-9a-fA-F]{40}$/.test(value) ? value : '';
+}
+
+function fieldFromBody(body, name) {
+  const lines = String(body || '').split(/\r?\n/);
+  let found = false;
+  for (const line of lines) {
+    if (line.trim() === `### ${name}`) { found = true; continue; }
+    if (found && line.startsWith('### ')) break;
+    if (found && line.trim()) return line.trim();
+  }
+  return '';
 }
 
 async function loadSignups(file) {

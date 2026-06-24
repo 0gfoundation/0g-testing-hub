@@ -2,19 +2,15 @@
   "note": "Season 1 (2026 · APAC) intake links. Do not reuse the retired Google Form URLs. Add the current testing intake URL before launch.",
   "season": "2026-apac",
   "forms": {
-    "testingIntake": {
-      "label": "Testing intake",
-      "url": "https://forms.gle/Mhm8YKXL9Kbvt11S8",
+    "testingSignup": {
+      "label": "Testing sign-up (GitHub issue)",
+      "url": "https://github.com/0gfoundation/0g-testing-hub/issues/new?template=signup.yml&labels=signup",
+      "note": "Sign-up is a GitHub issue (Option A): the authenticated issue author IS the reward join key (nothing typed, nothing to mismatch), and the 0G mainnet EVM wallet is captured in the issue body (public). Reward export reads these directly via `--signups-from-issues`.",
       "requiredFields": [
         {
           "key": "walletAddress",
           "label": "0G mainnet EVM wallet address",
-          "purpose": "Credit payout destination."
-        },
-        {
-          "key": "githubUsername",
-          "label": "GitHub username",
-          "purpose": "Join signup rows to GitHub issue authors in reward export."
+          "purpose": "Public payout destination, captured in the sign-up issue body."
         }
       ]
     },

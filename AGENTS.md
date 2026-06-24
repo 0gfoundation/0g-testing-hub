@@ -12,7 +12,7 @@ All rewards are **0G Compute Credit**; payout = the Credit of the **highest leve
 
 | Step | Reach | How it clears | Where to go | Credit |
 |------|-------|---------------|-------------|:------:|
-| **0** | **Sign Up** | 0G mainnet wallet address + GitHub username | [Testing Sign Up](https://forms.gle/Mhm8YKXL9Kbvt11S8) | — |
+| **0** | **Sign Up** | Open a sign-up issue with your 0G mainnet wallet (your GitHub account is your identity) | [Sign up (GitHub)](https://github.com/0gfoundation/0g-testing-hub/issues/new?template=signup.yml&labels=signup) | — |
 | **1** | **L0** Recruit | 2 feedback forms; no bug required | 1. [0G Studio Feedback (App Suite, all four apps)](https://forms.gle/ymEdZrdTNs4giEm1A)<br>2. [0G Private Computer Feedback (every level)](https://forms.gle/G919xrbRyfVJxPZe8) | **10 0G Compute Credit** |
 | **2** | **L1** Tester | 1 accepted · App Suite | [Defect report form](https://github.com/0gfoundation/0g-testing-hub/issues/new?template=defect-report.yml&labels=defect,status:filed) | **20 0G Compute Credit** |
 | **3** | **L2** Infra Pioneer | +1 accepted · 0G Infra (2 total) | [Defect report form](https://github.com/0gfoundation/0g-testing-hub/issues/new?template=defect-report.yml&labels=defect,status:filed) | **40 0G Compute Credit** |
@@ -22,7 +22,7 @@ Track filed issues on the [Defect board #19](https://github.com/orgs/0gfoundatio
 
 ```json
 {
-  "signup": "https://forms.gle/Mhm8YKXL9Kbvt11S8",
+  "signup": "https://github.com/0gfoundation/0g-testing-hub/issues/new?template=signup.yml&labels=signup",
   "appSuiteFeedback": "https://forms.gle/ymEdZrdTNs4giEm1A",
   "privateComputerFeedback": "https://forms.gle/G919xrbRyfVJxPZe8",
   "testingRepo": "https://github.com/0gfoundation/0g-testing-hub",
@@ -39,7 +39,7 @@ Track filed issues on the [Defect board #19](https://github.com/orgs/0gfoundatio
 
 The reward system depends on this chain. Do not bypass it:
 
-1. **Signup form** collects the tester's 0G mainnet EVM wallet and **GitHub username**. This external form is the prerequisite for reliable rewards; the GitHub username is the identity join key and the wallet is the payout destination.
+1. **Sign-up issue** (`signup.yml`, labelled `signup`) registers the tester. The **issue author** is the authenticated **GitHub username** — the identity join key, captured automatically so it can't be mistyped — and the **0G mainnet EVM wallet** is recorded in the issue body (public). `confirm-signup.yml` validates the wallet and confirms registration. Reward export reads these via `--signups-from-issues`, so no external signup form is needed.
 2. **Defect report / coverage log form** creates GitHub issues labelled `defect` + `status:filed`.
 3. **Workflow** adds every `defect` issue to Project #19, derives `area:*` / `sev:*` / `coverage-log` labels from the form body, and keeps the board's Triage state aligned with `status:filed`. If the form body can't be parsed, it applies `needs:manual-label` so the gap is visible instead of silently shipping unlabelled.
 4. **Triage** moves issues through `status:accepted` and `status:routed`, applies one `area:*`, one `sev:*`, optional `rc:*`, and `systemic` when appropriate.

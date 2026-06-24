@@ -1,0 +1,31 @@
+name: "Testing sign-up"
+description: "Register for the 0G testing program: your GitHub account is your identity, your 0G mainnet wallet is your payout address."
+title: "[signup]: "
+labels: ["signup"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Opening this issue registers you for the 0G testing program. Your **GitHub account** — whoever opens this issue — is your identity and the join key for every reward, read automatically so there is nothing to type and nothing to mismatch.
+
+        Enter your **0G mainnet EVM wallet** below; it is your payout address. This is a **public** repo, so the wallet address will be visible — that is expected. **Never paste a private key or seed phrase** — only the public wallet address.
+
+  - type: input
+    id: wallet
+    attributes:
+      label: "0G mainnet EVM wallet address"
+      description: "Your payout address — the public 0x… address only, never a private key or seed phrase."
+      placeholder: "0x0000000000000000000000000000000000000000"
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: gates
+    attributes:
+      label: Confirmations
+      description: "Both required."
+      options:
+        - label: "This is my 0G mainnet EVM wallet — a public 0x… address, not a private key or seed phrase."
+          required: true
+        - label: "I understand rewards are credited to this GitHub account and paid to the wallet above, and that this repo is public."
+          required: true
