@@ -68,11 +68,18 @@ jobs:
 
           OWNERSHIP=$(get_field "Ownership")
           SEVERITY=$(get_field "Severity")
+          echo "Parsed Ownership=[$OWNERSHIP] Severity=[$SEVERITY]"
+
+          # Track whether each field mapped to a known label. If the issue-form
+          # wording drifts (or the body was hand-edited) the case falls through and
+          # we flag the issue for a human instead of silently shipping it unlabelled.
+          NEEDS_MANUAL=0
 
           case "$OWNERSHIP" in
             "App Suite"*) gh issue edit "$ISSUE_NUMBER" --repo "$REPO" --add-label "area:app-suite" >/dev/null ;;
             "0G Infra"*) gh issue edit "$ISSUE_NUMBER" --repo "$REPO" --add-label "area:0g-infra" >/dev/null ;;
             "Ecosystem dApp"*) gh issue edit "$ISSUE_NUMBER" --repo "$REPO" --add-label "area:ecosystem" --add-label "coverage-log" >/dev/null ;;
+            *) echo "::warning::Ownership did not match a known area label: [$OWNERSHIP]"; NEEDS_MANUAL=1 ;;
           esac
 
           case "$SEVERITY" in
@@ -80,7 +87,12 @@ jobs:
             "P2"*) gh issue edit "$ISSUE_NUMBER" --repo "$REPO" --add-label "sev:P2" >/dev/null ;;
             "P3"*) gh issue edit "$ISSUE_NUMBER" --repo "$REPO" --add-label "sev:P3" >/dev/null ;;
             "P4"*) gh issue edit "$ISSUE_NUMBER" --repo "$REPO" --add-label "sev:P4" >/dev/null ;;
+            *) echo "::warning::Severity did not match a known sev label: [$SEVERITY]"; NEEDS_MANUAL=1 ;;
           esac
+
+          if [ "$NEEDS_MANUAL" -eq 1 ]; then
+            gh issue edit "$ISSUE_NUMBER" --repo "$REPO" --add-label "needs:manual-label" >/dev/null
+          fi
 
           # Add the issue (no-op if already on the board) and capture the item id.
           ITEM_ID=$(gh api graphql -f query='

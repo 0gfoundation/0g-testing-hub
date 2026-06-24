@@ -25,8 +25,11 @@ if (args.help) {
 const repo = args.repo || process.env.REPO || '0gfoundation/0g-testing-hub';
 const format = args.format || 'md';
 const issues = await loadIssues(args.issues, repo, args.limit || '1000');
-const signups = args.signups ? await loadSignups(args.signups) : new Map();
-const report = buildReport(issues, signups);
+const { users: signups, duplicates: signupDuplicates } = args.signups
+  ? await loadSignups(args.signups)
+  : { users: new Map(), duplicates: [] };
+const l0Done = args.l0 ? await loadL0(args.l0) : new Set();
+const report = buildReport(issues, signups, l0Done);
 const output = render(report, format);
 
 if (args.out) {
@@ -34,6 +37,30 @@ if (args.out) {
 } else {
   process.stdout.write(output);
   if (!output.endsWith('\n')) process.stdout.write('\n');
+}
+
+// Diagnostics: surface anything that would silently break or misdirect payout.
+// These go to stderr so they never corrupt CSV/JSON piped from stdout.
+const unmatchedAuthors = report.rows.filter((row) => row.acceptedDeduped > 0 && !row.registered);
+const missingWallet = report.rows.filter((row) => row.registered && !row.wallet && row.issueCredit > 0);
+const problemCount = unmatchedAuthors.length + signupDuplicates.length + missingWallet.length;
+
+if (problemCount) {
+  console.error(`\n⚠ reward-export diagnostics (${problemCount} issue${problemCount === 1 ? '' : 's'}):`);
+  if (unmatchedAuthors.length) {
+    console.error(`  ${unmatchedAuthors.length} issue author(s) with rewardable defects not matched to a signup (cannot pay):`);
+    for (const row of unmatchedAuthors) console.error(`    - ${row.githubUsername} → ${row.canonicalIssues}`);
+  }
+  if (signupDuplicates.length) {
+    console.error(`  ${signupDuplicates.length} duplicate signup username(s) (last row wins): ${signupDuplicates.join(', ')}`);
+  }
+  if (missingWallet.length) {
+    console.error(`  ${missingWallet.length} rewardable user(s) missing a wallet: ${missingWallet.map((r) => r.githubUsername).join(', ')}`);
+  }
+  if (args.strict) {
+    console.error('\n--strict: exiting non-zero because of the diagnostics above.');
+    process.exit(1);
+  }
 }
 
 function parseArgs(argv) {
@@ -58,16 +85,22 @@ function parseArgs(argv) {
 function printUsage() {
   console.log(`Usage:
   node scripts/export-reward-report.mjs [--repo owner/name]
-  node scripts/export-reward-report.mjs --issues issues.json [--signups signups.csv] [--format md|csv|json] [--out file]
+  node scripts/export-reward-report.mjs --issues issues.json [--signups signups.csv] [--l0 l0.csv] [--format md|csv|json] [--out file] [--strict]
 
 Inputs:
   --issues   Optional JSON export from gh issue list. If omitted, the script calls gh.
   --signups  Optional CSV or JSON signup export. Must include GitHub username + wallet columns.
+  --l0       Optional CSV or JSON export listing GitHub usernames that completed the
+             required L0 feedback. Any user listed here clears L0 (credit 10) when they
+             have no higher issue-driven level. Same username column aliases as --signups.
+  --strict   Exit non-zero if diagnostics find unmatched issue authors, duplicate signup
+             usernames, or rewardable users missing a wallet. Use as a pre-payout CI gate.
 
 Notes:
   Rewardable issues are core App Suite / 0G Infra issues with status:accepted or status:routed.
   Issues sharing the same rc:<CODE> label collapse to the earliest canonical issue.
-  Ecosystem dApp coverage logs are excluded from reward counts.`);
+  Ecosystem dApp coverage logs are excluded from reward counts.
+  Diagnostics (unmatched authors, duplicate signups, missing wallets) are printed to stderr.`);
 }
 
 async function loadIssues(file, repoName, limit) {
@@ -101,7 +134,7 @@ async function loadIssues(file, repoName, limit) {
 async function loadSignups(file) {
   const raw = await readFile(file, 'utf8');
   const trimmed = raw.trim();
-  if (!trimmed) return new Map();
+  if (!trimmed) return { users: new Map(), duplicates: [] };
 
   const rows = file.endsWith('.json') ? jsonRows(JSON.parse(trimmed)) : csvRows(trimmed);
   if (!rows.length) throw new Error(`Signup export is empty: ${file}`);
@@ -113,16 +146,37 @@ async function loadSignups(file) {
   }
 
   const users = new Map();
+  const duplicates = new Set();
 
   for (const row of rows) {
     const username = findField(row, githubUsernameAliases());
     const wallet = findField(row, walletAliases()).trim();
     const normalized = normalizeUser(username);
     if (!normalized) continue;
+    if (users.has(normalized)) duplicates.add(normalized);
     users.set(normalized, { row, wallet });
   }
 
-  return users;
+  return { users, duplicates: [...duplicates] };
+}
+
+async function loadL0(file) {
+  const raw = await readFile(file, 'utf8');
+  const trimmed = raw.trim();
+  if (!trimmed) return new Set();
+
+  const rows = file.endsWith('.json') ? jsonRows(JSON.parse(trimmed)) : csvRows(trimmed);
+  if (!rows.length) return new Set();
+  if (!hasAnyField(rows[0], githubUsernameAliases())) {
+    throw new Error('L0 export must include a GitHub username column (same aliases as the signup export).');
+  }
+
+  const done = new Set();
+  for (const row of rows) {
+    const normalized = normalizeUser(findField(row, githubUsernameAliases()));
+    if (normalized) done.add(normalized);
+  }
+  return done;
 }
 
 function githubUsernameAliases() {
@@ -225,7 +279,7 @@ function normalizeHeader(value) {
   return String(value || '').trim().toLowerCase().replace(/[\s-]+/g, '_');
 }
 
-function buildReport(issues, signups) {
+function buildReport(issues, signups, l0Done = new Set()) {
   const accepted = issues
     .filter(isRewardableAcceptedCore)
     .sort((a, b) => new Date(a.createdAt || 0) - new Date(b.createdAt || 0));
@@ -239,7 +293,7 @@ function buildReport(issues, signups) {
 
   const users = new Map();
   for (const [username, signup] of signups.entries()) {
-    users.set(username, emptyUser(username, true, signup.wallet));
+    users.set(username, emptyUser(username, true, signup.wallet, l0Done.has(username)));
   }
 
   const canonicalIssues = [];
@@ -249,7 +303,7 @@ function buildReport(issues, signups) {
     const username = normalizeUser(authorLogin(canonical)) || 'unknown';
     if (!users.has(username)) {
       const signup = signups.get(username);
-      users.set(username, emptyUser(username, Boolean(signup), signup?.wallet || ''));
+      users.set(username, emptyUser(username, Boolean(signup), signup?.wallet || '', l0Done.has(username)));
     }
     const user = users.get(username);
     user.acceptedDeduped += 1;
@@ -283,16 +337,18 @@ function buildReport(issues, signups) {
       acceptedCoreIssues: accepted.length,
       acceptedDeduped: canonicalIssues.length,
       signupUsers: signups.size,
+      l0Completions: l0Done.size,
     },
     rows,
   };
 }
 
-function emptyUser(username, registered, wallet = '') {
+function emptyUser(username, registered, wallet = '', l0Done = false) {
   return {
     githubUsername: username,
     wallet,
     registered,
+    l0Done,
     acceptedDeduped: 0,
     appSuite: 0,
     infra: 0,
@@ -318,6 +374,7 @@ function issueLevel(user) {
   if (user.appSuite >= 1 && user.infra >= 1 && user.acceptedDeduped >= 5 && user.systemic >= 1) return { name: 'L3', credit: 100 };
   if (user.appSuite >= 1 && user.infra >= 1 && user.acceptedDeduped >= 2) return { name: 'L2', credit: 40 };
   if (user.appSuite >= 1) return { name: 'L1', credit: 20 };
+  if (user.l0Done) return { name: 'L0', credit: 10 };
   return { name: '', credit: 0 };
 }
 
@@ -325,7 +382,7 @@ function notesFor(user, signups, level) {
   const notes = [];
   if (signups.size && !user.registered) notes.push('missing signup');
   if (user.registered && !user.wallet) notes.push('missing wallet');
-  if (!level.name) notes.push('no issue reward yet');
+  if (!level.name) notes.push('no reward yet');
   return notes.join('; ');
 }
 
@@ -413,6 +470,7 @@ function renderMarkdown(report) {
   lines.push(`Accepted core issues: ${report.totals.acceptedCoreIssues}`);
   lines.push(`Accepted + deduped findings: ${report.totals.acceptedDeduped}`);
   lines.push(`Signup users: ${report.totals.signupUsers}`);
+  lines.push(`L0 feedback completions: ${report.totals.l0Completions}`);
   lines.push('');
   lines.push('| GitHub | Wallet | Registered | Issue level | Credit | Accepted deduped | App Suite | Infra | Systemic | Issues | Notes |');
   lines.push('|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|');

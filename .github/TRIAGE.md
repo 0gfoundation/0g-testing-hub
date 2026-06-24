@@ -89,6 +89,11 @@ Notes:
 node scripts/check-routed-evidence.mjs --repo 0gfoundation/0g-testing-hub
 ```
 
+Don't guess the owner from memory — look the product up in
+[`data/owners.json`](../data/owners.json) (the per-product upstream owner, notify
+channel, and tracker). Keep that file current so routing never depends on who happens
+to be on triage.
+
 ## De-duplication (and the reward rule)
 
 When several issues share an `rc:` code they are **one** finding, not N:
@@ -97,6 +102,18 @@ When several issues share an `rc:` code they are **one** finding, not N:
 2. Label the rest with the same `rc:` code, then close them as duplicates
    (`status:closed`, comment linking the canonical issue).
 3. Route the canonical `systemic` issue upstream once — not per app.
+
+To find what to collapse, run the read-only finder — it lists issues already sharing
+an `rc:` code, candidate duplicates (same area + overlapping titles, no `rc:` yet), and
+any `rc:` label missing from the registry:
+
+```bash
+node scripts/find-duplicate-candidates.mjs --repo 0gfoundation/0g-testing-hub
+```
+
+Every `rc:<CODE>` must be registered in [`data/root-causes.json`](../data/root-causes.json)
+before use — that's the single source for codes so `CHAIN_ID_MISSING` doesn't drift into
+`ChainIdMissing`. Add the code there when you create a new `rc:` label.
 
 **Reward consequence:** a tester is credited for **accepted, deduped** defects, not raw filings.
 A cluster of issues sharing one `rc:` code counts as **one** rewardable defect, credited to the

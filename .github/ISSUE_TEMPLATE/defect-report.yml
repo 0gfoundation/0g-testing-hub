@@ -36,15 +36,6 @@ body:
     validations:
       required: true
 
-  - type: input
-    id: reported-to
-    attributes:
-      label: "Reported to dApp URL (Ecosystem only)"
-      description: "For Ecosystem coverage logs with an actionable bug, paste the dApp's own issue/form/support URL. Use N/A if you only confirmed coverage and found no actionable bug."
-      placeholder: "https://github.com/example/project/issues/123 or N/A"
-    validations:
-      required: false
-
   - type: dropdown
     id: severity
     attributes:
@@ -145,6 +136,15 @@ body:
       label: Root-cause code
       description: "Optional, ALL_CAPS slug. If several defects share one underlying cause, give them the same code so triage can collapse them into one systemic finding."
       placeholder: "CHAIN_ID_MISSING"
+    validations:
+      required: false
+
+  - type: input
+    id: reported-to
+    attributes:
+      label: "Reported to dApp URL (Ecosystem coverage logs only)"
+      description: "Only for Ecosystem dApp coverage logs: paste the dApp's own issue / form / support URL for the actionable bug, or N/A if you only confirmed coverage. App Suite / 0G Infra reports: leave this blank."
+      placeholder: "https://github.com/example/project/issues/123 or N/A"
     validations:
       required: false
 
