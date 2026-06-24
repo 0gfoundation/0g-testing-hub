@@ -4,10 +4,10 @@
 
 ## Jump to
 
-- [How to get the rewards](#how-to-get-the-rewards)
+- [Test, Report, Reward](#test-report-reward)
 - [Test targets](#test-targets)
 
-## How to get the rewards
+## Test, Report, Reward
 
 ![Reward levels](./Assets/reward-level.png)
 
