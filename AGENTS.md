@@ -2,27 +2,23 @@
 
 This is the canonical AI agent instruction file for this repository. It mirrors [`README.md`](./README.md); treat the README as the participant-facing source of truth for goals, levels, flows, test targets, submission rules, and defect template.
 
-**Not a code project.** `0g-testing-hub` is a community-run testing program for 0G: submit the required feedback, test target apps, file reproducible bugs, and climb **L0-L3** for 0G Compute Credit. There is no build, no tests, no lint, and no package manager here. The deliverable is **required feedback plus reproducible, routable defect intel**, not source code.
+**Not a code project.** `0g-testing-hub` is a testing program for 0G Ecosystem: submit the required feedback, test target apps, file reproducible bugs, and climb **L0-L3** for 0G Compute Credit. There is no build, no tests, no lint, and no package manager here. The deliverable is **required feedback plus reproducible, routable defect intel**, not source code.
 
 If a task drifts toward "write a script / set up a harness / refactor something here," stop and re-read the README. The work product is filed defects and feedback, not application code.
 
-## How to get reward
+## Test, Report, Reward
 
-1. **Register once.**
-2. **Clear L0** with 2 feedback forms only; no bug required.
-3. **Climb from L1** with accepted, reproducible bugs.
-4. **Cover in order:** App Suite -> 0G Infra -> Ecosystem dApps (record-only).
+All rewards are **0G Compute Credit**; payout = the Credit of the **highest level reached** (not cumulative).
 
-| Need | Link |
-|------|------|
-| **Sign up** (testing intake) | https://forms.gle/Mhm8YKXL9Kbvt11S8 |
-| **0G Studio Feedback** | https://forms.gle/ymEdZrdTNs4giEm1A |
-| **0G Private Computer Feedback** | https://forms.gle/G919xrbRyfVJxPZe8 |
-| **Submit a bug / coverage log** | [Defect report form](https://github.com/0gfoundation/0g-testing-hub/issues/new?template=defect-report.yml&labels=defect,status:filed) |
-| **Track issues** | [Defect board #19](https://github.com/orgs/0gfoundation/projects/19) |
-| **Level rules · rewards** | [`LEVELS.md`](./LEVELS.md) · [`rewards.md`](./seasons/2026-apac/rewards.md) |
-| **Workflow diagram** (tester + maintainer) | [`docs/WORKFLOWS.md`](./docs/WORKFLOWS.md) |
-| **Signup export schema** | [`docs/signups.example.csv`](./docs/signups.example.csv) |
+| Step | Reach | How it clears | Where to go | Credit |
+|------|-------|---------------|-------------|:------:|
+| **0** | **Sign Up** | 0G mainnet wallet address + GitHub username | [Testing Sign Up](https://forms.gle/Mhm8YKXL9Kbvt11S8) | — |
+| **1** | **L0** Recruit | 2 feedback forms; no bug required | 1. [0G Studio Feedback (App Suite, all four apps)](https://forms.gle/ymEdZrdTNs4giEm1A)<br>2. [0G Private Computer Feedback (every level)](https://forms.gle/G919xrbRyfVJxPZe8) | **10 0G Compute Credit** |
+| **2** | **L1** Tester | 1 accepted · App Suite | [Defect report form](https://github.com/0gfoundation/0g-testing-hub/issues/new?template=defect-report.yml&labels=defect,status:filed) | **20 0G Compute Credit** |
+| **3** | **L2** Infra Pioneer | +1 accepted · 0G Infra (2 total) | [Defect report form](https://github.com/0gfoundation/0g-testing-hub/issues/new?template=defect-report.yml&labels=defect,status:filed) | **40 0G Compute Credit** |
+| **4** | **L3** Master | 5+ accepted · incl. 1 `systemic` | [Defect report form](https://github.com/0gfoundation/0g-testing-hub/issues/new?template=defect-report.yml&labels=defect,status:filed) | **100 0G Compute Credit** |
+
+Track filed issues on the [Defect board #19](https://github.com/orgs/0gfoundation/projects/19). The more **accepted, deduped** defects a tester surfaces, the higher they climb - Master is the cap. Ecosystem dApps are **record-only**: log coverage, not a reward gate.
 
 ```json
 {
@@ -31,6 +27,10 @@ If a task drifts toward "write a script / set up a harness / refactor something 
   "privateComputerFeedback": "https://forms.gle/G919xrbRyfVJxPZe8",
   "testingRepo": "https://github.com/0gfoundation/0g-testing-hub",
   "bugReport": "https://github.com/0gfoundation/0g-testing-hub/issues/new?template=defect-report.yml&labels=defect,status:filed",
+  "defectBoard": "https://github.com/orgs/0gfoundation/projects/19",
+  "levelRules": "LEVELS.md",
+  "rewards": "seasons/2026-apac/rewards.md",
+  "workflowDiagram": "docs/WORKFLOWS.md",
   "signupSchema": "docs/signups.example.csv"
 }
 ```
@@ -53,7 +53,7 @@ Implemented chain:
 3. `status:filed` + `area:*` + `sev:*` automation: form labels plus workflow/backfill.
 4. Reward export script: depends on signup usernames, wallet, and the status label chain.
 5. Routed-to evidence: `status:routed` requires a structured maintainer comment.
-6. Targets generator and per-target checklists: `data/targets.json` renders README's generated target block.
+6. Targets generator: `data/targets.json` renders README's generated target block.
 
 Routed evidence check:
 
@@ -71,22 +71,9 @@ node scripts/check-routed-evidence.mjs --repo 0gfoundation/0g-testing-hub
 - **Record-only dApp bugs** - route to the dApp's own channel; the Hub only logs coverage. If an Ecosystem coverage log contains an actionable bug, require `Reported to dApp URL`.
 - **Funds / keys** - never sign or send; stop at the transaction-confirmation screen on swap / bridge / faucet / sign flows.
 
-## Levels & rewards
+## Test Targets
 
-All rewards are **0G Compute Credit**. Payout = the Credit of the **highest level reached**.
-
-| Lv | Title | How it clears | Credit |
-|----|-------|---------------|:------:|
-| **L0** | Recruit | Two feedback forms; no bug | **10** |
-| **L1** | Tester | 1 accepted · App Suite | **20** |
-| **L2** | Infra Pioneer | 2 accepted · App Suite + 0G Infra | **40** |
-| **L3** | Master | 5+ accepted · incl. 1 `systemic` | **100** |
-
-The more **accepted, deduped** defects a tester surfaces, the higher they climb. Ecosystem dApps are **record-only**: log coverage, but do not treat their bugs as reward gates.
-
-## Test targets
-
-`data/targets.json` is the source of truth for target URLs, descriptions, and checklists. Do not hand-edit README's generated target block. Edit `data/targets.json`, then run:
+`data/targets.json` is the source of truth for target URLs and descriptions. Do not hand-edit README's generated target block. Edit `data/targets.json`, then run:
 
 ```bash
 node scripts/render-targets-readme.mjs --write
@@ -95,11 +82,11 @@ node scripts/check-targets-drift.mjs
 
 - **0G App Suite · core (L0-L1)** - 0G App, Genome, 0G Chat, PandaClaw.
 - **0G Infra · core (L2)** - 0G Hub, 0G Storage Scan, Chain Scan, 0G Code to Coin (0g-cc).
-- **Ecosystem dApps · record-only** - TradeGPT, Jaine, Oku, AI Arena, CARV, Cygnus Finance, DataHive, Khalani, Merkl.
+- **0G Ecosystem dApp** - TradeGPT, Jaine, Oku, AI Arena, CARV, Cygnus Finance, DataHive, Khalani, Merkl.
 
 ## Defect template
 
-The [Defect report form](https://github.com/0gfoundation/0g-testing-hub/issues/new?template=defect-report.yml&labels=defect,status:filed) collects these fields. The same structure lives in [`README.md`](./README.md#defect-template), [`defects/TEMPLATE.md`](./defects/TEMPLATE.md), and [`defects/SEVERITY.md`](./defects/SEVERITY.md).
+The [Defect report form](https://github.com/0gfoundation/0g-testing-hub/issues/new?template=defect-report.yml&labels=defect,status:filed) collects these fields. The same structure lives in [`defects/TEMPLATE.md`](./defects/TEMPLATE.md) and [`defects/SEVERITY.md`](./defects/SEVERITY.md).
 
 ```text
 Title:
