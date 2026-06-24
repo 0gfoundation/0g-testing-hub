@@ -5,36 +5,22 @@
 ## Jump to
 
 - [Levels & rewards](#levels--rewards)
-- [How to get reward](#how-to-get-reward)
 - [Test targets](#test-targets)
 
 ## Levels & rewards
 
 ![Reward levels](./Assets/reward-level.png)
 
-All rewards are **0G Compute Credit**. Payout = the Credit of your **highest level reached** (not cumulative).
+[**Register once**](https://forms.gle/Mhm8YKXL9Kbvt11S8) at the testing intake, then climb the ladder. All rewards are **0G Compute Credit**; payout = the Credit of your **highest level reached** (not cumulative).
 
-| Lv | Title | How it clears | Credit |
-|----|-------|---------------|:------:|
-| **L0** | Recruit | Two feedback forms; no bug report required | **10** |
-| **L1** | Tester | 1 accepted · App Suite | **20** |
-| **L2** | Infra Pioneer | 2 accepted · App Suite + 0G Infra | **40** |
-| **L3** | Master | 5+ accepted · incl. 1 `systemic` | **100** |
+| Lv | Title | How it clears | Where to go | Credit |
+|----|-------|---------------|-------------|:------:|
+| **L0** | Recruit | Two feedback forms; no bug report required | [0G Studio Feedback (App Suite, all four apps)](https://forms.gle/ymEdZrdTNs4giEm1A) · [0G Private Computer Feedback (every level)](https://forms.gle/G919xrbRyfVJxPZe8) | **10** |
+| **L1** | Tester | 1 accepted · App Suite | [Defect report form](https://github.com/0gfoundation/0g-testing-hub/issues/new?template=defect-report.yml&labels=defect,status:filed) | **20** |
+| **L2** | Infra Pioneer | 2 accepted · App Suite + 0G Infra | [Defect report form](https://github.com/0gfoundation/0g-testing-hub/issues/new?template=defect-report.yml&labels=defect,status:filed) | **40** |
+| **L3** | Master | 5+ accepted · incl. 1 `systemic` | [Defect report form](https://github.com/0gfoundation/0g-testing-hub/issues/new?template=defect-report.yml&labels=defect,status:filed) | **100** |
 
-The more **accepted, deduped** defects you surface, the higher you climb - Master is the cap.
-
-## How to get reward
-
-![Reward workflow](./Assets/reward-workflow.png)
-
-The ladder above clears **L0 -> L3** (Recruit to Master); here is the flow that gets you up it, with where to go at each step.
-
-| Step | Link |
-|------|------|
-| **1. Register once** — testing intake | https://forms.gle/Mhm8YKXL9Kbvt11S8 |
-| **2. Clear L0** — 2 feedback forms only, no bug required | [0G Studio Feedback (App Suite, all four apps)](https://forms.gle/ymEdZrdTNs4giEm1A) · [0G Private Computer Feedback (every level)](https://forms.gle/G919xrbRyfVJxPZe8) |
-| **3. Climb from L1** with accepted, reproducible bugs — submit a bug / coverage log | [Defect report form](https://github.com/0gfoundation/0g-testing-hub/issues/new?template=defect-report.yml&labels=defect,status:filed) |
-| **4. Cover in order** — App Suite -> 0G Infra -> Ecosystem (record-only); track your issues | [Defect board #19](https://github.com/orgs/0gfoundation/projects/19) |
+Track your filed issues on the [Defect board #19](https://github.com/orgs/0gfoundation/projects/19). The more **accepted, deduped** defects you surface, the higher you climb - Master is the cap.
 
 **Won't be accepted / out of bounds:**
 
