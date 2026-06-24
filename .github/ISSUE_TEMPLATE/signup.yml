@@ -10,8 +10,6 @@ body:
 
         Enter your **0G mainnet EVM wallet** below; it is your payout address. This is a **public** repo, so the address is visible — that is expected. **Never paste a private key or seed phrase** — only the public wallet address.
 
-        > Your **reward level is decided by triage** from your accepted, deduped bugs. The level and progress fields below are your own intent and checklist — not the source of truth. See [LEVELS.md](./LEVELS.md).
-
   - type: input
     id: wallet
     attributes:
