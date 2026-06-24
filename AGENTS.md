@@ -73,7 +73,7 @@ node scripts/check-routed-evidence.mjs --repo 0gfoundation/0g-testing-hub
 
 ## Levels & rewards
 
-All rewards are **0G Compute Credit** - no physical goods, no shipping. Payout = the Credit of the **highest level reached**.
+All rewards are **0G Compute Credit**. Payout = the Credit of the **highest level reached**.
 
 | Lv | Title | How it clears | Credit |
 |----|-------|---------------|:------:|

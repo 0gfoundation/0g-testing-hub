@@ -12,7 +12,7 @@
 
 ![Reward levels](./Assets/reward-level.png)
 
-All rewards are **0G Compute Credit** - no physical goods, no shipping. Payout = the Credit of your **highest level reached** (not cumulative).
+All rewards are **0G Compute Credit**. Payout = the Credit of your **highest level reached** (not cumulative).
 
 | Lv | Title | How it clears | Credit |
 |----|-------|---------------|:------:|

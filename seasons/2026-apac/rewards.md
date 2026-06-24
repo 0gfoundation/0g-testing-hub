@@ -6,7 +6,7 @@
 ## Credit per level
 
 Payout = the **Credit of the highest level reached**. All rewards are 0G Compute
-Credit; no physical goods and no shipping.
+Credit.
 
 | Lv | Title | Clears with | 0G Compute Credit |
 |----|-------|-------------|:-----------------:|
