@@ -46,6 +46,8 @@ jobs:
             ACCEPTED_MSG="✅ **Coverage logged** — thanks for confirming this. Ecosystem dApps are **record-only**, so this does **not** count toward a reward tier; route the actionable bug to the dApp's own channel. See [LEVELS.md](../../blob/main/LEVELS.md)."
           elif has "area:0g-infra"; then
             ACCEPTED_MSG="✅ **Accepted** — triage reproduced and confirmed this **0G Infra** defect. Note: an Infra bug alone does **not** clear L1 (that needs an accepted **App Suite** bug); paired with one it gets you to L2. See [LEVELS.md](../../blob/main/LEVELS.md)."
+          elif has "area:app-suite"; then
+            ACCEPTED_MSG="✅ **Accepted** — triage reproduced and confirmed this **App Suite** defect; that clears **L1**. Add an accepted **0G Infra** bug to reach **L2**. Rewards are on **accepted, deduped** core findings. See [LEVELS.md](../../blob/main/LEVELS.md)."
           fi
 
           case "$LABEL" in
