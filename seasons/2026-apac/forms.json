@@ -30,7 +30,7 @@
     },
     "defectReport": {
       "label": "Submit bug report",
-      "url": "https://github.com/0gfoundation/0g-testing-hub/issues/new?template=defect-report.yml&labels=defect,status:filed,status:filed"
+      "url": "https://github.com/0gfoundation/0g-testing-hub/issues/new?template=defect-report.yml&labels=defect,status:filed"
     },
     "defectBoard": {
       "label": "Defect board",
