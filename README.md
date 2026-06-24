@@ -1,6 +1,6 @@
 # 0g-testing-hub
 
-**0g-testing-hub** is a community-run testing program for 0G: submit the required feedback, test target apps, file reproducible bugs, and climb **L0-L3** for 0G Compute Credit. **Not a code project** - no build, test, or package manager here.
+**0g-testing-hub** is a testing program for 0G Ecosystem: submit the required feedback, test target apps, file reproducible bugs, and climb **L0-L3** for 0G Compute Credit. **Not a code project** - no build, test, or package manager here.
 
 ## Jump to
 
