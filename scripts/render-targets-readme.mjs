@@ -50,7 +50,7 @@ export async function renderTargets() {
     }
 
     for (const item of bucket.items || []) {
-      lines.push(`- [**${item.name}**](${item.url}) - ${item.desc}`);
+      lines.push(`- [**${item.name}**](${item.url})${item.desc ? ` - ${item.desc}` : ''}`);
       if (item.note) lines.push(`  - Note: ${item.note}`);
       if (Array.isArray(item.checklist) && item.checklist.length) {
         lines.push('  - Checklist:');
