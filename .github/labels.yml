@@ -14,9 +14,6 @@
 - name: "area:ecosystem"
   color: "5319e7"
   description: "Ecosystem dApp — record-only, not a 0G defect"
-- name: "area:hackathon"
-  color: "b60205"
-  description: "Hackathon dApp — record-only, not a 0G defect"
 
 # --- Severity (impact-based; see defects/SEVERITY.md) ---
 - name: "sev:P1"

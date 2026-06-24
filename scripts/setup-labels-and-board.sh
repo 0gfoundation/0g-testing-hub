@@ -4,7 +4,7 @@
 #
 # Requirements:
 #   gh auth login                      # repo scope  -> labels
-#   gh auth refresh -s project         # project scope -> board (one-time)
+#   gh auth refresh -s project -s read:org  # project + read:org -> org board
 #
 # Usage:
 #   scripts/setup-labels-and-board.sh                 # uses the current repo
@@ -44,33 +44,34 @@ flush
 echo "==> Labels done."
 
 # ---------------------------------------------------------------------------
-# Project board (Projects v2). Needs a token with the `project` scope (classic)
-# or Account > Projects: Read and write (fine-grained — note: fine-grained
-# tokens cannot CREATE a board; create it once in the UI, then re-run this).
+# Project board (Projects v2). Needs a token with `project` + `repo` +
+# `read:org` scope (classic), or Account > Projects: Read and write
+# (fine-grained — note: fine-grained tokens cannot CREATE a board; create it
+# once in the org UI, then re-run this).
 #
 # Done via the GraphQL API directly, NOT `gh project` subcommands: those also
-# require `read:org` to classify the owner, which a `project`+`repo` token lacks.
+# require `read:org` to classify the owner.
 # Re-running is safe: an existing board is reused and the (destructive) column
 # reset is skipped, so item assignments survive.
 # ---------------------------------------------------------------------------
 REPO_NAME="${REPO#*/}"
 
 # Probe project read access; bail with guidance if the scope is missing.
-if ! gh api graphql -f query='query($l:String!){user(login:$l){id}}' -F l="$OWNER" >/dev/null 2>&1; then
+if ! gh api graphql -f query='query($l:String!){organization(login:$l){id}}' -F l="$OWNER" >/dev/null 2>&1; then
   cat <<'EOF'
 ==> SKIP board: token cannot reach the Projects API.
-    Use a classic token with `project` + `repo`, then re-run:
+    Use a classic token with `project` + `repo` + `read:org`, then re-run:
         GH_TOKEN=<token> scripts/setup-labels-and-board.sh
 EOF
   exit 0
 fi
 
-OWNER_ID=$(gh api graphql -f query='query($l:String!){user(login:$l){id}}' \
-  -F l="$OWNER" --jq '.data.user.id')
+OWNER_ID=$(gh api graphql -f query='query($l:String!){organization(login:$l){id}}' \
+  -F l="$OWNER" --jq '.data.organization.id')
 
 # Find the board by title.
-PROJECT_ID=$(gh api graphql -f query='query($l:String!){user(login:$l){projectsV2(first:100){nodes{id title}}}}' \
-  -F l="$OWNER" --jq ".data.user.projectsV2.nodes[] | select(.title==\"$BOARD_TITLE\") | .id" | head -1)
+PROJECT_ID=$(gh api graphql -f query='query($l:String!){organization(login:$l){projectsV2(first:100){nodes{id title}}}}' \
+  -F l="$OWNER" --jq ".data.organization.projectsV2.nodes[] | select(.title==\"$BOARD_TITLE\") | .id" | head -1)
 
 created=0
 if [ -z "$PROJECT_ID" ]; then
@@ -124,7 +125,7 @@ done < <(gh api graphql \
 echo "    added/synced $count issue(s)"
 
 cat <<EOF
-==> Board ready: https://github.com/users/$OWNER/projects
+==> Board ready: https://github.com/orgs/$OWNER/projects
     Optional (UI, one-time, no stable CLI): Project -> Workflows ->
     enable "Auto-add to project" for issues labelled 'defect', and
     "Item added to project" -> set Status = Triage, so new reports land in column 1.

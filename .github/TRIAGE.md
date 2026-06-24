@@ -7,12 +7,17 @@ structured form; the **maintainer** runs the label → verify → dedup → rout
 
 ## Tester flow (file a defect)
 
+L0 Recruit is feedback-only: 0G App Suite Feedback / 0G Studio Feedback +
+0G Private Computer Feedback.
+It does **not** use this defect flow. This section starts when a tester is filing
+a bug to climb beyond Recruit.
+
 Testers never touch `defects/*.md`, labels, or the board — the only action is filling one form.
 
 1. **Find a defect** while walking an app's happy path + an error path. Reproduce it first — "felt off" is not a defect.
-2. **Open the [Defect report form](./ISSUE_TEMPLATE/defect-report.yml)** (`issues/new?template=defect-report.yml`) — one issue per defect.
+2. **Open the [Defect report form](./ISSUE_TEMPLATE/defect-report.yml)** (`issues/new?template=defect-report.yml&labels=defect`) — one issue per defect.
 3. **Fill the fields**: ownership + severity (dropdowns), product, environment, repro / expected / actual; optionally a root-cause guess and an `rc:` **root-cause code** if you suspect it's shared with another bug.
-4. **Tick the three gates**: reproduced it yourself · didn't sign/touch funds or keys · understand Ecosystem/Hackathon dApps are record-only.
+4. **Tick the three gates**: reproduced it yourself · didn't sign/touch funds or keys · understand Ecosystem dApps are record-only.
 5. **Submit.** The issue is auto-labelled `defect` and lands in **Triage**. Done — the rest is the maintainer's.
 
 > Reward is decided on **accepted, deduped** defects (see below), not on how many you file.
@@ -22,7 +27,7 @@ Testers never touch `defects/*.md`, labels, or the board — the only action is 
 Everything from here down is the maintainer pipeline.
 
 > One-time setup of labels + board: run [`scripts/setup-labels-and-board.sh`](../scripts/setup-labels-and-board.sh).
-> The live board is [Project #1](https://github.com/users/lvxuan149/projects/1).
+> The live board is [Project #19](https://github.com/orgs/0gfoundation/projects/19).
 
 ## Automation (how issues reach the board)
 
@@ -30,8 +35,8 @@ New `defect` issues are added to the board and set to **Triage** automatically b
 [`add-defects-to-board`](./workflows/add-defects-to-board.yml) GitHub Action (it replaces
 the UI-only built-in Projects workflows, which have no API).
 
-It depends on a repo secret **`PROJECT_PAT`** — a token with the `project` (+ `repo`)
-scope, because the default `GITHUB_TOKEN` cannot write a user-owned Projects v2 board.
+It depends on a repo secret **`PROJECT_PAT`** — a token with the `project` + `repo` +
+`read:org` scopes, because the default `GITHUB_TOKEN` cannot write an org Projects v2 board.
 
 > **Token rotation:** if `PROJECT_PAT` is revoked or expires, auto-add silently stops
 > (issues still get the `defect` label, they just won't appear on the board). To rotate:
@@ -56,7 +61,7 @@ Ecosystem dApp is still record-only; a P3 in 0G Infra still routes upstream.
 
 ## Labelling on intake
 
-1. **Area** — exactly one: `area:app-suite` · `area:0g-infra` · `area:ecosystem` · `area:hackathon`.
+1. **Area** — exactly one: `area:app-suite` · `area:0g-infra` · `area:ecosystem`.
 2. **Severity** — exactly one: `sev:P1`…`sev:P4`. If the filer over/under-rated it, fix it here.
 3. **Status** — move `status:filed` → `status:accepted` once you reproduce it; otherwise close with a reason.
 4. **Root cause** — if the issue names a root-cause code, apply an `rc:<CODE>` label

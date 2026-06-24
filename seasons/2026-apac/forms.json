@@ -1,27 +1,33 @@
 {
-  "note": "Season 1 (2026 · APAC) intake forms. Model: routing follows the deliverable, not one catch-all inbox. (1) Bugs in core 0G products (App Suite + Infra) are filed in the Hub via the GitHub defect-report form — they drive Credit (status:accepted) and enable cross-app systemic detection. (2) Feedback is owned by each project (their own Google Form). (3) Ecosystem & Hackathon dApps are record-only — bugs go to the dApp's own channel; the Hub only logs coverage. (4) 0G Private Computer Feedback is required at every level. All rewards are 0G Compute Credit — the retired shipping form is removed; a wallet address (0G mainnet EVM) is collected at sign-up / hand-in.",
+  "note": "Season 1 (2026 · APAC) intake links. Do not reuse the retired Google Form URLs. Add the current testing intake URL before launch.",
   "season": "2026-apac",
   "forms": {
-    "signup": {
-      "label": "Test sign-up",
-      "url": "https://forms.gle/KFjtdnLNucAF8B2k7",
-      "collects": "wallet address (0G mainnet EVM, to send 0G Compute Credit)"
+    "testingIntake": {
+      "label": "Testing intake",
+      "url": null,
+      "status": "pending-current-url"
     },
-    "computeFeedback": {
+    "appSuiteStudioFeedback": {
+      "label": "0G App Suite Feedback / 0G Studio Feedback",
+      "url": "https://forms.gle/ymEdZrdTNs4giEm1A",
+      "note": "Required for L0 Recruit."
+    },
+    "privateComputerFeedback": {
       "label": "0G Private Computer Feedback",
-      "url": "https://forms.gle/TTxahPjziQskiJUC6",
-      "note": "Required at every level — the program's #1 deliverable."
-    },
-    "studioFeedback": {
-      "label": "0G Studio Feedback (App Suite + Infra)",
-      "url": "https://forms.gle/inicY6BCbEgwxYQk8"
+      "url": "https://forms.gle/G919xrbRyfVJxPZe8",
+      "note": "Required for L0 Recruit."
     },
     "defectReport": {
-      "label": "Report a bug",
-      "url": "https://github.com/0gfoundation/0g-testing-hub/issues/new?template=defect-report.yml"
+      "label": "Submit bug report",
+      "url": "https://github.com/0gfoundation/0g-testing-hub/issues/new?template=defect-report.yml&labels=defect"
+    },
+    "defectBoard": {
+      "label": "Defect board",
+      "url": "https://github.com/orgs/0gfoundation/projects/19"
+    },
+    "testingRepo": {
+      "label": "Open testing repo",
+      "url": "https://github.com/0gfoundation/0g-testing-hub"
     }
-  },
-  "retired": {
-    "shipping": "Removed — all rewards are 0G Compute Credit, no physical Gift Box / Hat, no shipping address."
   }
 }

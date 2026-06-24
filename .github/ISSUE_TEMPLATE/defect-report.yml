@@ -18,12 +18,11 @@ body:
     id: ownership
     attributes:
       label: Ownership
-      description: "Which bucket owns this? App Suite / 0G Infra → file the bug here. Ecosystem & Hackathon dApps are record-only — use this to log that you walked them (coverage); send actionable bugs to the dApp's own channel. Record-only entries are logged, not escalated as 0G defects."
+      description: "Which bucket owns this? App Suite / 0G Infra → file the bug here. Ecosystem dApps are record-only — use this to log that you walked them (coverage); send actionable bugs to the dApp's own channel. Record-only entries are logged, not escalated as 0G defects."
       options:
         - "App Suite (0G App / Genome / 0G Chat / PandaClaw)"
         - "0G Infra (0G Hub / 0G Storage Scan / Chain Scan)"
         - "Ecosystem dApp (record-only)"
-        - "Hackathon dApp (record-only)"
     validations:
       required: true
 
@@ -149,5 +148,5 @@ body:
           required: true
         - label: "I did not sign or send any transaction, and did not touch funds or private keys."
           required: true
-        - label: "If this is an Ecosystem or Hackathon dApp, I understand it is logged as record-only (not a 0G defect)."
+        - label: "If this is an Ecosystem dApp, I understand it is logged as record-only (not a 0G defect)."
           required: true

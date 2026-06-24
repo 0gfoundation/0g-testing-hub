@@ -28,6 +28,6 @@ nitpicking; pull back to core flows."* With the table above that gate becomes me
 
 ## Routing × severity
 
-Ownership (App Suite / 0G Infra / Ecosystem dApps / Hackathon dApps) is **orthogonal** to
+Ownership (App Suite / 0G Infra / Ecosystem dApps) is **orthogonal** to
 severity. A P1 in an Ecosystem dApp is still *record-only* per the README; a P3 in 0G Infra
 still routes upstream. Tag both fields independently — see [`TEMPLATE.md`](./TEMPLATE.md).

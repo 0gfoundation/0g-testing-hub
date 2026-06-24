@@ -13,7 +13,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
-const TARGETS = join(root, 'docs', 'data', 'targets.json');
+const TARGETS = join(root, 'data', 'targets.json');
 const README = join(root, 'README.md');
 
 const data = JSON.parse(await readFile(TARGETS, 'utf8'));

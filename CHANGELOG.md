@@ -11,23 +11,62 @@ change landed on the default branch.
 
 ---
 
+## [1.1.0] — Season 1 launch cleanup — 2026-06-24
+
+### Added
+- **Recruit-first Quick start.** Added a participant-facing flow diagram and
+  simplified first-run path: intake → two feedback forms → Recruit → defect
+  reports after L0.
+- **Live links and submission map.** Added explicit links for feedback forms,
+  the defect form, the org defect board, level rules, and Season 1 rewards.
+- **Reward visuals.** Added reward workflow and reward-level images under
+  `Assets/` and updated `README.md` to load them from the shared asset folder.
+
+### Changed
+- **Simplified the reward ladder.** Replaced the old L0→L5 unlock model with
+  the current L0→L3 model: L0 feedback-only, L1 with 1 accepted App Suite
+  defect, L2 with 2 accepted App Suite + 0G Infra defects, and L3 with 5+
+  accepted defects including 1 `systemic` finding.
+- **Reframed Season 1 intake.** Marked the current testing intake URL as
+  pending, updated the App Suite / Studio and 0G Private Computer Feedback
+  links, and made the defect form URL include the `defect` label parameter.
+- **Tightened defect routing.** Updated README, `LEVELS.md`, `TRIAGE.md`,
+  issue forms, severity docs, and defect templates around accepted, deduped,
+  reproducible defects as the reward signal after Recruit.
+- **Moved board automation to the org project.** Updated triage docs and setup
+  script references from the old user project to
+  `0gfoundation` Project #19, including the required `project` + `repo` +
+  `read:org` token scope and organization GraphQL lookups.
+- **Aligned test target data.** Updated `data/targets.json` for the current
+  Recruit/L1+ flow and changed the drift check to read from root
+  `data/targets.json`.
+- **Consolidated AI agent guidance.** Made `AGENTS.md` the canonical agent
+  instruction file and reduced `CLAUDE.md` to a pointer to avoid drift.
+
+### Removed
+- **Hackathon dApps from the active Season 1 scope.** Removed the Hackathon
+  routing bucket from current target data, issue form choices, label taxonomy,
+  severity docs, and defect template guidance.
+- **Retired ladder and reward language.** Removed L4/L5, leaderboard-gated
+  Master, badge/equipment promises, physical reward/shipping references, and
+  retired form URLs from the active docs.
+
+---
+
 ## [1.0.0] — 0G Testing Hub — 2026-06-06
 
 The program was rebranded from a single APAC test round into an evergreen,
 season-based testing hub with a level ladder.
 
 ### Added
-- **Season model + L0→L5 level ladder.** Evergreen mechanics in `LEVELS.md`;
+- **Season model + level ladder.** Evergreen mechanics in `LEVELS.md`;
   per-season specifics under `seasons/<active>/` (Season 1 = `2026-apac`).
-- **0G Private Computer Feedback** required at every level — run a model on
-  0G Compute once and submit feedback.
 - **Rebuilt docs site** for the Testing Hub model.
 - **Intake operating model** documented: core-product bugs → Hub GitHub form,
   feedback → each project's own form, record-only dApp bugs → dApp channels.
 
 ### Changed
 - Site footer note → `© 2026 0G Labs`.
-- Propagated the **0G Private Computer Feedback** naming across `LEVELS.md`.
 
 ### Removed
 - **English-only cleanup** — removed all Chinese text from tracked docs and site.

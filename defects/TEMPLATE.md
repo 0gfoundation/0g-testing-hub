@@ -7,7 +7,7 @@ is for humans (repro detail, screenshots, notes).
 -->
 ---
 title: ""                       # one line, imperative ("Bridge confirm screen never loads")
-ownership: ""                   # App Suite | 0G Infra | Ecosystem dApps | Hackathon dApps
+ownership: ""                   # App Suite | 0G Infra | Ecosystem dApps
 product: ""                     # which app, e.g. "0G Hub", "TradeGPT"
 severity: ""                    # P1 | P2 | P3 | P4  (see SEVERITY.md)
 status: filed                   # filed | routed | closed
