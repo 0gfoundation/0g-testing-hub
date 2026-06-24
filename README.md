@@ -21,9 +21,7 @@ All rewards are **0G Compute Credit**. Payout = the Credit of your **highest lev
 | **L2** | Infra Pioneer | 2 accepted · App Suite + 0G Infra | **40** |
 | **L3** | Master | 5+ accepted · incl. 1 `systemic` | **100** |
 
-The more **accepted, deduped** defects you surface, the higher you climb - Master is the cap. Ecosystem dApps are **record-only** (log coverage, not a gate). Full mechanics: [`LEVELS.md`](./LEVELS.md).
-
-*House wording: "The Blockchain for AI Agents", "onchain"; avoid legacy names.*
+The more **accepted, deduped** defects you surface, the higher you climb - Master is the cap.
 
 ## How to get reward
 
