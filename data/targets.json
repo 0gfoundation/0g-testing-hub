@@ -12,32 +12,31 @@
       "focus": "Focus: onboarding, wallet connect, the core journey, and repeat-user behavior - stale sessions, captcha/token expiry, Chain ID switches, refresh/back-button interrupts.",
       "notice": "L0 Recruit is feedback-only: 0G Studio Feedback + 0G Private Computer Feedback, no bug required. From L1 upward, submit reproducible bugs through the GitHub defect form.",
       "forms": [
-        { "label": "Report a bug", "url": "https://github.com/0gfoundation/0g-testing-hub/issues/new?template=defect-report.yml&labels=defect,status:filed" }
+        {
+          "label": "Report a bug",
+          "url": "https://github.com/0gfoundation/0g-testing-hub/issues/new?template=defect-report.yml&labels=defect,status:filed"
+        }
       ],
       "items": [
         {
           "name": "0G App",
           "desc": "flagship app builder, live on mainnet",
-          "url": "https://app.0g.ai/",
-          "checklist": ["Load app", "Connect wallet", "Walk the main app-builder journey", "Refresh or return with the same wallet", "Trigger one expected error path"]
+          "url": "https://app.0g.ai/"
         },
         {
           "name": "Genome",
           "desc": "paste a URL/screenshot, produces production-grade design DNA",
-          "url": "https://dev.0g-vibe.pages.dev/genome",
-          "checklist": ["Load app", "Connect wallet if prompted", "Submit one valid URL or screenshot", "Try one invalid/unsupported input", "Refresh or retry after a completed run"]
+          "url": "https://dev.0g-vibe.pages.dev/genome"
         },
         {
           "name": "0G Chat",
           "desc": "end-to-end encrypted private chat (UI still WIP)",
-          "url": "https://dev.0g-vibe.pages.dev/private-chat",
-          "checklist": ["Load app", "Connect wallet", "Open or create a chat", "Send one test message without exposing secrets", "Trigger one expected empty/error state"]
+          "url": "https://dev.0g-vibe.pages.dev/private-chat"
         },
         {
           "name": "PandaClaw",
           "desc": "agent launchpad + skill marketplace (Hermes + OpenClaw harness)",
-          "url": "https://dev.0g-vibe.pages.dev/agents",
-          "checklist": ["Load app", "Connect wallet", "Browse an agent or skill", "Walk one launch/configure flow until any confirmation boundary", "Trigger one expected error path"]
+          "url": "https://dev.0g-vibe.pages.dev/agents"
         }
       ]
     },
@@ -54,27 +53,23 @@
         {
           "name": "0G Hub",
           "desc": "bridge / swap / faucet / portfolio",
-          "url": "https://hub.0g.ai/",
-          "checklist": ["Load app", "Connect wallet", "Walk bridge/swap/faucet flow until confirmation screen", "Check portfolio/balance display for obvious mismatch", "Do not sign or send"]
+          "url": "https://hub.0g.ai/"
         },
         {
           "name": "0G Storage Scan",
           "desc": "storage explorer",
-          "url": "https://storagescan-newton.0g.ai/",
-          "checklist": ["Load explorer", "Search or open a known storage item if available", "Verify displayed metadata is internally consistent", "Try one invalid search/input", "Capture URL and visible identifiers"]
+          "url": "https://storagescan-newton.0g.ai/"
         },
         {
           "name": "Chain Scan",
           "desc": "block explorer",
-          "url": "https://chainscan.0g.ai/",
-          "checklist": ["Load explorer", "Open a block/transaction/address page", "Check balance/tx metadata for obvious mismatch", "Try one invalid search/input", "Capture URL and visible identifiers"]
+          "url": "https://chainscan.0g.ai/"
         },
         {
           "name": "0G Code to Coin (0g-cc)",
           "desc": "official MCP server routing AI inference / fine-tuning / storage to 0G Compute; install with `npm install @0gfoundation/0g-cc`",
           "url": "https://www.npmjs.com/package/@0gfoundation/0g-cc",
-          "note": "`0g-cc` is a CLI / MCP server, not a web app. Add it (`claude mcp add 0g-cc npx @0gfoundation/0g-cc`), then walk one inference / storage flow plus one error path. The funds/keys boundary still applies.",
-          "checklist": ["Install or inspect the package", "Add it as an MCP server", "Run one inference or storage flow", "Trigger one error path such as missing key/network issue", "Do not sign, send, launch, or trade"]
+          "note": "`0g-cc` is a CLI / MCP server, not a web app. Add it (`claude mcp add 0g-cc npx @0gfoundation/0g-cc`), then walk one inference / storage flow plus one error path. The funds/keys boundary still applies."
         }
       ]
     },
@@ -91,56 +86,47 @@
         {
           "name": "TradeGPT",
           "desc": "AI-driven DEX",
-          "url": "https://tradegpt.finance/",
-          "checklist": ["Load app", "Connect wallet on 0G", "Walk the main DEX flow until confirmation boundary", "Report actionable bugs to the dApp channel", "Log coverage in the Hub only"]
+          "url": "https://tradegpt.finance/"
         },
         {
           "name": "Jaine",
           "desc": "DEX/liquidity (LIC)",
-          "url": "https://jaine.fi/",
-          "checklist": ["Load app", "Connect wallet on 0G", "Walk the main liquidity/DEX flow until confirmation boundary", "Report actionable bugs to the dApp channel", "Log coverage in the Hub only"]
+          "url": "https://jaine.fi/"
         },
         {
           "name": "Oku",
           "desc": "concentrated liquidity DEX",
-          "url": "https://oku.trade/",
-          "checklist": ["Load app", "Connect wallet on 0G", "Walk the main DEX flow until confirmation boundary", "Report actionable bugs to the dApp channel", "Log coverage in the Hub only"]
+          "url": "https://oku.trade/"
         },
         {
           "name": "AI Arena",
           "desc": "PvP, train AI agents",
-          "url": "https://aiarena.io/",
-          "checklist": ["Load app", "Connect wallet if applicable", "Walk the train/play main flow once", "Report actionable bugs to the dApp channel", "Log coverage in the Hub only"]
+          "url": "https://aiarena.io/"
         },
         {
           "name": "CARV",
           "desc": "gamer identity",
-          "url": "https://carv.io/",
-          "checklist": ["Load app", "Connect wallet if applicable", "Walk the identity/profile main flow once", "Report actionable bugs to the dApp channel", "Log coverage in the Hub only"]
+          "url": "https://carv.io/"
         },
         {
           "name": "Cygnus Finance",
           "desc": "RWA stablecoin",
-          "url": "https://cygnus.finance/",
-          "checklist": ["Load app", "Connect wallet on 0G if supported", "Walk the main asset/stablecoin flow until confirmation boundary", "Report actionable bugs to the dApp channel", "Log coverage in the Hub only"]
+          "url": "https://cygnus.finance/"
         },
         {
           "name": "DataHive",
           "desc": "personal data economy",
-          "url": "https://datahive.network/",
-          "checklist": ["Load app", "Connect wallet if applicable", "Walk the main data flow once", "Report actionable bugs to the dApp channel", "Log coverage in the Hub only"]
+          "url": "https://datahive.network/"
         },
         {
           "name": "Khalani",
           "desc": "bridge to 0G",
-          "url": "https://hub.0g.ai/khalani/transfer?network=mainnet",
-          "checklist": ["Load app", "Connect wallet", "Walk bridge flow until confirmation screen", "Report actionable bugs to the dApp channel", "Do not sign or send"]
+          "url": "https://hub.0g.ai/khalani/transfer?network=mainnet"
         },
         {
           "name": "Merkl",
           "desc": "claim LIC rewards",
-          "url": "https://app.merkl.xyz/",
-          "checklist": ["Load app", "Connect wallet if applicable", "Walk claim flow until confirmation boundary", "Report actionable bugs to the dApp channel", "Do not sign or send"]
+          "url": "https://app.merkl.xyz/"
         }
       ]
     }
