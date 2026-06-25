@@ -1,8 +1,7 @@
 # 0G Testing Hub — Levels
 
-> **Evergreen spec.** This file defines how the reward ladder works. The Credit a given
-> season pays out lives in that season's folder — see
-> [`seasons/2026-apac/rewards.md`](./seasons/2026-apac/rewards.md).
+> **Evergreen spec.** This file defines how the reward ladder works. The current
+> public reward table lives in [`README.md`](./README.md#test-report-reward).
 
 ## The shape
 
@@ -44,9 +43,9 @@ Except for L0, progression is driven by centralized triage, not by raw submissio
 | Not reproducible / unclear / "felt off" | No | It cannot be routed. |
 | Record-only Ecosystem dApp issue | Coverage only | Bugs belong to that dApp's own channel. |
 
-The exact level assignment for a season is based on accepted, deduped defects and the
-season's operating rules. Do not reintroduce retired ladder data unless the landing
-page and season rewards are changed first.
+The exact level assignment is based on accepted, deduped defects and the current
+operating rules. Do not reintroduce retired ladder data unless `README.md`,
+`LEVELS.md`, and the reward export logic are changed together.
 
 ## Rules
 

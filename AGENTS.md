@@ -31,7 +31,7 @@ Two GitHub issue forms drive the program: **`signup.yml`** (label `signup` — s
   "bugReport": "https://github.com/0gfoundation/0g-testing-hub/issues/new?template=defect-report.yml&labels=defect,status:filed",
   "defectBoard": "https://github.com/orgs/0gfoundation/projects/19",
   "levelRules": "LEVELS.md",
-  "rewards": "seasons/2026-apac/rewards.md",
+  "rewards": "README.md#test-report-reward",
   "workflowDiagram": "docs/WORKFLOWS.md",
   "signupSchema": "docs/signups.example.csv"
 }
