@@ -50,6 +50,22 @@ jobs:
             exit 0
           fi
 
+          # Duplicate sign-up guard. The issue author is the reward join key, so one
+          # sign-up issue is all a tester needs. If they already have an earlier one,
+          # this later issue is a duplicate: strip its `signup` label so the reward
+          # export and the L0 feedback bridge both ignore it and stay on the canonical
+          # (earliest) issue, point the tester back, and close it.
+          CANONICAL=$(gh issue list --repo "$REPO" --state all --label signup \
+            --author "$AUTHOR" --json number --jq '.[].number' | sort -n | head -1)
+          if [ -n "$CANONICAL" ] && [ "$CANONICAL" != "$ISSUE_NUMBER" ]; then
+            gh issue edit "$ISSUE_NUMBER" --repo "$REPO" --remove-label "signup" >/dev/null
+            gh issue edit "$ISSUE_NUMBER" --repo "$REPO" --add-label "duplicate" >/dev/null 2>&1 || true
+            gh issue comment "$ISSUE_NUMBER" --repo "$REPO" --body "👋 You already registered in #$CANONICAL — that issue is your tracker. Your GitHub account is your identity, so one sign-up is all you need. Edit **#$CANONICAL** instead of opening new ones (need to fix your wallet? edit it there). Closing this duplicate."
+            gh issue close "$ISSUE_NUMBER" --repo "$REPO" >/dev/null
+            echo "Closed duplicate sign-up #$ISSUE_NUMBER (@$AUTHOR); canonical is #$CANONICAL."
+            exit 0
+          fi
+
           if printf '%s' "$WALLET" | grep -Eiq '^0x[0-9a-f]{40}$'; then
             gh issue edit "$ISSUE_NUMBER" --repo "$REPO" --title "[signup]: $AUTHOR" >/dev/null
             gh issue comment "$ISSUE_NUMBER" --repo "$REPO" --body-file - <<EOF

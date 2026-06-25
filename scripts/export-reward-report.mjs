@@ -11,6 +11,7 @@
  * Usage:
  *   node scripts/export-reward-report.mjs --repo 0gfoundation/0g-testing-hub
  *   node scripts/export-reward-report.mjs --issues issues.json --signups signups.csv --format csv
+ *   node scripts/export-reward-report.mjs --signups-from-issues --format csv --out rewards.csv --blockers-out rewards.blockers.json --audit-out rewards.audit.json
  */
 import { execFileSync } from 'node:child_process';
 import { readFile, writeFile } from 'node:fs/promises';
@@ -30,8 +31,13 @@ const { users: signups, duplicates: signupDuplicates } = signupSource;
 // L0 completion: an explicit --l0 export wins; otherwise derive it from `l0:cleared`
 // labels on sign-up issues (set by the Google Forms bridge + mark-l0-cleared workflow).
 const l0Done = args.l0 ? await loadL0(args.l0) : (signupSource.l0Done || new Set());
+const rootCauseRegistry = await loadRootCauseRegistry(args['root-causes'] || 'data/root-causes.json');
 const report = buildReport(issues, signups, l0Done);
-const output = render(report, format);
+const diagnostics = buildDiagnostics(report, signups, signupDuplicates);
+const blockers = buildBlockers(issues, diagnostics, rootCauseRegistry);
+const blockerReport = buildBlockerReport(report, blockers);
+const auditReport = buildAuditReport(report, blockers);
+const output = args.preflight ? renderPreflight(blockerReport) : render(report, format);
 
 if (args.out) {
   await writeFile(args.out, output);
@@ -40,31 +46,34 @@ if (args.out) {
   if (!output.endsWith('\n')) process.stdout.write('\n');
 }
 
+if (args['blockers-out']) await writeJson(args['blockers-out'], blockerReport);
+if (args['audit-out']) await writeJson(args['audit-out'], auditReport);
+
 // Diagnostics: surface anything that would silently break or misdirect payout.
 // These go to stderr so they never corrupt CSV/JSON piped from stdout.
-const unmatchedAuthors = report.rows.filter((row) => row.acceptedDeduped > 0 && !row.registered);
-const missingWallet = report.rows.filter((row) => row.registered && !row.wallet && row.issueCredit > 0);
-const duplicateWallets = findDuplicateWallets(signups);
 const problemCount =
-  unmatchedAuthors.length + signupDuplicates.length + missingWallet.length + duplicateWallets.length;
+  diagnostics.unmatchedAuthors.length
+  + diagnostics.signupDuplicates.length
+  + diagnostics.missingWallet.length
+  + diagnostics.duplicateWallets.length;
 
 if (problemCount) {
   console.error(`\n⚠ reward-export diagnostics (${problemCount} issue${problemCount === 1 ? '' : 's'}):`);
-  if (unmatchedAuthors.length) {
-    console.error(`  ${unmatchedAuthors.length} issue author(s) with rewardable defects not matched to a signup (cannot pay):`);
-    for (const row of unmatchedAuthors) console.error(`    - ${row.githubUsername} → ${row.canonicalIssues}`);
+  if (diagnostics.unmatchedAuthors.length) {
+    console.error(`  ${diagnostics.unmatchedAuthors.length} issue author(s) with rewardable defects not matched to a signup (cannot pay):`);
+    for (const row of diagnostics.unmatchedAuthors) console.error(`    - ${row.githubUsername} → ${row.canonicalIssues}`);
   }
-  if (signupDuplicates.length) {
-    console.error(`  ${signupDuplicates.length} duplicate signup username(s) (last row wins): ${signupDuplicates.join(', ')}`);
+  if (diagnostics.signupDuplicates.length) {
+    console.error(`  ${diagnostics.signupDuplicates.length} duplicate signup username(s) (last row wins): ${diagnostics.signupDuplicates.join(', ')}`);
   }
-  if (missingWallet.length) {
-    console.error(`  ${missingWallet.length} rewardable user(s) missing a wallet: ${missingWallet.map((r) => r.githubUsername).join(', ')}`);
+  if (diagnostics.missingWallet.length) {
+    console.error(`  ${diagnostics.missingWallet.length} rewardable user(s) missing a wallet: ${diagnostics.missingWallet.map((r) => r.githubUsername).join(', ')}`);
   }
-  if (duplicateWallets.length) {
-    console.error(`  ${duplicateWallets.length} wallet(s) shared by multiple sign-ups (possible Sybil — verify before paying):`);
-    for (const dup of duplicateWallets) console.error(`    - ${dup.wallet} ← ${dup.users.join(', ')}`);
+  if (diagnostics.duplicateWallets.length) {
+    console.error(`  ${diagnostics.duplicateWallets.length} wallet(s) shared by multiple sign-ups (possible Sybil — verify before paying):`);
+    for (const dup of diagnostics.duplicateWallets) console.error(`    - ${dup.wallet} ← ${dup.users.join(', ')}`);
   }
-  if (args.strict) {
+  if (args.strict && blockers.some((blocker) => blocker.severity === 'error')) {
     console.error('\n--strict: exiting non-zero because of the diagnostics above.');
     process.exit(1);
   }
@@ -93,6 +102,7 @@ function printUsage() {
   console.log(`Usage:
   node scripts/export-reward-report.mjs [--repo owner/name]
   node scripts/export-reward-report.mjs --issues issues.json [--signups signups.csv] [--l0 l0.csv] [--format md|csv|json] [--out file] [--strict]
+  node scripts/export-reward-report.mjs --signups-from-issues --format csv --out rewards.csv --blockers-out rewards.blockers.json --audit-out rewards.audit.json
 
 Inputs:
   --issues   Optional JSON export from gh issue list. If omitted, the script calls gh.
@@ -103,14 +113,20 @@ Inputs:
   --l0       Optional CSV or JSON export listing GitHub usernames that completed the
              required L0 feedback. Any user listed here clears L0 (credit 10) when they
              have no higher issue-driven level. Same username column aliases as --signups.
+  --root-causes  Optional root cause registry path. Defaults to data/root-causes.json.
+  --blockers-out Write structured payout blockers / warnings to JSON.
+  --audit-out Write the generated reward report plus row-level blockers to JSON.
+  --preflight Render blocker JSON to stdout instead of the reward report.
   --strict   Exit non-zero if diagnostics find unmatched issue authors, duplicate signup
-             usernames, or rewardable users missing a wallet. Use as a pre-payout CI gate.
+             usernames, duplicate wallets, or rewardable users missing a wallet. Use as a
+             pre-payout CI gate. Lightweight quality warnings do not fail strict mode.
 
 Notes:
   Rewardable issues are core App Suite / 0G Infra issues with status:accepted or status:routed.
   Issues sharing the same rc:<CODE> label collapse to the earliest canonical issue.
   Ecosystem dApp coverage logs are excluded from reward counts.
-  Diagnostics (unmatched authors, duplicate signups, missing wallets) are printed to stderr.`);
+  Diagnostics (unmatched authors, duplicate signups, duplicate wallets, missing wallets) are
+  printed to stderr and can also be written as structured blockers.`);
 }
 
 async function loadIssues(file, repoName, limit) {
@@ -160,7 +176,7 @@ async function loadSignupsFromIssues(file, repoName, limit) {
   } else {
     const raw = execFileSync(
       'gh',
-      ['issue', 'list', '--repo', repoName, '--state', 'all', '--limit', String(limit), '--label', 'signup', '--json', 'number,author,body,labels'],
+      ['issue', 'list', '--repo', repoName, '--state', 'all', '--limit', String(limit), '--label', 'signup', '--json', 'number,author,body,labels,url'],
       { encoding: 'utf8' },
     );
     signupIssues = JSON.parse(raw);
@@ -243,6 +259,30 @@ async function loadL0(file) {
     if (normalized) done.add(normalized);
   }
   return done;
+}
+
+async function loadRootCauseRegistry(file) {
+  let raw;
+  try {
+    raw = await readFile(file, 'utf8');
+  } catch (error) {
+    if (error.code === 'ENOENT') return { file, labels: new Set(), available: false };
+    throw error;
+  }
+  const parsed = JSON.parse(raw);
+  const rows = Array.isArray(parsed) ? parsed : (parsed.codes || parsed.rootCauses || []);
+  const labels = new Set();
+
+  for (const row of rows) {
+    if (typeof row === 'string') {
+      labels.add(rootCauseLabel(row));
+      continue;
+    }
+    if (row?.code) labels.add(rootCauseLabel(row.code));
+    if (row?.id) labels.add(rootCauseLabel(row.id));
+  }
+
+  return { file, labels, available: true };
 }
 
 function githubUsernameAliases() {
@@ -409,6 +449,187 @@ function buildReport(issues, signups, l0Done = new Set()) {
   };
 }
 
+function buildDiagnostics(report, signups, signupDuplicates) {
+  return {
+    unmatchedAuthors: report.rows.filter((row) => row.acceptedDeduped > 0 && !row.registered),
+    missingWallet: report.rows.filter((row) => row.registered && !row.wallet && row.issueCredit > 0),
+    duplicateWallets: findDuplicateWallets(signups),
+    signupDuplicates,
+    signups,
+  };
+}
+
+function buildBlockers(issues, diagnostics, rootCauseRegistry) {
+  return [
+    ...diagnosticBlockers(diagnostics),
+    ...qualityWarningBlockers(issues, rootCauseRegistry),
+  ];
+}
+
+function diagnosticBlockers(diagnostics) {
+  const blockers = [];
+
+  for (const row of diagnostics.unmatchedAuthors) {
+    blockers.push(blocker({
+      code: 'missing_signup',
+      severity: 'error',
+      subjectType: 'tester',
+      subjectId: row.githubUsername,
+      message: `${row.githubUsername} has rewardable accepted defects but no signup issue.`,
+      evidenceUrl: firstIssueUrl(row),
+    }));
+  }
+
+  for (const row of diagnostics.missingWallet) {
+    blockers.push(blocker({
+      code: 'missing_wallet',
+      severity: 'error',
+      subjectType: 'tester',
+      subjectId: row.githubUsername,
+      message: `${row.githubUsername} is rewardable but has no valid wallet on signup.`,
+      evidenceUrl: signupEvidenceUrl(diagnostics.signups, row.githubUsername),
+    }));
+  }
+
+  for (const username of diagnostics.signupDuplicates) {
+    blockers.push(blocker({
+      code: 'duplicate_signup',
+      severity: 'error',
+      subjectType: 'tester',
+      subjectId: username,
+      message: `${username} has multiple signup issues; the last row currently wins.`,
+      evidenceUrl: signupEvidenceUrl(diagnostics.signups, username),
+    }));
+  }
+
+  for (const duplicate of diagnostics.duplicateWallets) {
+    blockers.push(blocker({
+      code: 'duplicate_wallet',
+      severity: 'error',
+      subjectType: 'tester',
+      subjectId: duplicate.wallet,
+      message: `Wallet is shared by multiple signup usernames: ${duplicate.users.join(', ')}.`,
+    }));
+  }
+
+  return blockers;
+}
+
+function qualityWarningBlockers(issues, rootCauseRegistry) {
+  const blockers = [];
+
+  for (const issue of issues.filter(isAcceptedOrRouted)) {
+    const labels = labelNames(issue);
+    const rcLabels = labels.filter((label) => label.startsWith('rc:'));
+    const hasCoreArea = hasLabel(issue, 'area:app-suite') || hasLabel(issue, 'area:0g-infra');
+
+    if (!labels.some((label) => label.startsWith('area:'))) {
+      blockers.push(issueBlocker(issue, 'accepted_missing_area', 'warning', 'Accepted/routed defect is missing an area:* label.'));
+    }
+
+    if (hasCoreArea && !labels.some((label) => label.startsWith('sev:'))) {
+      blockers.push(issueBlocker(issue, 'accepted_missing_severity', 'warning', 'Accepted/routed rewardable defect is missing a sev:* label.'));
+    }
+
+    if (hasCoreArea && rcLabels.length === 0) {
+      blockers.push(issueBlocker(issue, 'accepted_missing_rc', 'warning', 'Accepted/routed rewardable defect is missing an rc:* root-cause label.'));
+    }
+
+    if (rootCauseRegistry.available) {
+      for (const rc of rcLabels) {
+        if (!rootCauseRegistry.labels.has(rc)) {
+          blockers.push(issueBlocker(issue, 'unregistered_rc', 'warning', `${rc} is not registered in ${rootCauseRegistry.file}.`));
+        }
+      }
+    }
+
+    if (hasLabel(issue, 'area:ecosystem')) {
+      blockers.push(issueBlocker(issue, 'ecosystem_counted_attempt', 'warning', 'Ecosystem dApp issue is accepted/routed but remains record-only and excluded from rewards.'));
+    }
+
+    if (hasLabel(issue, 'status:routed') && Array.isArray(issue.comments) && !hasRoutedEvidence(issue)) {
+      blockers.push(issueBlocker(issue, 'routed_missing_evidence', 'warning', 'Routed defect is missing a comment containing both "Routed to:" and "Upstream link:".'));
+    }
+  }
+
+  return blockers;
+}
+
+function issueBlocker(issue, code, severity, message) {
+  return blocker({
+    code,
+    severity,
+    subjectType: 'defect',
+    subjectId: `#${issue.number}`,
+    message,
+    evidenceUrl: issue.url || '',
+  });
+}
+
+function blocker({ code, severity, subjectType, subjectId, message, evidenceUrl = '' }) {
+  return {
+    code,
+    severity,
+    subjectType,
+    subjectId,
+    message,
+    evidenceUrl,
+  };
+}
+
+function buildBlockerReport(report, blockers) {
+  return {
+    schema: '0g.reward_blockers.v1',
+    generatedAt: report.generatedAt,
+    totals: blockerTotals(blockers),
+    blockers,
+  };
+}
+
+function buildAuditReport(report, blockers) {
+  return {
+    schema: '0g.reward_audit.v1',
+    generatedAt: report.generatedAt,
+    totals: {
+      ...report.totals,
+      blockers: blockerTotals(blockers),
+    },
+    rows: report.rows.map((row) => ({
+      githubUsername: row.githubUsername,
+      wallet: row.wallet,
+      registered: row.registered,
+      l0Done: row.l0Done,
+      issueLevel: row.issueLevel,
+      issueCredit: row.issueCredit,
+      acceptedDeduped: row.acceptedDeduped,
+      appSuite: row.appSuite,
+      infra: row.infra,
+      systemic: row.systemic,
+      canonicalIssues: row.canonicalIssues,
+      notes: row.notes,
+      blockers: blockers.filter((item) => item.subjectType === 'tester' && item.subjectId === row.githubUsername),
+    })),
+    blockers,
+  };
+}
+
+function blockerTotals(blockers) {
+  return {
+    total: blockers.length,
+    errors: blockers.filter((item) => item.severity === 'error').length,
+    warnings: blockers.filter((item) => item.severity === 'warning').length,
+    byCode: countBy(blockers, 'code'),
+  };
+}
+
+function countBy(items, key) {
+  return items.reduce((counts, item) => {
+    const value = item[key] || '';
+    counts[value] = (counts[value] || 0) + 1;
+    return counts;
+  }, {});
+}
+
 function emptyUser(username, registered, wallet = '', l0Done = false) {
   return {
     githubUsername: username,
@@ -429,11 +650,21 @@ function isRewardableAcceptedCore(issue) {
   return hasLabel(issue, 'status:accepted') || hasLabel(issue, 'status:routed');
 }
 
+function isAcceptedOrRouted(issue) {
+  return hasLabel(issue, 'status:accepted') || hasLabel(issue, 'status:routed');
+}
+
 function rootCauseKey(issue) {
   const rc = labelNames(issue)
     .filter((label) => label.startsWith('rc:'))
     .sort()[0];
   return rc || `issue:${issue.number}`;
+}
+
+function rootCauseLabel(value) {
+  const text = String(value || '').trim();
+  if (!text) return '';
+  return text.startsWith('rc:') ? text : `rc:${text}`;
 }
 
 function issueLevel(user) {
@@ -458,6 +689,25 @@ function issueRef(issue, key, groupSize) {
     ref: `#${issue.number}${suffix}`,
     url: issue.url || '',
   };
+}
+
+function firstIssueUrl(row) {
+  return row.issues?.find((issue) => issue.url)?.url || '';
+}
+
+function signupEvidenceUrl(signups, username) {
+  return issueUrl(signups.get(username)?.row);
+}
+
+function issueUrl(issue) {
+  return issue?.url || '';
+}
+
+function hasRoutedEvidence(issue) {
+  return (issue.comments || []).some((comment) => {
+    const body = String(comment.body || comment || '');
+    return body.includes('Routed to:') && body.includes('Upstream link:');
+  });
 }
 
 function authorLogin(issue) {
@@ -499,6 +749,14 @@ function render(report, requestedFormat) {
   if (requestedFormat === 'csv') return renderCsv(report.rows);
   if (requestedFormat === 'md') return renderMarkdown(report);
   throw new Error(`Unsupported format: ${requestedFormat}`);
+}
+
+function renderPreflight(blockerReport) {
+  return `${JSON.stringify(blockerReport, null, 2)}\n`;
+}
+
+async function writeJson(file, value) {
+  await writeFile(file, `${JSON.stringify(value, null, 2)}\n`);
 }
 
 function renderCsv(rows) {
