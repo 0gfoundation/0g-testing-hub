@@ -42,20 +42,12 @@ Two GitHub issue forms drive the program: **`signup.yml`** (label `signup` — s
 The reward system depends on this chain. Do not bypass it:
 
 1. **Sign-up issue** (`signup.yml`, labelled `signup`) registers the tester. The **issue author** is the authenticated **GitHub username** — the identity join key, captured automatically so it can't be mistyped — and the **0G mainnet EVM wallet** is recorded in the issue body (public). `confirm-signup.yml` validates the wallet and confirms registration. Reward export reads these via `--signups-from-issues`, so no external signup form is needed.
-2. **Defect report / coverage log form** creates GitHub issues labelled `defect` + `status:filed`.
-3. **Workflow** adds every `defect` issue to Project #19, derives `area:*` / `sev:*` / `coverage-log` labels from the form body, and keeps the board's Triage state aligned with `status:filed`. If the form body can't be parsed, it applies `needs:manual-label` so the gap is visible instead of silently shipping unlabelled.
-4. **Triage** moves issues through `status:accepted` and `status:routed`, applies one `area:*`, one `sev:*`, optional `rc:*`, and `systemic` when appropriate.
-5. **Route evidence** is required before `status:routed`: add a comment containing `Routed to:` and `Upstream link:`. Look up the upstream owner in [`data/owners.json`](./data/owners.json) so routing doesn't depend on tribal knowledge.
-6. **Reward export** runs `node scripts/export-reward-report.mjs --signups <signup-export.csv> --format csv --out rewards.csv` and joins signup GitHub usernames to GitHub issue authors; output includes wallet. Add `--l0 <l0-export.csv>` to fold L0 feedback completion into the same report (L0-L3 in one pass), and `--strict` to fail before payout on unmatched issue authors, duplicate signup usernames, or rewardable users missing a wallet.
-
-Implemented chain:
-
-1. Signup form with GitHub username + wallet fields. This is the external prerequisite and must exist before reliable rewards.
-2. Ecosystem classification: form treats Ecosystem as **coverage-log** and uses `Reported to dApp URL` for actionable bugs.
-3. `status:filed` + `area:*` + `sev:*` automation: form labels plus workflow/backfill.
-4. Reward export script: depends on signup usernames, wallet, and the status label chain.
-5. Routed-to evidence: `status:routed` requires a structured maintainer comment.
-6. Targets generator: `data/targets.json` renders README's generated target block.
+2. **L0 feedback bridge** — the two external Google feedback forms each run an Apps Script (`automation/l0-feedback-bridge.gs`) that labels the tester's sign-up issue `l0:studio-done` / `l0:pc-done` by GitHub username; `mark-l0-cleared.yml` sets `l0:cleared` once both arrive. See [`automation/README.md`](./automation/README.md).
+3. **Defect report / coverage log form** creates GitHub issues labelled `defect` + `status:filed`.
+4. **Workflow** adds every `defect` issue to Project #19, derives `area:*` / `sev:*` / `coverage-log` labels from the form body, and keeps the board's Triage state aligned with `status:filed`. If the form body can't be parsed, it applies `needs:manual-label` so the gap is visible instead of silently shipping unlabelled.
+5. **Triage** moves issues through `status:accepted` and `status:routed`, applies one `area:*`, one `sev:*`, optional `rc:*`, and `systemic` when appropriate.
+6. **Route evidence** is required before `status:routed`: add a comment containing `Routed to:` and `Upstream link:`. Look up the upstream owner in [`data/owners.json`](./data/owners.json) so routing doesn't depend on tribal knowledge.
+7. **Reward export** runs `node scripts/export-reward-report.mjs --signups-from-issues --format csv --out rewards.csv` — it reads the `signup` issues directly (author = GitHub username, body = wallet), counts accepted + deduped App Suite / 0G Infra defects, and credits L0 from the `l0:cleared` label. `--strict` blocks payout on unmatched issue authors, duplicate signup usernames, **duplicate wallets (Sybil)**, or rewardable users missing a wallet. (A legacy `--signups <csv>` / `--l0 <csv>` path remains for non-GitHub data.)
 
 Routed evidence check:
 
