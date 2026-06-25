@@ -17,6 +17,26 @@ Tester submits a feedback form
 The tester sees `l0:cleared` (and a 🎉 comment) on their own sign-up issue the moment
 both forms are in. The reward export needs no `--l0` CSV anymore.
 
+## Go-live checklist
+
+Run these in order once the bridge code is on `main` (the `mark-l0-cleared` workflow
+only fires from the default branch). Details for each form step are in **One-time setup** below.
+
+1. **Merge to `main`.** The workflow, labels, and the export's `l0:cleared` reader must be on
+   the default branch.
+2. **Create the labels:** `bash scripts/setup-labels-and-board.sh` (adds `signup`, `needs:fix`,
+   `l0:studio-done`, `l0:pc-done`, `l0:cleared`).
+3. **Mint a token:** a fine-grained PAT scoped to *Issues: Read and write* on
+   `0gfoundation/0g-testing-hub`.
+4. **Add the GitHub-username question** to both feedback forms (title containing "GitHub").
+5. **Wire each form's Apps Script** (paste, set `FORM_LABEL`, add `GITHUB_TOKEN`, add the
+   `onFormSubmit` trigger) — see **One-time setup**.
+6. **Smoke test** with your own account:
+   - Open a sign-up issue (`[signup]: <your-username>` + wallet).
+   - Submit each feedback form, entering that same GitHub username.
+   - Watch the sign-up issue gain `l0:studio-done` → `l0:pc-done` → `l0:cleared` + 🎉 comment.
+   - `node scripts/export-reward-report.mjs --signups-from-issues --format md` shows you at L0 / 10.
+
 ## One-time setup
 
 **Prerequisite — both feedback forms must ask for the GitHub username.** Add a short-answer
