@@ -44,7 +44,9 @@ if (args.out) {
 // These go to stderr so they never corrupt CSV/JSON piped from stdout.
 const unmatchedAuthors = report.rows.filter((row) => row.acceptedDeduped > 0 && !row.registered);
 const missingWallet = report.rows.filter((row) => row.registered && !row.wallet && row.issueCredit > 0);
-const problemCount = unmatchedAuthors.length + signupDuplicates.length + missingWallet.length;
+const duplicateWallets = findDuplicateWallets(signups);
+const problemCount =
+  unmatchedAuthors.length + signupDuplicates.length + missingWallet.length + duplicateWallets.length;
 
 if (problemCount) {
   console.error(`\n⚠ reward-export diagnostics (${problemCount} issue${problemCount === 1 ? '' : 's'}):`);
@@ -57,6 +59,10 @@ if (problemCount) {
   }
   if (missingWallet.length) {
     console.error(`  ${missingWallet.length} rewardable user(s) missing a wallet: ${missingWallet.map((r) => r.githubUsername).join(', ')}`);
+  }
+  if (duplicateWallets.length) {
+    console.error(`  ${duplicateWallets.length} wallet(s) shared by multiple sign-ups (possible Sybil — verify before paying):`);
+    for (const dup of duplicateWallets) console.error(`    - ${dup.wallet} ← ${dup.users.join(', ')}`);
   }
   if (args.strict) {
     console.error('\n--strict: exiting non-zero because of the diagnostics above.');
@@ -471,6 +477,21 @@ function hasLabel(issue, name) {
 
 function normalizeUser(value) {
   return String(value || '').trim().replace(/^@/, '').toLowerCase();
+}
+
+// One wallet attached to several sign-up usernames is a Sybil signal (many GitHub
+// accounts farming to one payout address). Surface it so it can't pass silently.
+function findDuplicateWallets(signups) {
+  const byWallet = new Map();
+  for (const [username, signup] of signups.entries()) {
+    const wallet = String(signup.wallet || '').trim().toLowerCase();
+    if (!wallet) continue;
+    if (!byWallet.has(wallet)) byWallet.set(wallet, []);
+    byWallet.get(wallet).push(username);
+  }
+  return [...byWallet.entries()]
+    .filter(([, users]) => users.length > 1)
+    .map(([wallet, users]) => ({ wallet, users: users.sort() }));
 }
 
 function render(report, requestedFormat) {
