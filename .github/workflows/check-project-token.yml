@@ -8,7 +8,8 @@ name: Check PROJECT_PAT health
 # failure notification — when the token can no longer reach the board.
 #
 # Rotate with: gh secret set PROJECT_PAT --repo 0gfoundation/0g-testing-hub
-# then re-run scripts/setup-labels-and-board.sh to back-fill any missed issues.
+# then re-run scripts/setup-labels-and-board.sh to safely back-fill missed open
+# defect issues without downgrading existing status labels.
 
 on:
   schedule:

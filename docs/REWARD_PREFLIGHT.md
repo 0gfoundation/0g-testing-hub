@@ -67,7 +67,9 @@ Use `rewards.blockers.json` as the pre-payout queue:
 2. Review warnings during triage cleanup.
 3. Keep `data/root-causes.json` in sync with any `rc:*` labels used on accepted
    or routed defects.
-4. Keep README reward rules and `data/reward-rules.json` aligned.
+4. Keep reward rules aligned across `README.md`, `LEVELS.md`, and `issueLevel()`
+   in `scripts/export-reward-report.mjs`. The export currently uses `issueLevel()`
+   as the executable ladder; there is no separate JSON rules file.
 
 This layer is intentionally lightweight: labels remain the workflow surface, and
 the CSV export remains compatible with the previous payout process.

@@ -10,12 +10,6 @@
       "pillKind": "app",
       "recordOnly": false,
       "notice": "L0 Recruit is feedback-only: 0G Studio Feedback + 0G Private Computer Feedback, no bug required. From L1 upward, submit reproducible bugs through the GitHub defect form.",
-      "checklist": [
-        "Load the app.",
-        "Connect a wallet on 0G.",
-        "Walk the core journey once.",
-        "Try one interrupt or error path: stale session, captcha/token expiry, Chain ID switch, refresh, or back button."
-      ],
       "forms": [
         {
           "label": "Report a bug",
@@ -53,12 +47,6 @@
       "pill": "0G Infra · escalate",
       "pillKind": "infra",
       "recordOnly": false,
-      "checklist": [
-        "Load or initialize the target.",
-        "Check correctness over polish: Chain ID, RPC, explorer data, or storage/inference path.",
-        "Walk one core flow; for bridge, swap, faucet, or sign flows, stop at confirmation.",
-        "Try one error path."
-      ],
       "items": [
         {
           "name": "0G Hub",
@@ -79,13 +67,7 @@
           "name": "0G Code to Coin (0g-cc)",
           "desc": "MCP server for AI inference / storage on 0G Compute",
           "url": "https://www.npmjs.com/package/@0gfoundation/0g-cc",
-          "note": "`0g-cc` is a CLI / MCP server, not a web app. Add it (`claude mcp add 0g-cc npx @0gfoundation/0g-cc`), then walk one inference / storage flow plus one error path. The funds/keys boundary still applies.",
-          "checklist": [
-            "Add the MCP server with `claude mcp add 0g-cc npx @0gfoundation/0g-cc`.",
-            "Walk one inference or storage flow.",
-            "Trigger one config, auth, or invalid-input error path.",
-            "Do not expose funds, keys, or private data."
-          ]
+          "note": "`0g-cc` is a CLI / MCP server, not a web app. Add it (`claude mcp add 0g-cc npx @0gfoundation/0g-cc`), then walk one inference / storage flow plus one error path. The funds/keys boundary still applies."
         }
       ]
     },
@@ -97,12 +79,6 @@
       "pill": "record-only",
       "pillKind": "record",
       "recordOnly": true,
-      "checklist": [
-        "Load the dApp.",
-        "Connect a wallet on 0G if supported.",
-        "Walk the main flow once.",
-        "Report actionable bugs to the dApp's own channel and paste that URL in the Hub coverage log."
-      ],
       "items": [
         {
           "name": "TradeGPT",

@@ -1,9 +1,9 @@
 # Severity rubric (P1–P4)
 
-The README requires every defect to carry a `P1 / P2 / P3 / P4` severity, but the
-scale isn't defined anywhere — so two testers can tag the same bug differently and
-the [signal-to-noise gate](../README.md#feedback-calibration-pull-back-when-drifting)
-can't be applied consistently. This is that definition.
+The defect form requires every defect or coverage log to carry a `P1 / P2 / P3 / P4`
+severity. This rubric keeps testers and triage aligned: severity is a quality
+signal for core defects, and it stays orthogonal to ownership for record-only
+Ecosystem coverage.
 
 **Severity is impact-based.** Judge it against *what the user/dev cannot do*, not
 against how hard the fix looks. A one-line CSS fix can still be a P1 if it hides the
@@ -18,8 +18,8 @@ only "confirm" button on the core flow.
 
 ## How this interacts with the SNR gate
 
-The README says: *"a round that's all P3/P4 trivia with no reproducible P1/P2 → you're
-nitpicking; pull back to core flows."* With the table above that gate becomes mechanical:
+The program rejects low-signal rounds dominated by P3/P4 nits with no reproducible
+P1/P2. With the table above that gate becomes mechanical:
 
 - A round with **0 reproducible P1/P2** is a low-signal round → return to happy/error paths.
 - **P4 is for manual downgrade only** — don't open a round by hunting cosmetics.

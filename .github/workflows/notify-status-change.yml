@@ -134,12 +134,8 @@ jobs:
               NEED_CORE=0
             fi
 
-            if [ "$NEED_CORE" -gt 0 ] && [ "$SYSTEMIC" -lt 1 ]; then
-              NEXT="Need ${NEED_CORE} more accepted, deduped core defect(s) and 1 systemic finding for L3."
-            elif [ "$NEED_CORE" -gt 0 ]; then
+            if [ "$NEED_CORE" -gt 0 ]; then
               NEXT="Need ${NEED_CORE} more accepted, deduped core defect(s) for L3."
-            elif [ "$SYSTEMIC" -lt 1 ]; then
-              NEXT="Need 1 systemic finding for L3."
             else
               NEXT="L3 criteria appear met; final payout still follows export."
             fi

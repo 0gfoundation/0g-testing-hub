@@ -30,7 +30,7 @@ body:
         - "L0 — Recruit (feedback only)"
         - "L1 — Tester (1 accepted App Suite bug)"
         - "L2 — Infra Pioneer (App Suite + 0G Infra)"
-        - "L3 — Master (5+ accepted, incl. 1 systemic)"
+        - "L3 — Master (5+ accepted, App Suite + 0G Infra)"
     validations:
       required: false
 

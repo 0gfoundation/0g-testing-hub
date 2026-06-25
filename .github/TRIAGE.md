@@ -31,6 +31,10 @@ Testers never touch `defects/*.md`, labels, or the board — the only action is 
 Everything from here down is the maintainer pipeline.
 
 > One-time setup of labels + board: run [`scripts/setup-labels-and-board.sh`](../scripts/setup-labels-and-board.sh).
+> It is also the safe backfill path for missed open defect issues: existing `status:*`
+> labels are preserved, missing statuses get `status:filed`, and multi-status issues
+> are flagged with `needs:manual-label`. Board Status is set from the single
+> existing `status:*` label when it is unambiguous.
 > The live board is [Project #19](https://github.com/orgs/0gfoundation/projects/19).
 
 ## Automation (how issues reach the board)
@@ -45,7 +49,9 @@ It depends on a repo secret **`PROJECT_PAT`** — a token with the `project` + `
 > **Token rotation:** if `PROJECT_PAT` is revoked or expires, auto-add silently stops
 > (issues still get the `defect` label, they just won't appear on the board). To rotate:
 > `gh secret set PROJECT_PAT --repo 0gfoundation/0g-testing-hub` with a fresh token, then
-> back-fill any missed issues by re-running `scripts/setup-labels-and-board.sh`.
+> back-fill any missed open defect issues by re-running `scripts/setup-labels-and-board.sh`.
+> The script does not downgrade existing `status:accepted` / `status:routed` issues;
+> it syncs the Project Status from the existing label.
 
 ## State machine → board columns
 
@@ -166,7 +172,7 @@ Rules enforced by the script:
 - `status:accepted` and `status:routed` are rewardable states.
 - `area:ecosystem` coverage logs are excluded from reward counts.
 - Issues sharing one `rc:<CODE>` collapse to the earliest canonical issue and credit the first filer.
-- L3 requires 5+ accepted, deduped core findings, at least one `systemic`, and the L2 App Suite + 0G Infra spread.
+- L3 requires 5+ accepted, deduped core findings, including the L2 App Suite + 0G Infra spread.
 
 ## Migrating the old intake (Issue #3)
 
