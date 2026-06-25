@@ -51,7 +51,21 @@ jobs:
           fi
 
           if printf '%s' "$WALLET" | grep -Eiq '^0x[0-9a-f]{40}$'; then
-            gh issue comment "$ISSUE_NUMBER" --repo "$REPO" --body "✅ Registered **@$AUTHOR** → \`$WALLET\`. Your GitHub account is your testing identity and rewards pay to this wallet. Climb from L0 — see the [README](../../blob/main/README.md)."
+            gh issue edit "$ISSUE_NUMBER" --repo "$REPO" --title "[signup]: $AUTHOR" >/dev/null
+            gh issue comment "$ISSUE_NUMBER" --repo "$REPO" --body-file - <<EOF
+          ✅ **Registered @$AUTHOR** → \`$WALLET\`.
+
+          This signup issue is your tracker. Your GitHub account is your testing identity, and rewards pay to this wallet.
+
+          Next steps:
+
+          1. Submit [0G Studio Feedback](https://forms.gle/ymEdZrdTNs4giEm1A).
+          2. Submit [0G Private Computer Feedback](https://forms.gle/G919xrbRyfVJxPZe8).
+          3. Wait for this issue to show \`l0:cleared\` after both forms land.
+          4. Then climb to L1 by filing an accepted App Suite defect: https://github.com/$REPO/issues/new?template=defect-report.yml&labels=defect,status:filed
+
+          See the ladder in [README.md](../../blob/main/README.md#test-report-reward).
+          EOF
             echo "Confirmed sign-up #$ISSUE_NUMBER (@$AUTHOR -> $WALLET)."
           else
             gh issue edit "$ISSUE_NUMBER" --repo "$REPO" --add-label "needs:fix" >/dev/null

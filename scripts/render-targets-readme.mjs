@@ -52,9 +52,10 @@ export async function renderTargets() {
     for (const item of bucket.items || []) {
       lines.push(`- [**${item.name}**](${item.url})${item.desc ? ` - ${item.desc}` : ''}`);
       if (item.note) lines.push(`  - Note: ${item.note}`);
-      if (Array.isArray(item.checklist) && item.checklist.length) {
+      const checklist = Array.isArray(item.checklist) ? item.checklist : bucket.checklist;
+      if (Array.isArray(checklist) && checklist.length) {
         lines.push('  - Checklist:');
-        for (const check of item.checklist) lines.push(`    - ${check}`);
+        for (const check of checklist) lines.push(`    - ${check}`);
       }
     }
   }

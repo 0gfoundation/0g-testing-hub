@@ -28,7 +28,10 @@ jobs:
       REPO: ${{ github.repository }}
       ISSUE_NUMBER: ${{ github.event.issue.number }}
       LABEL: ${{ github.event.label.name }}
+      AUTHOR: ${{ github.event.issue.user.login }}
     steps:
+      - uses: actions/checkout@v4
+
       - name: Comment on the issue
         run: |
           set -euo pipefail
@@ -63,3 +66,100 @@ jobs:
 
           gh issue comment "$ISSUE_NUMBER" --repo "$REPO" --body "$MSG"
           echo "Commented on #$ISSUE_NUMBER for $LABEL."
+
+      - name: Update signup progress preview
+        if: >-
+          github.event.label.name == 'status:accepted' ||
+          github.event.label.name == 'status:routed'
+        run: |
+          set -euo pipefail
+
+          LABELS=$(gh issue view "$ISSUE_NUMBER" --repo "$REPO" --json labels --jq '.labels[].name' | tr '\n' ' ')
+          has() { case " $LABELS " in *" $1 "*) return 0 ;; *) return 1 ;; esac }
+
+          if has "area:ecosystem" || has "coverage-log"; then
+            echo "Ecosystem coverage is record-only; skipping reward progress preview."
+            exit 0
+          fi
+
+          if ! { has "area:app-suite" || has "area:0g-infra"; }; then
+            echo "No rewardable core area label; skipping reward progress preview."
+            exit 0
+          fi
+
+          SIGNUP_NUMBER=$(gh issue list \
+            --repo "$REPO" \
+            --state all \
+            --label signup \
+            --author "$AUTHOR" \
+            --limit 100 \
+            --json number,createdAt \
+            --jq 'sort_by(.createdAt)[0].number // ""')
+
+          if [ -z "$SIGNUP_NUMBER" ]; then
+            echo "No signup issue found for @$AUTHOR; skipping reward progress preview."
+            exit 0
+          fi
+
+          REPORT=$(node scripts/export-reward-report.mjs --repo "$REPO" --signups-from-issues --format json)
+          USER=$(printf '%s' "$AUTHOR" | tr '[:upper:]' '[:lower:]')
+          ROW=$(jq -c --arg user "$USER" '.rows[] | select(.githubUsername == $user)' <<<"$REPORT" | head -n 1)
+
+          if [ -z "$ROW" ]; then
+            echo "No reward row found for @$AUTHOR; skipping reward progress preview."
+            exit 0
+          fi
+
+          LEVEL=$(jq -r '.issueLevel // ""' <<<"$ROW")
+          CREDIT=$(jq -r '.issueCredit // 0' <<<"$ROW")
+          TOTAL=$(jq -r '.acceptedDeduped // 0' <<<"$ROW")
+          APP_SUITE=$(jq -r '.appSuite // 0' <<<"$ROW")
+          INFRA=$(jq -r '.infra // 0' <<<"$ROW")
+          SYSTEMIC=$(jq -r '.systemic // 0' <<<"$ROW")
+          CANONICAL=$(jq -r '.canonicalIssues // ""' <<<"$ROW")
+
+          if [ -z "$LEVEL" ]; then
+            LEVEL="not yet"
+          fi
+
+          if [ "$LEVEL" = "L3" ]; then
+            NEXT="L3 is the current cap. Keep reports high-signal; final payout still follows export."
+          elif [ "$APP_SUITE" -lt 1 ]; then
+            NEXT="Need 1 accepted App Suite defect for L1."
+          elif [ "$INFRA" -lt 1 ]; then
+            NEXT="Need 1 accepted 0G Infra defect, paired with your App Suite accept, for L2."
+          else
+            NEED_CORE=$((5 - TOTAL))
+            if [ "$NEED_CORE" -lt 0 ]; then
+              NEED_CORE=0
+            fi
+
+            if [ "$NEED_CORE" -gt 0 ] && [ "$SYSTEMIC" -lt 1 ]; then
+              NEXT="Need ${NEED_CORE} more accepted, deduped core defect(s) and 1 systemic finding for L3."
+            elif [ "$NEED_CORE" -gt 0 ]; then
+              NEXT="Need ${NEED_CORE} more accepted, deduped core defect(s) for L3."
+            elif [ "$SYSTEMIC" -lt 1 ]; then
+              NEXT="Need 1 systemic finding for L3."
+            else
+              NEXT="L3 criteria appear met; final payout still follows export."
+            fi
+          fi
+
+          gh issue comment "$SIGNUP_NUMBER" --repo "$REPO" --body-file - <<EOF
+          📊 **Reward progress preview** (advisory)
+
+          Current level: **$LEVEL** ($CREDIT 0G Compute Credit)
+
+          Accepted, deduped core findings: **$TOTAL**
+          - App Suite: **$APP_SUITE**
+          - 0G Infra: **$INFRA**
+          - Systemic: **$SYSTEMIC**
+
+          Canonical issues: ${CANONICAL:-none yet}
+
+          Next gate: $NEXT
+
+          Final payout still comes from the reward export after triage and de-duplication.
+          EOF
+
+          echo "Updated signup #$SIGNUP_NUMBER with reward progress preview for @$AUTHOR."

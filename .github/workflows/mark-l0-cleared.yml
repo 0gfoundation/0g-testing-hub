@@ -34,7 +34,12 @@ jobs:
           has() { case " $LABELS " in *" $1 "*) return 0 ;; *) return 1 ;; esac }
 
           if ! { has "l0:studio-done" && has "l0:pc-done"; }; then
-            echo "Only one feedback label so far — waiting for the other."
+            if has "l0:studio-done"; then
+              gh issue comment "$ISSUE_NUMBER" --repo "$REPO" --body "L0 progress: **0G Studio Feedback received**. Still needed: [0G Private Computer Feedback](https://forms.gle/G919xrbRyfVJxPZe8)."
+            elif has "l0:pc-done"; then
+              gh issue comment "$ISSUE_NUMBER" --repo "$REPO" --body "L0 progress: **0G Private Computer Feedback received**. Still needed: [0G Studio Feedback](https://forms.gle/ymEdZrdTNs4giEm1A)."
+            fi
+            echo "Only one feedback label so far — commented with the missing form."
             exit 0
           fi
 
@@ -44,5 +49,16 @@ jobs:
           fi
 
           gh issue edit "$ISSUE_NUMBER" --repo "$REPO" --add-label "l0:cleared" >/dev/null
-          gh issue comment "$ISSUE_NUMBER" --repo "$REPO" --body "🎉 **L0 Recruit cleared** — both feedback forms received. That's **10 0G Compute Credit**. Climb to L1 by filing an accepted **App Suite** bug — see the [README](../../blob/main/README.md)."
+          gh issue comment "$ISSUE_NUMBER" --repo "$REPO" --body-file - <<EOF
+          🎉 **L0 Recruit cleared** — both feedback forms received. That's **10 0G Compute Credit**.
+
+          Next: climb to **L1 Tester** with one accepted **App Suite** defect.
+
+          Start here:
+
+          - App Suite targets: [0G App, Genome, 0G Chat, PandaClaw](../../blob/main/README.md#0g-app-suite--core-l0-l1)
+          - Defect report form: https://github.com/$REPO/issues/new?template=defect-report.yml&labels=defect,status:filed
+
+          Acceptance bar: a defect counts only if it is reproducible from your steps, a divergence from documented or expected behavior, and measured against the current stack baseline.
+          EOF
           echo "Marked #$ISSUE_NUMBER l0:cleared."

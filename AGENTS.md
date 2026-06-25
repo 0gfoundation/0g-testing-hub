@@ -20,7 +20,7 @@ All rewards are **0G Compute Credit**; payout = the Credit of the **highest leve
 
 Track filed issues on the [Defect board #19](https://github.com/orgs/0gfoundation/projects/19). The more **accepted, deduped** defects a tester surfaces, the higher they climb - Master is the cap. Ecosystem dApps are **record-only**: log coverage, not a reward gate.
 
-Two GitHub issue forms drive the program: **`signup.yml`** (label `signup` — step 0, identity + wallet, handled by `confirm-signup.yml`) and **`defect-report.yml`** (labels `defect` + `status:filed` — steps 2–4, one bug/coverage log per issue, handled by `add-defects-to-board.yml` + `notify-status-change.yml`). Step 1's L0 feedback is two external Google forms (see `config.yml` contact links), not GitHub issues.
+Two GitHub issue forms drive the program: **`signup.yml`** (label `signup` — step 0, identity + wallet + personal tracker, handled by `confirm-signup.yml`) and **`defect-report.yml`** (labels `defect` + `status:filed` — steps 2–4, one bug/coverage log per issue, handled by `add-defects-to-board.yml` + `notify-status-change.yml`). Step 1's L0 feedback is two external Google forms (see `config.yml` contact links), not GitHub issues.
 
 ```json
 {
@@ -41,13 +41,13 @@ Two GitHub issue forms drive the program: **`signup.yml`** (label `signup` — s
 
 The reward system depends on this chain. Do not bypass it:
 
-1. **Sign-up issue** (`signup.yml`, labelled `signup`) registers the tester. The **issue author** is the authenticated **GitHub username** — the identity join key, captured automatically so it can't be mistyped — and the **0G mainnet EVM wallet** is recorded in the issue body (public). `confirm-signup.yml` validates the wallet and confirms registration. Reward export reads these via `--signups-from-issues`, so no external signup form is needed.
-2. **L0 feedback bridge** — the two external Google feedback forms each run an Apps Script (`automation/l0-feedback-bridge.gs`) that labels the tester's sign-up issue `l0:studio-done` / `l0:pc-done` by GitHub username; `mark-l0-cleared.yml` sets `l0:cleared` once both arrive. See [`automation/README.md`](./automation/README.md).
+1. **Sign-up issue** (`signup.yml`, labelled `signup`) registers the tester. The **issue author** is the authenticated **GitHub username** — the identity join key, captured automatically so it can't be mistyped — and the **0G mainnet EVM wallet** is recorded in the issue body (public). `confirm-signup.yml` validates the wallet, normalizes the title to `[signup]: <author>`, and comments the L0 next steps. Reward export reads these signup issues via `--signups-from-issues`, so no external signup form is needed.
+2. **L0 feedback bridge** — the two external Google feedback forms each run an Apps Script (`automation/l0-feedback-bridge.gs`) that labels the tester's sign-up issue `l0:studio-done` / `l0:pc-done` by GitHub username; `mark-l0-cleared.yml` comments partial progress when only one form has arrived, then sets `l0:cleared` and points the tester toward L1 once both arrive. See [`automation/README.md`](./automation/README.md).
 3. **Defect report / coverage log form** creates GitHub issues labelled `defect` + `status:filed`.
 4. **Workflow** adds every `defect` issue to Project #19, derives `area:*` / `sev:*` / `coverage-log` labels from the form body, and keeps the board's Triage state aligned with `status:filed`. If the form body can't be parsed, it applies `needs:manual-label` so the gap is visible instead of silently shipping unlabelled.
 5. **Triage** moves issues through `status:accepted` and `status:routed`, applies one `area:*`, one `sev:*`, optional `rc:*`, and `systemic` when appropriate.
 6. **Route evidence** is required before `status:routed`: add a comment containing `Routed to:` and `Upstream link:`. Look up the upstream owner in [`data/owners.json`](./data/owners.json) so routing doesn't depend on tribal knowledge.
-7. **Reward export** runs `node scripts/export-reward-report.mjs --signups-from-issues --format csv --out rewards.csv` — it reads the `signup` issues directly (author = GitHub username, body = wallet), counts accepted + deduped App Suite / 0G Infra defects, and credits L0 from the `l0:cleared` label. `--strict` blocks payout on unmatched issue authors, duplicate signup usernames, **duplicate wallets (Sybil)**, or rewardable users missing a wallet. (A legacy `--signups <csv>` / `--l0 <csv>` path remains for non-GitHub data.)
+7. **Reward preview + export** — `notify-status-change.yml` comments an advisory reward progress preview on the tester's signup issue when rewardable core defects reach `status:accepted` / `status:routed`; final payout still comes from `node scripts/export-reward-report.mjs --signups-from-issues --format csv --out rewards.csv`. The export reads `signup` issues directly (author = GitHub username, body = wallet), counts accepted + deduped App Suite / 0G Infra defects, and credits L0 from the `l0:cleared` label. `--strict` blocks payout on unmatched issue authors, duplicate signup usernames, **duplicate wallets (Sybil)**, or rewardable users missing a wallet. (A legacy `--signups <csv>` / `--l0 <csv>` path remains for non-GitHub data.)
 
 Routed evidence check:
 
@@ -67,7 +67,7 @@ node scripts/check-routed-evidence.mjs --repo 0gfoundation/0g-testing-hub
 
 ## Test Targets
 
-`data/targets.json` is the source of truth for target URLs and descriptions. Do not hand-edit README's generated target block. Edit `data/targets.json`, then run:
+`data/targets.json` is the source of truth for target URLs, descriptions, and per-target checklists. Do not hand-edit README's generated target block. Edit `data/targets.json`, then run:
 
 ```bash
 node scripts/render-targets-readme.mjs --write
