@@ -5,7 +5,7 @@
 ## Jump to
 
 - [Test, Report, Reward](#test-report-reward)
-- [Tester path](#tester-path)
+- [Tester Path](#tester-path)
 - [Test Targets](#test-targets)
 
 ## Test, Report, Reward
@@ -24,7 +24,7 @@ All rewards are **0G Compute Credit**; payout = the Credit of your **highest lev
 | **L2** Infra Pioneer | +1 accepted · 0G Infra (2 total) | [Defect report form](https://github.com/0gfoundation/0g-testing-hub/issues/new?template=defect-report.yml&labels=defect,status:filed) | **40 0G Compute Credit** |
 | **L3** Master | 5+ accepted · App Suite + 0G Infra | [Defect report form](https://github.com/0gfoundation/0g-testing-hub/issues/new?template=defect-report.yml&labels=defect,status:filed) | **100 0G Compute Credit** |
 
-## Tester path
+## Tester Path
 
 Two GitHub forms are the entry points; the rest is filling them in and waiting for triage.
 
