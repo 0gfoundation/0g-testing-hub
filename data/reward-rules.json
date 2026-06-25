@@ -1,0 +1,38 @@
+{
+  "schema": "0g.reward_rules.v1",
+  "levels": [
+    {
+      "level": "L0",
+      "credit": 10,
+      "requires": {
+        "l0Done": true
+      }
+    },
+    {
+      "level": "L1",
+      "credit": 20,
+      "requires": {
+        "appSuite": 1
+      }
+    },
+    {
+      "level": "L2",
+      "credit": 40,
+      "requires": {
+        "appSuite": 1,
+        "acceptedDeduped": 2,
+        "infra": 1
+      }
+    },
+    {
+      "level": "L3",
+      "credit": 100,
+      "requires": {
+        "appSuite": 1,
+        "infra": 1,
+        "acceptedDeduped": 5,
+        "systemic": 1
+      }
+    }
+  ]
+}

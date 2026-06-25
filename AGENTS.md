@@ -32,6 +32,7 @@ Two GitHub issue forms drive the program: **`signup.yml`** (label `signup` — s
   "defectBoard": "https://github.com/orgs/0gfoundation/projects/19",
   "levelRules": "LEVELS.md",
   "rewards": "README.md#test-report-reward",
+  "rewardPreflight": "docs/REWARD_PREFLIGHT.md",
   "workflowDiagram": "docs/WORKFLOWS.md",
   "signupSchema": "docs/signups.example.csv"
 }
@@ -47,7 +48,7 @@ The reward system depends on this chain. Do not bypass it:
 4. **Workflow** adds every `defect` issue to Project #19, derives `area:*` / `sev:*` / `coverage-log` labels from the form body, and keeps the board's Triage state aligned with `status:filed`. If the form body can't be parsed, it applies `needs:manual-label` so the gap is visible instead of silently shipping unlabelled.
 5. **Triage** moves issues through `status:accepted` and `status:routed`, applies one `area:*`, one `sev:*`, optional `rc:*`, and `systemic` when appropriate.
 6. **Route evidence** is required before `status:routed`: add a comment containing `Routed to:` and `Upstream link:`. Look up the upstream owner in [`data/owners.json`](./data/owners.json) so routing doesn't depend on tribal knowledge.
-7. **Reward preview + export** — `notify-status-change.yml` comments an advisory reward progress preview on the tester's signup issue when rewardable core defects reach `status:accepted` / `status:routed`; final payout still comes from `node scripts/export-reward-report.mjs --signups-from-issues --format csv --out rewards.csv`. The export reads `signup` issues directly (author = GitHub username, body = wallet), counts accepted + deduped App Suite / 0G Infra defects, and credits L0 from the `l0:cleared` label. `--strict` blocks payout on unmatched issue authors, duplicate signup usernames, **duplicate wallets (Sybil)**, or rewardable users missing a wallet. (A legacy `--signups <csv>` / `--l0 <csv>` path remains for non-GitHub data.)
+7. **Reward preview + export** — `notify-status-change.yml` comments an advisory reward progress preview on the tester's signup issue when rewardable core defects reach `status:accepted` / `status:routed`; final payout still comes from `node scripts/export-reward-report.mjs --signups-from-issues --format csv --out rewards.csv`. Before payout, run the same export with `--blockers-out rewards.blockers.json --audit-out rewards.audit.json --strict` (see [`docs/REWARD_PREFLIGHT.md`](./docs/REWARD_PREFLIGHT.md)) so structured blockers are visible. The export reads `signup` issues directly (author = GitHub username, body = wallet), counts accepted + deduped App Suite / 0G Infra defects, and credits L0 from the `l0:cleared` label. `--strict` blocks payout on unmatched issue authors, duplicate signup usernames, **duplicate wallets (Sybil)**, or rewardable users missing a wallet; lightweight accepted-issue quality gaps are warnings for maintainer cleanup. (A legacy `--signups <csv>` / `--l0 <csv>` path remains for non-GitHub data.)
 
 Routed evidence check:
 
