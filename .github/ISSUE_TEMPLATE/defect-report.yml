@@ -15,6 +15,14 @@ body:
 
         The fields below mirror the defect template — triage uses them to label, route, de-duplicate, and export rewards, so fill them precisely.
 
+        Minimum useful example:
+        - Product: 0G Hub
+        - Severity: P2 — Major
+        - Repro: 1. Connect wallet on Chain ID 16661. 2. Open Bridge. 3. Refresh before confirmation.
+        - Expected: the bridge state recovers or asks me to reconnect.
+        - Actual: the page shows connected wallet but actions stay disabled until a hard reload.
+        - Evidence: screenshot or short recording.
+
   - type: dropdown
     id: ownership
     attributes:

@@ -5,7 +5,7 @@ layer between them. This is the visual companion to [`.github/TRIAGE.md`](../.gi
 (the maintainer runbook) and [`LEVELS.md`](../LEVELS.md) (the reward ladder).
 
 - **Tester** only ever fills forms — never touches labels, the board, or `defects/*.md`.
-- **Automation** (GitHub Actions) labels, boards, and closes the feedback loop.
+- **Automation** (GitHub Actions) labels, boards, updates the signup tracker, and closes the feedback loop.
 - **Maintainer** runs the label → verify → dedup → route → export pipeline.
 
 ## End-to-end flow
@@ -13,13 +13,14 @@ layer between them. This is the visual companion to [`.github/TRIAGE.md`](../.gi
 ```mermaid
 flowchart TD
     subgraph T["🧑‍💻 Tester — fills forms only"]
-      T1["Sign up once<br/>wallet + GitHub username"]
+      T1["Sign up once<br/>wallet; GitHub author = identity"]
       T2["L0: two feedback forms<br/>no bug required"]
       T3["Find + reproduce a bug"]
       T4["File Defect report form<br/>one issue per defect"]
     end
 
     subgraph A["⚙️ Automation — GitHub Actions"]
+      A0["signup issue tracker<br/>auto-title · L0 progress · reward preview"]
       A1["Issue opened<br/>defect + status:filed"]
       A2["add-defects-to-board.yml<br/>add to board #19 · parse area/sev · set Triage"]
       A3["notify-status-change.yml<br/>auto-comment outcome to the tester"]
@@ -35,14 +36,15 @@ flowchart TD
       M7["export-reward-report.mjs<br/>join username → wallet · tally L0–L3"]
     end
 
-    T1 --> T2 --> T3 --> T4 --> A1 --> A2 --> M1 --> M2
+    T1 --> A0 --> T2 --> T3 --> T4 --> A1 --> A2 --> M1 --> M2
     M2 -- yes --> M3 --> M5 --> M6 --> M7
     M2 -- no --> M4
     M3 -. triggers .-> A3
     M4 -. triggers .-> A3
     M6 -. triggers .-> A3
     A3 -. result comment .-> T4
-    T1 -. "GitHub username = join key" .-> M7
+    A3 -. reward preview .-> A0
+    A0 -. "issue author = join key" .-> M7
 ```
 
 ## Status state machine → board columns
@@ -83,5 +85,9 @@ and pass conditions are the evergreen spec in [`LEVELS.md`](../LEVELS.md), mirro
   message: App Suite accept counts; an **0G Infra** accept alone does **not** clear L1
   (needs a paired App Suite bug → L2); an **Ecosystem** coverage log is record-only and
   does **not** count.
+- **The signup issue is the tester's tracker.** Signup confirmation normalizes the title
+  from the issue author, L0 feedback automation comments partial / cleared states, and
+  accepted or routed core defects add an advisory reward progress preview. Final payout
+  still comes from `export-reward-report.mjs`.
 
 Open items that are policy/data decisions, not code: see [`KNOWN-GAPS.md`](../KNOWN-GAPS.md).
