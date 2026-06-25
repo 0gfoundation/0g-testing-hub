@@ -5,6 +5,7 @@
 ## Jump to
 
 - [Test, Report, Reward](#test-report-reward)
+- [Tester path](#tester-path)
 - [Test Targets](#test-targets)
 
 ## Test, Report, Reward
@@ -13,21 +14,25 @@
 
 ![Reward levels](./Assets/reward-level.png)
 
-The ladder you're climbing: **L0** Recruit → **L3** Master.
-
 All rewards are **0G Compute Credit**; payout = the Credit of your **highest level reached** (not cumulative).
 
-| Step | Reach | How it clears | Where to go | Credit |
-|------|-------|---------------|-------------|:------:|
-| **0** | **Sign Up** | Open a sign-up issue with your 0G mainnet wallet (your GitHub account is your identity) | [Sign up (GitHub)](https://github.com/0gfoundation/0g-testing-hub/issues/new?template=signup.yml&labels=signup) | — |
-| **1** | **L0** Recruit | 2 feedback forms; no bug required | 1. [0G Studio Feedback (App Suite, all four apps)](https://forms.gle/ymEdZrdTNs4giEm1A)<br>2. [0G Private Computer Feedback](https://forms.gle/G919xrbRyfVJxPZe8) | **10 0G Compute Credit** |
-| **2** | **L1** Tester | 1 accepted · App Suite | [Defect report form](https://github.com/0gfoundation/0g-testing-hub/issues/new?template=defect-report.yml&labels=defect,status:filed) | **20 0G Compute Credit** |
-| **3** | **L2** Infra Pioneer | +1 accepted · 0G Infra (2 total) | [Defect report form](https://github.com/0gfoundation/0g-testing-hub/issues/new?template=defect-report.yml&labels=defect,status:filed) | **40 0G Compute Credit** |
-| **4** | **L3** Master | 5+ accepted · incl. 1 `systemic` | [Defect report form](https://github.com/0gfoundation/0g-testing-hub/issues/new?template=defect-report.yml&labels=defect,status:filed) | **100 0G Compute Credit** |
+| Reach | How it clears | Where to go | Credit |
+|-------|---------------|-------------|:------:|
+| **Sign Up** | Open a sign-up issue with your 0G mainnet wallet (your GitHub account is your identity) | [Sign up (GitHub)](https://github.com/0gfoundation/0g-testing-hub/issues/new?template=signup.yml&labels=signup) | — |
+| **L0** Recruit | 2 feedback forms; no bug required | 1. [0G Studio Feedback (App Suite, all four apps)](https://forms.gle/ymEdZrdTNs4giEm1A)<br>2. [0G Private Computer Feedback](https://forms.gle/G919xrbRyfVJxPZe8) | **10 0G Compute Credit** |
+| **L1** Tester | 1 accepted · App Suite | [Defect report form](https://github.com/0gfoundation/0g-testing-hub/issues/new?template=defect-report.yml&labels=defect,status:filed) | **20 0G Compute Credit** |
+| **L2** Infra Pioneer | +1 accepted · 0G Infra (2 total) | [Defect report form](https://github.com/0gfoundation/0g-testing-hub/issues/new?template=defect-report.yml&labels=defect,status:filed) | **40 0G Compute Credit** |
+| **L3** Master | 5+ accepted · App Suite + 0G Infra | [Defect report form](https://github.com/0gfoundation/0g-testing-hub/issues/new?template=defect-report.yml&labels=defect,status:filed) | **100 0G Compute Credit** |
 
-Track filed defects on the [Defect board #19](https://github.com/orgs/0gfoundation/projects/19). Track your personal journey on your **sign-up issue**: the workflow normalizes its title, comments L0 feedback progress, and posts an advisory reward progress preview after accepted / routed core defects. Final reward decisions still come from triage and the reward export.
+## Tester path
 
-Two GitHub issue forms drive this: **[Sign up](https://github.com/0gfoundation/0g-testing-hub/issues/new?template=signup.yml&labels=signup)** (step 0 — identity + wallet + personal tracker) and **[Defect report](https://github.com/0gfoundation/0g-testing-hub/issues/new?template=defect-report.yml&labels=defect,status:filed)** (steps 2–4 — one bug or coverage log per issue). Step 1's L0 feedback is the two external Google forms above.
+Two GitHub forms are the entry points; the rest is filling them in and waiting for triage.
+
+1. **[Sign up](https://github.com/0gfoundation/0g-testing-hub/issues/new?template=signup.yml&labels=signup)** once — this issue is your tracker and the start of your tester journey.
+2. **Clear L0** — submit the two Google forms above with that same username. No bug needed → **10 0G Compute Credit**.
+3. **File defects** — one bug or coverage log per **[Defect report](https://github.com/0gfoundation/0g-testing-hub/issues/new?template=defect-report.yml&labels=defect,status:filed)**, with Ownership / Product / Severity. Accepted **core** defects (App Suite / 0G Infra) climb **L1–L3**; Ecosystem dApps are record-only.
+4. **Triage** — maintainers label it; you get a comment when it's accepted, routed, or closed. Track it on [board #19](https://github.com/orgs/0gfoundation/projects/19).
+5. **Progress** — your sign-up issue shows L0 status and a reward-progress preview as defects are accepted.
 
 **Won't be accepted / out of bounds:**
 
@@ -44,113 +49,28 @@ Two GitHub issue forms drive this: **[Sign up](https://github.com/0gfoundation/0
 ### 0G App Suite · core (L0-L1)
 
 - [**0G App**](https://app.0g.ai/) - flagship app builder, live on mainnet
-  - Checklist:
-    - Load the app.
-    - Connect a wallet on 0G.
-    - Walk the core journey once.
-    - Try one interrupt or error path: stale session, captcha/token expiry, Chain ID switch, refresh, or back button.
 - [**Genome**](https://dev.0g-vibe.pages.dev/genome) - paste a URL/screenshot, produces production-grade design DNA
-  - Checklist:
-    - Load the app.
-    - Connect a wallet on 0G.
-    - Walk the core journey once.
-    - Try one interrupt or error path: stale session, captcha/token expiry, Chain ID switch, refresh, or back button.
 - [**0G Chat**](https://dev.0g-vibe.pages.dev/private-chat) - end-to-end encrypted private chat (UI still WIP)
-  - Checklist:
-    - Load the app.
-    - Connect a wallet on 0G.
-    - Walk the core journey once.
-    - Try one interrupt or error path: stale session, captcha/token expiry, Chain ID switch, refresh, or back button.
 - [**PandaClaw**](https://dev.0g-vibe.pages.dev/agents) - agent launchpad + skill marketplace (Hermes + OpenClaw harness)
-  - Checklist:
-    - Load the app.
-    - Connect a wallet on 0G.
-    - Walk the core journey once.
-    - Try one interrupt or error path: stale session, captcha/token expiry, Chain ID switch, refresh, or back button.
 
 ### 0G Infra · core (L2)
 
 - [**0G Hub**](https://hub.0g.ai/) - bridge / swap / faucet / portfolio
-  - Checklist:
-    - Load or initialize the target.
-    - Check correctness over polish: Chain ID, RPC, explorer data, or storage/inference path.
-    - Walk one core flow; for bridge, swap, faucet, or sign flows, stop at confirmation.
-    - Try one error path.
 - [**0G Storage Scan**](https://storagescan-newton.0g.ai/) - storage explorer
-  - Checklist:
-    - Load or initialize the target.
-    - Check correctness over polish: Chain ID, RPC, explorer data, or storage/inference path.
-    - Walk one core flow; for bridge, swap, faucet, or sign flows, stop at confirmation.
-    - Try one error path.
 - [**Chain Scan**](https://chainscan.0g.ai/) - block explorer
-  - Checklist:
-    - Load or initialize the target.
-    - Check correctness over polish: Chain ID, RPC, explorer data, or storage/inference path.
-    - Walk one core flow; for bridge, swap, faucet, or sign flows, stop at confirmation.
-    - Try one error path.
 - [**0G Code to Coin (0g-cc)**](https://www.npmjs.com/package/@0gfoundation/0g-cc) - MCP server for AI inference / storage on 0G Compute
   - Note: `0g-cc` is a CLI / MCP server, not a web app. Add it (`claude mcp add 0g-cc npx @0gfoundation/0g-cc`), then walk one inference / storage flow plus one error path. The funds/keys boundary still applies.
-  - Checklist:
-    - Add the MCP server with `claude mcp add 0g-cc npx @0gfoundation/0g-cc`.
-    - Walk one inference or storage flow.
-    - Trigger one config, auth, or invalid-input error path.
-    - Do not expose funds, keys, or private data.
 
 ### 0G Ecosystem dApp
 
 - [**TradeGPT**](https://tradegpt.finance/) - AI-driven DEX
-  - Checklist:
-    - Load the dApp.
-    - Connect a wallet on 0G if supported.
-    - Walk the main flow once.
-    - Report actionable bugs to the dApp's own channel and paste that URL in the Hub coverage log.
 - [**Jaine**](https://jaine.fi/) - DEX/liquidity (LIC)
-  - Checklist:
-    - Load the dApp.
-    - Connect a wallet on 0G if supported.
-    - Walk the main flow once.
-    - Report actionable bugs to the dApp's own channel and paste that URL in the Hub coverage log.
 - [**Oku**](https://oku.trade/) - concentrated liquidity DEX
-  - Checklist:
-    - Load the dApp.
-    - Connect a wallet on 0G if supported.
-    - Walk the main flow once.
-    - Report actionable bugs to the dApp's own channel and paste that URL in the Hub coverage log.
 - [**AI Arena**](https://aiarena.io/) - PvP, train AI agents
-  - Checklist:
-    - Load the dApp.
-    - Connect a wallet on 0G if supported.
-    - Walk the main flow once.
-    - Report actionable bugs to the dApp's own channel and paste that URL in the Hub coverage log.
 - [**CARV**](https://carv.io/) - gamer identity
-  - Checklist:
-    - Load the dApp.
-    - Connect a wallet on 0G if supported.
-    - Walk the main flow once.
-    - Report actionable bugs to the dApp's own channel and paste that URL in the Hub coverage log.
 - [**Cygnus Finance**](https://cygnus.finance/) - RWA stablecoin
-  - Checklist:
-    - Load the dApp.
-    - Connect a wallet on 0G if supported.
-    - Walk the main flow once.
-    - Report actionable bugs to the dApp's own channel and paste that URL in the Hub coverage log.
 - [**DataHive**](https://datahive.network/) - personal data economy
-  - Checklist:
-    - Load the dApp.
-    - Connect a wallet on 0G if supported.
-    - Walk the main flow once.
-    - Report actionable bugs to the dApp's own channel and paste that URL in the Hub coverage log.
 - [**Khalani**](https://hub.0g.ai/khalani/transfer?network=mainnet) - bridge to 0G
-  - Checklist:
-    - Load the dApp.
-    - Connect a wallet on 0G if supported.
-    - Walk the main flow once.
-    - Report actionable bugs to the dApp's own channel and paste that URL in the Hub coverage log.
 - [**Merkl**](https://app.merkl.xyz/) - claim LIC rewards
-  - Checklist:
-    - Load the dApp.
-    - Connect a wallet on 0G if supported.
-    - Walk the main flow once.
-    - Report actionable bugs to the dApp's own channel and paste that URL in the Hub coverage log.
 
 <!-- targets:end -->

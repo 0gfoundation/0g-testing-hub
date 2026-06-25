@@ -668,7 +668,7 @@ function rootCauseLabel(value) {
 }
 
 function issueLevel(user) {
-  if (user.appSuite >= 1 && user.infra >= 1 && user.acceptedDeduped >= 5 && user.systemic >= 1) return { name: 'L3', credit: 100 };
+  if (user.appSuite >= 1 && user.infra >= 1 && user.acceptedDeduped >= 5) return { name: 'L3', credit: 100 };
   if (user.appSuite >= 1 && user.infra >= 1 && user.acceptedDeduped >= 2) return { name: 'L2', credit: 40 };
   if (user.appSuite >= 1) return { name: 'L1', credit: 20 };
   if (user.l0Done) return { name: 'L0', credit: 10 };

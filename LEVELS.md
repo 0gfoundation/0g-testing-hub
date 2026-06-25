@@ -26,7 +26,7 @@ Keep this table in sync with the landing page.
 | **L0** | Recruit | 0G App Suite Feedback / 0G Studio Feedback + 0G Private Computer Feedback; no bug required | **10 0G Compute Credit** |
 | **L1** | Tester | 1 accepted · App Suite | **20 0G Compute Credit** |
 | **L2** | Infra Pioneer | 2 accepted · App Suite + 0G Infra | **40 0G Compute Credit** |
-| **L3** | Master | 5+ accepted · incl. 1 systemic | **100 0G Compute Credit** |
+| **L3** | Master | 5+ accepted · App Suite + 0G Infra | **100 0G Compute Credit** |
 
 ## Pass conditions
 
@@ -37,7 +37,7 @@ Except for L0, progression is driven by centralized triage, not by raw submissio
 | 0G App Suite Feedback / 0G Studio Feedback + 0G Private Computer Feedback | L0 only | Recruit is feedback-only. |
 | 1 accepted App Suite defect | L1 | Tester proves the first valid first-party bug. |
 | 2 accepted defects across App Suite + 0G Infra | L2 | Infra Pioneer covers both core buckets. |
-| 5+ accepted defects, including 1 `systemic` finding | L3 | Master is the accepted-defect cap and requires systemic signal. |
+| 5+ accepted defects across App Suite + 0G Infra | L3 | Master is the accepted-defect cap. |
 | `status:accepted` + reproducible + not duplicate | Reward count | It is a valid defect. |
 | Duplicate of an existing root cause | No new reward count | It folds into the canonical issue via the same `rc:*` code. |
 | Not reproducible / unclear / "felt off" | No | It cannot be routed. |

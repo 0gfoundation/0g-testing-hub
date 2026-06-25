@@ -10,17 +10,17 @@ If a task drifts toward "write a script / set up a harness / refactor something 
 
 All rewards are **0G Compute Credit**; payout = the Credit of the **highest level reached** (not cumulative).
 
-| Step | Reach | How it clears | Where to go | Credit |
-|------|-------|---------------|-------------|:------:|
-| **0** | **Sign Up** | Open a sign-up issue with your 0G mainnet wallet (your GitHub account is your identity) | [Sign up (GitHub)](https://github.com/0gfoundation/0g-testing-hub/issues/new?template=signup.yml&labels=signup) | — |
-| **1** | **L0** Recruit | 2 feedback forms; no bug required | 1. [0G Studio Feedback (App Suite, all four apps)](https://forms.gle/ymEdZrdTNs4giEm1A)<br>2. [0G Private Computer Feedback](https://forms.gle/G919xrbRyfVJxPZe8) | **10 0G Compute Credit** |
-| **2** | **L1** Tester | 1 accepted · App Suite | [Defect report form](https://github.com/0gfoundation/0g-testing-hub/issues/new?template=defect-report.yml&labels=defect,status:filed) | **20 0G Compute Credit** |
-| **3** | **L2** Infra Pioneer | +1 accepted · 0G Infra (2 total) | [Defect report form](https://github.com/0gfoundation/0g-testing-hub/issues/new?template=defect-report.yml&labels=defect,status:filed) | **40 0G Compute Credit** |
-| **4** | **L3** Master | 5+ accepted · incl. 1 `systemic` | [Defect report form](https://github.com/0gfoundation/0g-testing-hub/issues/new?template=defect-report.yml&labels=defect,status:filed) | **100 0G Compute Credit** |
+| Reach | How it clears | Where to go | Credit |
+|-------|---------------|-------------|:------:|
+| **Sign Up** | Open a sign-up issue with your 0G mainnet wallet (your GitHub account is your identity) | [Sign up (GitHub)](https://github.com/0gfoundation/0g-testing-hub/issues/new?template=signup.yml&labels=signup) | — |
+| **L0** Recruit | 2 feedback forms; no bug required | 1. [0G Studio Feedback (App Suite, all four apps)](https://forms.gle/ymEdZrdTNs4giEm1A)<br>2. [0G Private Computer Feedback](https://forms.gle/G919xrbRyfVJxPZe8) | **10 0G Compute Credit** |
+| **L1** Tester | 1 accepted · App Suite | [Defect report form](https://github.com/0gfoundation/0g-testing-hub/issues/new?template=defect-report.yml&labels=defect,status:filed) | **20 0G Compute Credit** |
+| **L2** Infra Pioneer | +1 accepted · 0G Infra (2 total) | [Defect report form](https://github.com/0gfoundation/0g-testing-hub/issues/new?template=defect-report.yml&labels=defect,status:filed) | **40 0G Compute Credit** |
+| **L3** Master | 5+ accepted · App Suite + 0G Infra | [Defect report form](https://github.com/0gfoundation/0g-testing-hub/issues/new?template=defect-report.yml&labels=defect,status:filed) | **100 0G Compute Credit** |
 
 Track filed issues on the [Defect board #19](https://github.com/orgs/0gfoundation/projects/19). The more **accepted, deduped** defects a tester surfaces, the higher they climb - Master is the cap. Ecosystem dApps are **record-only**: log coverage, not a reward gate.
 
-Two GitHub issue forms drive the program: **`signup.yml`** (label `signup` — step 0, identity + wallet + personal tracker, handled by `confirm-signup.yml`) and **`defect-report.yml`** (labels `defect` + `status:filed` — steps 2–4, one bug/coverage log per issue, handled by `add-defects-to-board.yml` + `notify-status-change.yml`). Step 1's L0 feedback is two external Google forms (see `config.yml` contact links), not GitHub issues.
+Two GitHub issue forms drive the program: **`signup.yml`** (label `signup` — identity + wallet + personal tracker, handled by `confirm-signup.yml`) and **`defect-report.yml`** (labels `defect` + `status:filed` — one bug/coverage log per issue, climbs L1–L3, handled by `add-defects-to-board.yml` + `notify-status-change.yml`). L0 feedback is two external Google forms (see `config.yml` contact links), not GitHub issues.
 
 ```json
 {
@@ -68,7 +68,7 @@ node scripts/check-routed-evidence.mjs --repo 0gfoundation/0g-testing-hub
 
 ## Test Targets
 
-`data/targets.json` is the source of truth for target URLs, descriptions, and per-target checklists. Do not hand-edit README's generated target block. Edit `data/targets.json`, then run:
+`data/targets.json` is the source of truth for target URLs, descriptions, and target notes. Do not hand-edit README's generated target block. Edit `data/targets.json`, then run:
 
 ```bash
 node scripts/render-targets-readme.mjs --write

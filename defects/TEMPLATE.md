@@ -1,9 +1,7 @@
 <!--
-Copy this file to defects/<short-slug>.md and fill it in.
-The YAML front-matter is the machine-aggregatable part: it's what lets you run the
-README's "aggregate repeated patterns -> 1 systemic issue" step without re-reading
-every defect by hand. Keep the keys; replace the values. The prose below the `---`
-is for humans (repro detail, screenshots, notes).
+Reference template only. Live defects are filed through the GitHub Defect report
+form, not by copying this file into defects/*.md. Keep this file aligned with the
+issue form so example defects and maintainer docs use the same field vocabulary.
 -->
 ---
 title: ""                       # one line, imperative ("Bridge confirm screen never loads")

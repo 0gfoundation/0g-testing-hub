@@ -49,13 +49,26 @@ export async function renderTargets() {
       lines.push('');
     }
 
+    // The checklist lives at the bucket level and applies to every target, so
+    // print it once for the section instead of repeating it under each item.
+    // The "Targets:" lead-in only appears when a checklist precedes it (to keep
+    // the two lists apart); with no checklist, items sit straight under the header.
+    if (Array.isArray(bucket.checklist) && bucket.checklist.length) {
+      lines.push('Checklist for each target:');
+      lines.push('');
+      for (const check of bucket.checklist) lines.push(`- ${check}`);
+      lines.push('');
+      lines.push('Targets:');
+      lines.push('');
+    }
+
     for (const item of bucket.items || []) {
       lines.push(`- [**${item.name}**](${item.url})${item.desc ? ` - ${item.desc}` : ''}`);
       if (item.note) lines.push(`  - Note: ${item.note}`);
-      const checklist = Array.isArray(item.checklist) ? item.checklist : bucket.checklist;
-      if (Array.isArray(checklist) && checklist.length) {
+      // Only an item that overrides the bucket default prints its own checklist.
+      if (Array.isArray(item.checklist) && item.checklist.length) {
         lines.push('  - Checklist:');
-        for (const check of checklist) lines.push(`    - ${check}`);
+        for (const check of item.checklist) lines.push(`    - ${check}`);
       }
     }
   }
