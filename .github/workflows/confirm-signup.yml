@@ -9,7 +9,7 @@ name: Confirm sign-up
 
 on:
   issues:
-    types: [opened, labeled]
+    types: [opened]
 
 permissions:
   contents: read
@@ -17,11 +17,10 @@ permissions:
 
 jobs:
   confirm:
-    # Only act on intake: a freshly opened sign-up issue, or someone adding the
-    # `signup` label — not on every later label change.
-    if: >-
-      contains(github.event.issue.labels.*.name, 'signup') &&
-      (github.event.action == 'opened' || github.event.label.name == 'signup')
+    # Sign-ups always arrive via the form, which applies the `signup` label at
+    # creation — so `opened` alone is enough. (Listening to `labeled` too would
+    # double-fire, because opening with a template label emits both events.)
+    if: contains(github.event.issue.labels.*.name, 'signup')
     runs-on: ubuntu-latest
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

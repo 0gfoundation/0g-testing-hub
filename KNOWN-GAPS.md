@@ -29,8 +29,8 @@ reach L2. So the friction is now **disclosed**, not silent.
 but it means a strong Infra-only contributor is uncredited. Either:
 - **Keep as-is** — accept the disclosure above as sufficient, or
 - **Add an Infra-only entry tier** (e.g. 1 accepted Infra bug ⇒ L1) — this requires
-  changing `LEVELS.md`, `seasons/2026-apac/rewards.md`, the landing page, **and**
-  `issueLevel()` together (they must stay in sync).
+  changing `LEVELS.md`, `README.md#test-report-reward`, **and** `issueLevel()`
+  together (they must stay in sync).
 
 Do not change one without the others — the export script encodes the ladder.
 

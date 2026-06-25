@@ -70,15 +70,9 @@ stateDiagram-v2
 ## Reward ladder (what the export computes)
 
 Payout = Credit of the **highest level reached**. Counts **accepted + deduped** core
-(App Suite / 0G Infra) findings; Ecosystem coverage logs are excluded. Full rules in
-[`LEVELS.md`](../LEVELS.md).
-
-| Lv | Clears with | Credit |
-|----|-------------|:---:|
-| **L0** Recruit | two feedback forms; no bug | 10 |
-| **L1** Tester | 1 accepted · App Suite | 20 |
-| **L2** Infra Pioneer | 2 accepted · App Suite + 0G Infra | 40 |
-| **L3** Master | 5+ accepted · incl. 1 `systemic` | 100 |
+(App Suite / 0G Infra) findings; Ecosystem coverage logs are excluded. The L0–L3 table
+and pass conditions are the evergreen spec in [`LEVELS.md`](../LEVELS.md), mirrored on the
+[landing page](../README.md#test-report-reward) — not repeated here so the numbers can't drift.
 
 ## Two things the automation gets right (and recently fixed)
 

@@ -5,3 +5,6 @@ Screen Shot*.png
 
 # macOS
 .DS_Store
+
+# Local-only setup notes / tutorials — never published
+local-setup-notes/
