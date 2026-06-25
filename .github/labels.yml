@@ -58,3 +58,20 @@
   description: "Auto-labeller could not derive area/severity from the form — triage by hand"
 # `rc:<CODE>` labels (e.g. rc:CHAIN_ID_MISSING) are created on demand at triage
 # to group every issue sharing a root cause. See .github/TRIAGE.md.
+
+# --- Sign-up & L0 (GitHub-native registration + feedback tracking) ---
+- name: "signup"
+  color: "0e8a16"
+  description: "Testing sign-up issue — the tester's authenticated identity + wallet"
+- name: "needs:fix"
+  color: "d4c5f9"
+  description: "Sign-up needs a correction (invalid wallet, or a secret pasted)"
+- name: "l0:studio-done"
+  color: "c2e0c6"
+  description: "0G Studio Feedback submitted (set by the Google Forms bridge)"
+- name: "l0:pc-done"
+  color: "c2e0c6"
+  description: "0G Private Computer Feedback submitted (set by the Google Forms bridge)"
+- name: "l0:cleared"
+  color: "0e8a16"
+  description: "Both L0 feedback forms received — L0 Recruit cleared"

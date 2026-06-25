@@ -1,0 +1,48 @@
+name: Mark L0 cleared
+
+# The Google Forms bridge (automation/l0-feedback-bridge.gs) adds `l0:studio-done`
+# and `l0:pc-done` to a tester's sign-up issue as each feedback form comes in.
+# When both are present, this sets `l0:cleared` (and tells the tester), so L0
+# completion is visible on the sign-up issue and readable by the reward export.
+#
+# Default GITHUB_TOKEN is enough — it only labels/comments issues in this repo.
+
+on:
+  issues:
+    types: [labeled]
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  combine:
+    if: >-
+      contains(github.event.issue.labels.*.name, 'signup') &&
+      (github.event.label.name == 'l0:studio-done' || github.event.label.name == 'l0:pc-done')
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      REPO: ${{ github.repository }}
+      ISSUE_NUMBER: ${{ github.event.issue.number }}
+    steps:
+      - name: Set l0:cleared once both feedback forms are in
+        run: |
+          set -euo pipefail
+
+          LABELS=$(gh issue view "$ISSUE_NUMBER" --repo "$REPO" --json labels --jq '.labels[].name' | tr '\n' ' ')
+          has() { case " $LABELS " in *" $1 "*) return 0 ;; *) return 1 ;; esac }
+
+          if ! { has "l0:studio-done" && has "l0:pc-done"; }; then
+            echo "Only one feedback label so far — waiting for the other."
+            exit 0
+          fi
+
+          if has "l0:cleared"; then
+            echo "Already cleared."
+            exit 0
+          fi
+
+          gh issue edit "$ISSUE_NUMBER" --repo "$REPO" --add-label "l0:cleared" >/dev/null
+          gh issue comment "$ISSUE_NUMBER" --repo "$REPO" --body "🎉 **L0 Recruit cleared** — both feedback forms received. That's **10 0G Compute Credit**. Climb to L1 by filing an accepted **App Suite** bug — see the [README](../../blob/main/README.md)."
+          echo "Marked #$ISSUE_NUMBER l0:cleared."

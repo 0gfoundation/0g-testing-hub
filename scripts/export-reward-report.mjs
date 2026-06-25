@@ -25,8 +25,11 @@ if (args.help) {
 const repo = args.repo || process.env.REPO || '0gfoundation/0g-testing-hub';
 const format = args.format || 'md';
 const issues = await loadIssues(args.issues, repo, args.limit || '1000');
-const { users: signups, duplicates: signupDuplicates } = await loadSignupSource(args, repo);
-const l0Done = args.l0 ? await loadL0(args.l0) : new Set();
+const signupSource = await loadSignupSource(args, repo);
+const { users: signups, duplicates: signupDuplicates } = signupSource;
+// L0 completion: an explicit --l0 export wins; otherwise derive it from `l0:cleared`
+// labels on sign-up issues (set by the Google Forms bridge + mark-l0-cleared workflow).
+const l0Done = args.l0 ? await loadL0(args.l0) : (signupSource.l0Done || new Set());
 const report = buildReport(issues, signups, l0Done);
 const output = render(report, format);
 
@@ -41,7 +44,9 @@ if (args.out) {
 // These go to stderr so they never corrupt CSV/JSON piped from stdout.
 const unmatchedAuthors = report.rows.filter((row) => row.acceptedDeduped > 0 && !row.registered);
 const missingWallet = report.rows.filter((row) => row.registered && !row.wallet && row.issueCredit > 0);
-const problemCount = unmatchedAuthors.length + signupDuplicates.length + missingWallet.length;
+const duplicateWallets = findDuplicateWallets(signups);
+const problemCount =
+  unmatchedAuthors.length + signupDuplicates.length + missingWallet.length + duplicateWallets.length;
 
 if (problemCount) {
   console.error(`\n⚠ reward-export diagnostics (${problemCount} issue${problemCount === 1 ? '' : 's'}):`);
@@ -54,6 +59,10 @@ if (problemCount) {
   }
   if (missingWallet.length) {
     console.error(`  ${missingWallet.length} rewardable user(s) missing a wallet: ${missingWallet.map((r) => r.githubUsername).join(', ')}`);
+  }
+  if (duplicateWallets.length) {
+    console.error(`  ${duplicateWallets.length} wallet(s) shared by multiple sign-ups (possible Sybil — verify before paying):`);
+    for (const dup of duplicateWallets) console.error(`    - ${dup.wallet} ← ${dup.users.join(', ')}`);
   }
   if (args.strict) {
     console.error('\n--strict: exiting non-zero because of the diagnostics above.');
@@ -151,7 +160,7 @@ async function loadSignupsFromIssues(file, repoName, limit) {
   } else {
     const raw = execFileSync(
       'gh',
-      ['issue', 'list', '--repo', repoName, '--state', 'all', '--limit', String(limit), '--label', 'signup', '--json', 'number,author,body'],
+      ['issue', 'list', '--repo', repoName, '--state', 'all', '--limit', String(limit), '--label', 'signup', '--json', 'number,author,body,labels'],
       { encoding: 'utf8' },
     );
     signupIssues = JSON.parse(raw);
@@ -159,13 +168,15 @@ async function loadSignupsFromIssues(file, repoName, limit) {
 
   const users = new Map();
   const duplicates = new Set();
+  const l0Done = new Set();
   for (const issue of signupIssues) {
     const normalized = normalizeUser(authorLogin(issue));
     if (!normalized) continue;
     if (users.has(normalized)) duplicates.add(normalized);
     users.set(normalized, { row: issue, wallet: walletFromBody(issue.body) });
+    if (hasLabel(issue, 'l0:cleared')) l0Done.add(normalized);
   }
-  return { users, duplicates: [...duplicates] };
+  return { users, duplicates: [...duplicates], l0Done };
 }
 
 // Pull the wallet out of a sign-up issue body, accepting only a well-formed
@@ -466,6 +477,21 @@ function hasLabel(issue, name) {
 
 function normalizeUser(value) {
   return String(value || '').trim().replace(/^@/, '').toLowerCase();
+}
+
+// One wallet attached to several sign-up usernames is a Sybil signal (many GitHub
+// accounts farming to one payout address). Surface it so it can't pass silently.
+function findDuplicateWallets(signups) {
+  const byWallet = new Map();
+  for (const [username, signup] of signups.entries()) {
+    const wallet = String(signup.wallet || '').trim().toLowerCase();
+    if (!wallet) continue;
+    if (!byWallet.has(wallet)) byWallet.set(wallet, []);
+    byWallet.get(wallet).push(username);
+  }
+  return [...byWallet.entries()]
+    .filter(([, users]) => users.length > 1)
+    .map(([wallet, users]) => ({ wallet, users: users.sort() }));
 }
 
 function render(report, requestedFormat) {
