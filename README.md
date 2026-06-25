@@ -27,6 +27,8 @@ All rewards are **0G Compute Credit**; payout = the Credit of your **highest lev
 
 Track your filed issues on the [Defect board #19](https://github.com/orgs/0gfoundation/projects/19). The more **accepted, deduped** defects you surface, the higher you climb - Master is the cap.
 
+Two GitHub issue forms drive this: **[Sign up](https://github.com/0gfoundation/0g-testing-hub/issues/new?template=signup.yml&labels=signup)** (step 0 — identity + wallet) and **[Defect report](https://github.com/0gfoundation/0g-testing-hub/issues/new?template=defect-report.yml&labels=defect,status:filed)** (steps 2–4 — one bug or coverage log per issue). Step 1's L0 feedback is the two external Google forms above.
+
 **Won't be accepted / out of bounds:**
 
 - **Duplicates** or **not-reproducible** "felt off" reports.

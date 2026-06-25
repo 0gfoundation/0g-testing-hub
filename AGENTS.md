@@ -20,6 +20,8 @@ All rewards are **0G Compute Credit**; payout = the Credit of the **highest leve
 
 Track filed issues on the [Defect board #19](https://github.com/orgs/0gfoundation/projects/19). The more **accepted, deduped** defects a tester surfaces, the higher they climb - Master is the cap. Ecosystem dApps are **record-only**: log coverage, not a reward gate.
 
+Two GitHub issue forms drive the program: **`signup.yml`** (label `signup` — step 0, identity + wallet, handled by `confirm-signup.yml`) and **`defect-report.yml`** (labels `defect` + `status:filed` — steps 2–4, one bug/coverage log per issue, handled by `add-defects-to-board.yml` + `notify-status-change.yml`). Step 1's L0 feedback is two external Google forms (see `config.yml` contact links), not GitHub issues.
+
 ```json
 {
   "signup": "https://github.com/0gfoundation/0g-testing-hub/issues/new?template=signup.yml&labels=signup",
