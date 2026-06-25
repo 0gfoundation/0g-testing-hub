@@ -25,8 +25,11 @@ if (args.help) {
 const repo = args.repo || process.env.REPO || '0gfoundation/0g-testing-hub';
 const format = args.format || 'md';
 const issues = await loadIssues(args.issues, repo, args.limit || '1000');
-const { users: signups, duplicates: signupDuplicates } = await loadSignupSource(args, repo);
-const l0Done = args.l0 ? await loadL0(args.l0) : new Set();
+const signupSource = await loadSignupSource(args, repo);
+const { users: signups, duplicates: signupDuplicates } = signupSource;
+// L0 completion: an explicit --l0 export wins; otherwise derive it from `l0:cleared`
+// labels on sign-up issues (set by the Google Forms bridge + mark-l0-cleared workflow).
+const l0Done = args.l0 ? await loadL0(args.l0) : (signupSource.l0Done || new Set());
 const report = buildReport(issues, signups, l0Done);
 const output = render(report, format);
 
@@ -151,7 +154,7 @@ async function loadSignupsFromIssues(file, repoName, limit) {
   } else {
     const raw = execFileSync(
       'gh',
-      ['issue', 'list', '--repo', repoName, '--state', 'all', '--limit', String(limit), '--label', 'signup', '--json', 'number,author,body'],
+      ['issue', 'list', '--repo', repoName, '--state', 'all', '--limit', String(limit), '--label', 'signup', '--json', 'number,author,body,labels'],
       { encoding: 'utf8' },
     );
     signupIssues = JSON.parse(raw);
@@ -159,13 +162,15 @@ async function loadSignupsFromIssues(file, repoName, limit) {
 
   const users = new Map();
   const duplicates = new Set();
+  const l0Done = new Set();
   for (const issue of signupIssues) {
     const normalized = normalizeUser(authorLogin(issue));
     if (!normalized) continue;
     if (users.has(normalized)) duplicates.add(normalized);
     users.set(normalized, { row: issue, wallet: walletFromBody(issue.body) });
+    if (hasLabel(issue, 'l0:cleared')) l0Done.add(normalized);
   }
-  return { users, duplicates: [...duplicates] };
+  return { users, duplicates: [...duplicates], l0Done };
 }
 
 // Pull the wallet out of a sign-up issue body, accepting only a well-formed
