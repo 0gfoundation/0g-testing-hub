@@ -1,6 +1,6 @@
 # 0g-testing-hub
 
-This is the canonical AI agent instruction file for this repository. It mirrors [`README.md`](./README.md); treat the README as the participant-facing source of truth for goals, levels, flows, test targets, submission rules, and defect template.
+This is the canonical AI agent instruction file for this repository. It is the fuller companion to the participant-facing [`README.md`](./README.md): the README stays the source of truth for goals, levels, flows, and test targets, while this file adds the operational detail agents need — the data chain, acceptance criteria, dedup/routing, and reward export. Where both cover the same fact, keep them in sync.
 
 **Not a code project.** `0g-testing-hub` is a testing program for 0G Ecosystem: submit the required feedback, test target apps, file reproducible bugs, and climb **L0-L3** for 0G Compute Credit. There is no build, no tests, no lint, and no package manager here. The deliverable is **required feedback plus reproducible, routable defect intel**, not source code.
 

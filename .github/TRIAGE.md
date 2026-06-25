@@ -6,7 +6,7 @@ How a defect moves from intake to routed intel, and how rewards and de-duplicati
 are decided. Companion to the [root README](../README.md) and the
 [defect template](../defects/TEMPLATE.md). There are two flows — the **tester** fills one
 structured form; the **maintainer** runs the label → verify → dedup → route pipeline.
-Reward export joins the signup form's **GitHub username** field to GitHub issue authors.
+Reward export joins each `signup` issue's author (the **GitHub username**) to its defect issue authors.
 
 ## Tester flow (file a defect)
 
@@ -147,14 +147,19 @@ gh issue list --label 'systemic' --state all
 
 ## Reward export
 
-The signup form must export `github_username` and `wallet` columns; see
-[`docs/signups.example.csv`](../docs/signups.example.csv). The reward export joins
-that username to GitHub issue authors, carries the wallet into the output, then
-counts **accepted + deduped** App Suite / 0G Infra findings:
+Reward export reads the `signup` issues directly — the issue author is the GitHub
+username (the join key) and the wallet is in the issue body — carries the wallet into
+the output, credits L0 from the `l0:cleared` label, then counts **accepted + deduped**
+App Suite / 0G Infra findings:
 
 ```bash
-node scripts/export-reward-report.mjs --signups exports/signups.csv --format csv --out rewards.csv
+node scripts/export-reward-report.mjs --signups-from-issues --format csv --out rewards.csv
 ```
+
+Add `--strict` to block payout on unmatched authors, duplicate usernames, duplicate
+wallets (Sybil), or rewardable users missing a wallet. (A legacy `--signups <csv>` /
+`--l0 <csv>` path remains for non-GitHub data; schema in
+[`docs/signups.example.csv`](../docs/signups.example.csv).)
 
 Rules enforced by the script:
 
