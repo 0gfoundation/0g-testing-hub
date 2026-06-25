@@ -1,5 +1,5 @@
 name: "Testing sign-up & tracker"
-description: "Register for the 0G testing program and track your journey: wallet, the level you're aiming for, and your progress."
+description: "Register for the 0G testing program and let automation track your wallet, L0 feedback, and reward progress."
 title: "[signup]: "
 labels: ["signup"]
 body:
@@ -33,18 +33,6 @@ body:
         - "L3 — Master (5+ accepted, incl. 1 systemic)"
     validations:
       required: false
-
-  - type: checkboxes
-    id: progress
-    attributes:
-      label: "My progress (self-tracked — tick as you go)"
-      description: "Edit this issue any time to update it. Rewards still depend on triage-accepted bugs, not on these ticks."
-      options:
-        - label: "Submitted 0G Studio Feedback"
-        - label: "Submitted 0G Private Computer Feedback"
-        - label: "Filed my first App Suite bug"
-        - label: "Filed my first 0G Infra bug"
-        - label: "Surfaced a systemic finding"
 
   - type: checkboxes
     id: gates

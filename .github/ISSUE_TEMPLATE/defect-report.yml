@@ -35,14 +35,41 @@ body:
     validations:
       required: true
 
-  - type: input
+  - type: dropdown
     id: product
     attributes:
       label: Product
-      description: "The specific app, e.g. \"0G Hub\", \"Genome\", \"TradeGPT\"."
-      placeholder: "0G Hub"
+      description: "Choose the exact target. If this is an unlisted Ecosystem dApp, choose the last option and name it below."
+      options:
+        - "0G App"
+        - "Genome"
+        - "0G Chat"
+        - "PandaClaw"
+        - "0G Hub"
+        - "0G Storage Scan"
+        - "Chain Scan"
+        - "0G Code to Coin (0g-cc)"
+        - "TradeGPT"
+        - "Jaine"
+        - "Oku"
+        - "AI Arena"
+        - "CARV"
+        - "Cygnus Finance"
+        - "DataHive"
+        - "Khalani"
+        - "Merkl"
+        - "Other Ecosystem dApp — name it below"
     validations:
       required: true
+
+  - type: input
+    id: other-product
+    attributes:
+      label: "Other Ecosystem dApp name"
+      description: "Only use this when Product is \"Other Ecosystem dApp\"."
+      placeholder: "dApp name"
+    validations:
+      required: false
 
   - type: dropdown
     id: severity

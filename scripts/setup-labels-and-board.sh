@@ -124,6 +124,10 @@ get_issue_field() {
   ' <<<"$body"
 }
 
+trim() {
+  sed -E 's/^[[:space:]]+//; s/[[:space:]]+$//' <<<"$1"
+}
+
 echo "==> Ensuring open 'defect' issues have status:filed and form-derived labels"
 while IFS= read -r number; do
   [ -z "$number" ] && continue
@@ -131,10 +135,18 @@ while IFS= read -r number; do
   body=$(gh issue view "$number" --repo "$REPO" --json body --jq .body 2>/dev/null || true)
   ownership=$(get_issue_field "$body" "Ownership")
   severity=$(get_issue_field "$body" "Severity")
+  repro=$(get_issue_field "$body" "Repro steps")
+  actual=$(get_issue_field "$body" "Actual result")
+  reported_to=$(get_issue_field "$body" "Reported to dApp URL (Ecosystem coverage logs only)")
   case "$ownership" in
     "App Suite"*) gh issue edit "$number" --repo "$REPO" --add-label "area:app-suite" >/dev/null 2>&1 || true ;;
     "0G Infra"*) gh issue edit "$number" --repo "$REPO" --add-label "area:0g-infra" >/dev/null 2>&1 || true ;;
-    "Ecosystem dApp"*) gh issue edit "$number" --repo "$REPO" --add-label "area:ecosystem" --add-label "coverage-log" >/dev/null 2>&1 || true ;;
+    "Ecosystem dApp"*)
+      gh issue edit "$number" --repo "$REPO" --add-label "area:ecosystem" --add-label "coverage-log" >/dev/null 2>&1 || true
+      if [ -n "$(trim "$repro")" ] && [ -n "$(trim "$actual")" ] && [ -z "$(trim "$reported_to")" ]; then
+        gh issue edit "$number" --repo "$REPO" --add-label "needs:dapp-report-url" >/dev/null 2>&1 || true
+      fi
+      ;;
   esac
   case "$severity" in
     "P1"*) gh issue edit "$number" --repo "$REPO" --add-label "sev:P1" >/dev/null 2>&1 || true ;;

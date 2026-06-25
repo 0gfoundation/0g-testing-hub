@@ -19,7 +19,7 @@ Testers never touch `defects/*.md`, labels, or the board — the only action is 
 
 1. **Find a defect** while walking an app's happy path + an error path. Reproduce it first — "felt off" is not a defect.
 2. **Open the [Defect report form](./ISSUE_TEMPLATE/defect-report.yml)** (`issues/new?template=defect-report.yml&labels=defect,status:filed`) — one issue per defect or coverage log.
-3. **Fill the fields**: ownership + severity (dropdowns), product, environment, repro / expected / actual; optionally a root-cause guess and an `rc:` **root-cause code** if you suspect it's shared with another bug.
+3. **Fill the fields**: ownership + product + severity (dropdowns), environment, repro / expected / actual; optionally a root-cause guess and an `rc:` **root-cause code** if you suspect it's shared with another bug.
 4. **For Ecosystem dApps:** treat the issue as a **coverage log**. Send actionable bugs to the dApp's own channel and paste the `Reported to dApp URL` field.
 5. **Tick the gates**: reproduced it yourself · didn't sign/touch funds or keys · understand Ecosystem dApps are record-only.
 6. **Submit.** The issue is auto-labelled `defect` + `status:filed` and lands in **Triage**. Done — the rest is the maintainer's.
@@ -70,7 +70,7 @@ Ecosystem dApp is still record-only; a P3 in 0G Infra still routes upstream.
 3. **Status** — move `status:filed` → `status:accepted` once you reproduce it; otherwise close with a reason.
 4. **Root cause** — if the issue names a root-cause code, apply an `rc:<CODE>` label
    (create it once: `gh label create 'rc:CHAIN_ID_MISSING' --color ededed -d 'shared root cause'`).
-5. **Ecosystem coverage** — keep `area:ecosystem`, add `coverage-log`, do not mark as a rewardable 0G defect, and confirm the `Reported to dApp URL` field is filled when there is an actionable bug.
+5. **Ecosystem coverage** — keep `area:ecosystem`, add `coverage-log`, do not mark as a rewardable 0G defect, and clear `needs:dapp-report-url` only after the `Reported to dApp URL` field points to the dApp's own issue / form / support channel for the actionable bug.
 
 ## Routed evidence
 
