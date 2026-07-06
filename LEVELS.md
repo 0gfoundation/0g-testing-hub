@@ -53,7 +53,8 @@ operating rules. Do not reintroduce retired ladder data unless `README.md`,
 - **Accepted beats submitted after Recruit.** L1+ rewards follow valid defects, not filing volume.
 - **Deduped, not raw.** Several reports sharing one root cause are one rewardable
   finding, credited to the canonical accepted issue.
-- **Routable or it does not count.** Every accepted defect needs ownership, severity,
-  environment, repro steps, expected / actual behavior, and enough evidence to route.
+- **Routable or it does not count.** Every accepted defect needs an area, a severity,
+  reproduction steps, expected / actual behavior, and enough evidence to route — the
+  tester supplies the story in Details / Evidence; maintainers derive the rest at triage.
 - **Hard boundaries still apply.** Never touch funds or keys; Ecosystem dApps are
   record-only.

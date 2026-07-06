@@ -78,7 +78,7 @@ jobs:
           1. Submit [0G Studio Feedback](https://forms.gle/ymEdZrdTNs4giEm1A).
           2. Submit [0G Private Computer Feedback](https://forms.gle/G919xrbRyfVJxPZe8).
           3. Wait for this issue to show \`l0:cleared\` after both forms land.
-          4. Then climb to L1 by filing an accepted App Suite defect: https://github.com/$REPO/issues/new?template=defect-report.yml&labels=defect,status:filed
+          4. Then climb to L1 by submitting an accepted App Suite bug report: https://github.com/$REPO/issues/new?template=submit-feedback.yml
 
           See the ladder in [README.md](../../blob/main/README.md#test-report-reward).
           EOF

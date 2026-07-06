@@ -4,7 +4,7 @@
 # Axes are orthogonal: every triaged defect carries one area:, one sev:, and a
 # status:. `rc:` labels are created on demand to group a shared root cause.
 
-# --- Ownership (routing bucket) ---
+# --- Area (routing bucket) ---
 - name: "area:app-suite"
   color: "1d76db"
   description: "0G App / Genome / 0G Chat / PandaClaw"
@@ -44,9 +44,15 @@
   description: "Resolved, rejected, or duplicate"
 
 # --- Type / aggregation ---
+- name: "feedback"
+  color: "c5def5"
+  description: "Submitted through the Submit Feedback form (auto-applied)"
+- name: "feature-request"
+  color: "a2eeef"
+  description: "Feature Request feedback — recorded, never reward-eligible"
 - name: "defect"
   color: "e99695"
-  description: "A defect report (auto-applied by the issue form)"
+  description: "A confirmed bug report (added by automation when Category = Bug Report, or manually)"
 - name: "coverage-log"
   color: "bfdadc"
   description: "Record-only Ecosystem dApp coverage log"
@@ -55,10 +61,10 @@
   description: "Confirmed cross-app root cause — the one issue N duplicates collapse into"
 - name: "needs:manual-label"
   color: "d4c5f9"
-  description: "Auto-labeller could not derive area/severity from the form — triage by hand"
+  description: "Auto-labeller could not derive an area from the form — triage by hand"
 - name: "needs:dapp-report-url"
   color: "d4c5f9"
-  description: "Ecosystem coverage log is missing the dApp's own report/support URL"
+  description: "Maintainer-applied at triage: ecosystem bug lacks the dApp's own report/support URL"
 # `rc:<CODE>` labels (e.g. rc:CHAIN_ID_MISSING) are created on demand at triage
 # to group every issue sharing a root cause. See .github/TRIAGE.md.
 

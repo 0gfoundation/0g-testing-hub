@@ -53,7 +53,8 @@ the lightweight version.
 Initial warning blockers:
 
 - `accepted_missing_rc`
-- `accepted_missing_severity`
+- `accepted_missing_severity` — the Submit Feedback form collects no severity, so
+  this warning now enforces the maintainer's duty to apply `sev:*` at triage
 - `accepted_missing_area`
 - `unregistered_rc`
 - `ecosystem_counted_attempt`

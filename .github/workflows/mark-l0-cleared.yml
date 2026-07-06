@@ -57,7 +57,7 @@ jobs:
           Start here:
 
           - App Suite targets: [0G App, Genome, 0G Chat, PandaClaw](../../blob/main/README.md#0g-app-suite--core-l0-l1)
-          - Defect report form: https://github.com/$REPO/issues/new?template=defect-report.yml&labels=defect,status:filed
+          - Submit Feedback form: https://github.com/$REPO/issues/new?template=submit-feedback.yml
 
           Acceptance bar: a defect counts only if it is reproducible from your steps, a divergence from documented or expected behavior, and measured against the current stack baseline.
           EOF

@@ -150,9 +150,29 @@ get_issue_field() {
   ' <<<"$body"
 }
 
-trim() {
-  sed -E 's/^[[:space:]]+//; s/[[:space:]]+$//' <<<"$1"
-}
+# Recover open Submit Feedback issues the intake workflow missed (e.g. while
+# PROJECT_PAT was revoked): promote Bug Reports into the defect pipeline so the
+# defect loops below pick them up; tag Feature Requests; leave Other as plain
+# feedback.
+echo "==> Promoting open 'feedback' issues by Category"
+while IFS=$'\t' read -r number labels; do
+  [ -z "$number" ] && continue
+  case " $labels " in
+    *" defect "*|*" feature-request "*) continue ;;
+  esac
+  body=$(gh issue view "$number" --repo "$REPO" --json body --jq .body 2>/dev/null || true)
+  category=$(get_issue_field "$body" "Category")
+  case "$category" in
+    "Bug Report"*)
+      echo "    #$number: Bug Report → defect"
+      gh issue edit "$number" --repo "$REPO" --add-label "defect" --add-label "status:filed" >/dev/null 2>&1 || true
+      ;;
+    "Feature Request"*)
+      gh issue edit "$number" --repo "$REPO" --add-label "feature-request" >/dev/null 2>&1 || true
+      ;;
+  esac
+done < <(gh issue list --repo "$REPO" --label "feedback" --state open --json number,labels \
+  --jq '.[] | [(.number|tostring), ([.labels[].name] | join(" "))] | @tsv')
 
 project_option_for_status() {
   case "$1" in
@@ -180,21 +200,32 @@ while IFS= read -r number; do
   fi
 
   body=$(gh issue view "$number" --repo "$REPO" --json body --jq .body 2>/dev/null || true)
-  ownership=$(get_issue_field "$body" "Ownership")
-  severity=$(get_issue_field "$body" "Severity")
-  repro=$(get_issue_field "$body" "Repro steps")
-  actual=$(get_issue_field "$body" "Actual result")
-  reported_to=$(get_issue_field "$body" "Reported to dApp URL (Ecosystem coverage logs only)")
-  case "$ownership" in
-    "App Suite"*) gh issue edit "$number" --repo "$REPO" --add-label "area:app-suite" >/dev/null 2>&1 || true ;;
-    "0G Infra"*) gh issue edit "$number" --repo "$REPO" --add-label "area:0g-infra" >/dev/null 2>&1 || true ;;
-    "Ecosystem dApp"*)
-      gh issue edit "$number" --repo "$REPO" --add-label "area:ecosystem" --add-label "coverage-log" >/dev/null 2>&1 || true
-      if [ -n "$(trim "$repro")" ] && [ -n "$(trim "$actual")" ] && [ -z "$(trim "$reported_to")" ]; then
-        gh issue edit "$number" --repo "$REPO" --add-label "needs:dapp-report-url" >/dev/null 2>&1 || true
-      fi
-      ;;
+  # Product → area map — keep in lockstep with the case in
+  # .github/workflows/add-defects-to-board.yml (product names track
+  # data/targets.json). Legacy old-form bodies fall back to Ownership.
+  product=$(get_issue_field "$body" "Product")
+  area=""
+  case "$product" in
+    "0G App"|"Genome"|"0G Chat"|"PandaClaw") area="area:app-suite" ;;
+    "0G Hub"|"0G Storage Scan"|"Chain Scan"|"0G Code to Coin"*) area="area:0g-infra" ;;
+    "TradeGPT"|"Jaine"|"Oku"|"AI Arena"|"CARV"|"Cygnus Finance"|"DataHive"|"Khalani"|"Merkl") area="area:ecosystem" ;;
+    "Other Ecosystem dApp"*) area="area:ecosystem" ;;
+    "Other"*) : ;; # maintainer assigns the area at triage
+    *)
+      ownership=$(get_issue_field "$body" "Ownership")
+      case "$ownership" in
+        "App Suite"*) area="area:app-suite" ;;
+        "0G Infra"*) area="area:0g-infra" ;;
+        "Ecosystem dApp"*) area="area:ecosystem" ;;
+      esac ;;
   esac
+  case "$area" in
+    "area:ecosystem") gh issue edit "$number" --repo "$REPO" --add-label "area:ecosystem" --add-label "coverage-log" >/dev/null 2>&1 || true ;;
+    "area:"*) gh issue edit "$number" --repo "$REPO" --add-label "$area" >/dev/null 2>&1 || true ;;
+  esac
+  # Legacy old-form bodies carried a tester-picked Severity; the Submit
+  # Feedback form has none — sev:* is maintainer-applied at triage.
+  severity=$(get_issue_field "$body" "Severity")
   case "$severity" in
     "P1"*) gh issue edit "$number" --repo "$REPO" --add-label "sev:P1" >/dev/null 2>&1 || true ;;
     "P2"*) gh issue edit "$number" --repo "$REPO" --add-label "sev:P2" >/dev/null 2>&1 || true ;;
@@ -260,5 +291,5 @@ cat <<EOF
 ==> Board ready: https://github.com/orgs/$OWNER/projects
     New reports are handled by .github/workflows/add-defects-to-board.yml.
     Do not enable duplicate UI auto-add workflows; rerun this script only for
-    label refresh or safe backfill of missed open defect issues.
+    label refresh or safe backfill of missed open feedback/defect issues.
 EOF

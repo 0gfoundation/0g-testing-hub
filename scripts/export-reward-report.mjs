@@ -125,6 +125,7 @@ Notes:
   Rewardable issues are core App Suite / 0G Infra issues with status:accepted or status:routed.
   Issues sharing the same rc:<CODE> label collapse to the earliest canonical issue.
   Ecosystem dApp coverage logs are excluded from reward counts.
+  Feature Request / Other feedback never carries the defect label, so this export never sees it.
   Diagnostics (unmatched authors, duplicate signups, duplicate wallets, missing wallets) are
   printed to stderr and can also be written as structured blockers.`);
 }
