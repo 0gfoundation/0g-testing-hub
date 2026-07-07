@@ -9,7 +9,7 @@
       "pill": "App Suite · escalate",
       "pillKind": "app",
       "recordOnly": false,
-      "notice": "L0 Recruit is feedback-only: 0G Studio Feedback + 0G Private Computer Feedback, no bug required. From L1 upward, submit reproducible bugs through the GitHub Submit Feedback form.",
+      "notice": "L0 Recruit is survey-only: 0G Studio Survey + 0G Private Computer Survey, no bug required. From L1 upward, submit reproducible bugs through the GitHub Submit Feedback form.",
       "forms": [
         {
           "label": "Submit feedback",
@@ -76,7 +76,7 @@
       "label": "Ecosystem dApps",
       "readmeTitle": "0G Ecosystem dApp",
       "ownership": "Ecosystem",
-      "pill": "record-only",
+      "pill": "ecosystem coverage",
       "pillKind": "record",
       "recordOnly": true,
       "items": [

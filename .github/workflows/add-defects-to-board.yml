@@ -5,6 +5,8 @@ name: Add defects to board
 # an `area:*` derived from Product — and dropped on the board in Triage.
 # Feature Request / Other stay plain feedback (Feature Request also gets
 # `feature-request`) and never enter the defect pipeline or reward export.
+# Ecosystem dApps are useful coverage, but L1-L3 rewards come from accepted
+# App Suite / 0G Infra bugs.
 # `sev:*` is never auto-applied: severity is a maintainer call at triage.
 # Manually adding `defect` (including to legacy old-form issues) routes through
 # the same board logic.
@@ -28,7 +30,7 @@ jobs:
     # `status:filed` and forcing the board back to Triage — clobbering the
     # maintainer's triage progress. (The run that promotes a Bug Report by
     # adding `defect` does trigger one more `labeled: defect` run — every
-    # operation here is idempotent and the record-only comment is gated on
+    # operation here is idempotent and the ecosystem coverage comment is gated on
     # `opened`, so that re-fire is a harmless no-op.)
     if: >-
       (contains(github.event.issue.labels.*.name, 'feedback') ||
@@ -132,11 +134,12 @@ jobs:
             gh issue edit "$ISSUE_NUMBER" --repo "$REPO" --add-label "needs:manual-label" >/dev/null
           fi
 
-          # Ecosystem dApps are record-only: nudge once, on open, to also report
-          # the bug to the dApp's own channel. (Gated on `opened` so the re-fire
-          # from adding `defect` above cannot double-post.)
+          # Ecosystem dApp findings are useful coverage, but higher reward tiers
+          # come from accepted App Suite / 0G Infra bugs. Nudge once, on open, to
+          # also report actionable dApp bugs to the dApp's own channel. (Gated on
+          # `opened` so the re-fire from adding `defect` above cannot double-post.)
           if [ "$IS_ECOSYSTEM" -eq 1 ] && [ "$EVENT_ACTION" = "opened" ]; then
-            gh issue comment "$ISSUE_NUMBER" --repo "$REPO" --body "Thanks — Ecosystem dApp reports are **record-only** in this Hub: they are triaged and recorded, but don't count toward core-bug rewards. If the bug is actionable, please also report it to the dApp's own channel and paste that link here as a comment so triage can follow up."
+            gh issue comment "$ISSUE_NUMBER" --repo "$REPO" --body "Thanks — Ecosystem dApp findings are useful coverage in this Hub. If you are aiming for higher L1–L3 rewards, prioritize accepted bugs in **0G App Suite** and **0G Infra**. If this dApp bug is actionable, please also report it to the dApp's own channel and paste that link here as a comment so triage can follow up."
           fi
 
           # Resolve the board id, Status field id, and the "Triage" option id at

@@ -1,7 +1,7 @@
 name: Mark L0 cleared
 
-# The Google Forms bridge (automation/l0-feedback-bridge.gs) adds `l0:studio-done`
-# and `l0:pc-done` to a tester's sign-up issue as each feedback form comes in.
+# The Google survey bridge (automation/l0-feedback-bridge.gs) adds `l0:studio-done`
+# and `l0:pc-done` to a tester's sign-up issue as each L0 survey comes in.
 # When both are present, this sets `l0:cleared` (and tells the tester), so L0
 # completion is visible on the sign-up issue and readable by the reward export.
 #
@@ -26,7 +26,7 @@ jobs:
       REPO: ${{ github.repository }}
       ISSUE_NUMBER: ${{ github.event.issue.number }}
     steps:
-      - name: Set l0:cleared once both feedback forms are in
+      - name: Set l0:cleared once both L0 surveys are in
         run: |
           set -euo pipefail
 
@@ -35,11 +35,11 @@ jobs:
 
           if ! { has "l0:studio-done" && has "l0:pc-done"; }; then
             if has "l0:studio-done"; then
-              gh issue comment "$ISSUE_NUMBER" --repo "$REPO" --body "L0 progress: **0G Studio Feedback received**. Still needed: [0G Private Computer Feedback](https://forms.gle/G919xrbRyfVJxPZe8)."
+              gh issue comment "$ISSUE_NUMBER" --repo "$REPO" --body "L0 progress: **0G Studio Survey received**. Still needed: [0G Private Computer Survey](https://forms.gle/G919xrbRyfVJxPZe8)."
             elif has "l0:pc-done"; then
-              gh issue comment "$ISSUE_NUMBER" --repo "$REPO" --body "L0 progress: **0G Private Computer Feedback received**. Still needed: [0G Studio Feedback](https://forms.gle/ymEdZrdTNs4giEm1A)."
+              gh issue comment "$ISSUE_NUMBER" --repo "$REPO" --body "L0 progress: **0G Private Computer Survey received**. Still needed: [0G Studio Survey](https://forms.gle/ymEdZrdTNs4giEm1A)."
             fi
-            echo "Only one feedback label so far — commented with the missing form."
+            echo "Only one L0 survey label so far — commented with the missing survey."
             exit 0
           fi
 
@@ -50,7 +50,7 @@ jobs:
 
           gh issue edit "$ISSUE_NUMBER" --repo "$REPO" --add-label "l0:cleared" >/dev/null
           gh issue comment "$ISSUE_NUMBER" --repo "$REPO" --body-file - <<EOF
-          🎉 **L0 Recruit cleared** — both feedback forms received. That's **10 0G Compute Credit**.
+          🎉 **L0 Recruit cleared** — both L0 surveys received. That's **10 0G Compute Credit**.
 
           Next: climb to **L1 Tester** with one accepted **App Suite** defect.
 

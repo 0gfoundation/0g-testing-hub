@@ -4,7 +4,7 @@ How a defect travels from a tester's form to a payout row. Two actors, one autom
 layer between them. This is the visual companion to [`.github/TRIAGE.md`](../.github/TRIAGE.md)
 (the maintainer runbook) and [`LEVELS.md`](../LEVELS.md) (the reward ladder).
 
-- **Tester** only ever fills forms — never touches labels, the board, or `defects/*.md`.
+- **Tester** uses the README registration link, L0 surveys, and the Submit Feedback form — never labels, the board, or `defects/*.md`.
 - **Automation** (GitHub Actions) labels, boards, updates the signup tracker, and closes the feedback loop.
 - **Maintainer** runs the label → verify → dedup → route → export pipeline.
 
@@ -12,9 +12,9 @@ layer between them. This is the visual companion to [`.github/TRIAGE.md`](../.gi
 
 ```mermaid
 flowchart TD
-    subgraph T["🧑‍💻 Tester — fills forms only"]
-      T1["Sign up once<br/>wallet; GitHub author = identity"]
-      T2["L0: two feedback forms<br/>no bug required"]
+    subgraph T["🧑‍💻 Tester — README + forms"]
+      T1["Sign up once from README<br/>wallet; GitHub author = identity"]
+      T2["L0: two surveys<br/>no bug required"]
       T3["Find + reproduce a bug"]
       T4["Submit Feedback form<br/>Category · Product · Details · Evidence"]
     end
@@ -76,7 +76,7 @@ stateDiagram-v2
 ## Reward ladder (what the export computes)
 
 Payout = Credit of the **highest level reached**. Counts **accepted + deduped** core
-(App Suite / 0G Infra) findings; Ecosystem coverage logs are excluded. The L0–L3 table
+(App Suite / 0G Infra) findings; Ecosystem coverage logs are valuable but excluded from core reward tiers. The L0–L3 table
 and pass conditions are the evergreen spec in [`LEVELS.md`](../LEVELS.md), mirrored on the
 [landing page](../README.md#test-report-reward) — not repeated here so the numbers can't drift.
 
@@ -87,11 +87,11 @@ and pass conditions are the evergreen spec in [`LEVELS.md`](../LEVELS.md), mirro
   change — so moving an issue to `status:accepted` no longer gets reset back to Triage.
 - **The accept comment tells the truth per area.** `notify-status-change.yml` branches the
   message: App Suite accept counts; an **0G Infra** accept alone does **not** clear L1
-  (needs a paired App Suite bug → L2); an **Ecosystem** coverage log is record-only and
-  does **not** count.
-- **The signup issue is the tester's tracker.** Signup confirmation normalizes the title
-  from the issue author, L0 feedback automation comments partial / cleared states, and
+  (needs a paired App Suite bug → L2); an **Ecosystem** coverage log helps follow-up
+  but does **not** count toward the core reward ladder.
+- **The signup issue is the tester's tracker.** The README registration link creates it,
+  signup confirmation normalizes the title from the issue author, L0 survey automation comments partial / cleared states, and
   accepted or routed core defects add an advisory reward progress preview. Final payout
   still comes from `export-reward-report.mjs`.
 
-Open items that are policy/data decisions, not code: see [`KNOWN-GAPS.md`](../KNOWN-GAPS.md).
+Open items that are policy/data decisions, not code, should be tracked in the maintainers' local planning notes or promoted into a public issue when they need external coordination.

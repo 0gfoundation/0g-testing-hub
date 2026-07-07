@@ -10,8 +10,7 @@ Reward export joins each `signup` issue's author (the **GitHub username**) to it
 
 ## Tester flow (submit feedback)
 
-L0 Recruit is feedback-only: 0G App Suite Feedback / 0G Studio Feedback +
-0G Private Computer Feedback.
+L0 Recruit is survey-only: 0G Studio Survey + 0G Private Computer Survey.
 It does **not** use this flow. This section starts when a tester is filing
 a bug to climb beyond Recruit.
 
@@ -22,7 +21,7 @@ Testers never touch `defects/*.md`, labels, or the board — the only action is 
 3. **Fill the four fields**: **Category** (Bug Report / Feature Request / Other) + **Product** (dropdowns), **Details** (what happened, steps to reproduce, expected vs. actual), and optional **Evidence** (screenshots, recordings, links). No severity, ownership, environment breakdown, or root-cause codes — those are maintainer triage work.
 4. **Submit.** The issue lands labelled `feedback`. A `Bug Report` is promoted to `defect` + `status:filed` automatically and enters **Triage**; `Feature Request` / `Other` are recorded as feedback and are not reward-eligible. Done — the rest is the maintainer's.
 
-> Reward is decided on **accepted, deduped** core bugs (see below), not on how many you file. Ecosystem dApp products are record-only.
+> Reward is decided on **accepted, deduped** core bugs (see below), not on how many you file. Ecosystem dApp findings are useful coverage, but the L1-L3 reward path is App Suite + 0G Infra.
 
 ## Maintainer flow (triage → route)
 
@@ -42,7 +41,7 @@ New `feedback` issues are routed by their **Category** by the
 [`add-defects-to-board`](./workflows/add-defects-to-board.yml) GitHub Action (it replaces
 the UI-only built-in Projects workflows, which have no API): a **Bug Report** is promoted
 to `defect` + `status:filed`, gets a first-pass `area:*` derived from **Product** (ecosystem
-also gets `coverage-log` and a record-only notice), is added to the board, and set to
+also gets `coverage-log` and an ecosystem-routing notice), is added to the board, and set to
 **Triage**. **Feature Request** gets `feature-request`; **Other** stays plain `feedback` —
 neither enters the defect pipeline. No `sev:*` is ever auto-applied: severity is assigned
 here, at triage.
@@ -73,7 +72,7 @@ Triage → Accepted → Routed → Closed
 | `status:closed` (**Closed**) | Resolved, rejected, or duplicate | Closed with a one-line reason. |
 
 Area is **orthogonal** to severity (see [SEVERITY.md](../defects/SEVERITY.md)): a P1 in an
-Ecosystem dApp is still record-only; a P3 in 0G Infra still routes upstream.
+Ecosystem dApp is still valuable coverage outside the core reward ladder; a P3 in 0G Infra still routes upstream.
 
 ## Labelling on intake
 
@@ -93,7 +92,7 @@ supplies Category, Product, Details, and Evidence.
 3. **Status** — move `status:filed` → `status:accepted` once you reproduce it; otherwise close with a reason.
 4. **Root cause** — when defects share an underlying cause, apply an `rc:<CODE>` label
    (create it once: `gh label create 'rc:CHAIN_ID_MISSING' --color ededed -d 'shared root cause'`).
-5. **Ecosystem coverage** — keep `area:ecosystem`, add `coverage-log` (automation does both), and never mark as a rewardable 0G defect. If the bug is actionable, apply `needs:dapp-report-url` and ask the tester to comment the dApp's own issue / form / support link; clear the label once that link is posted.
+5. **Ecosystem coverage** — keep `area:ecosystem`, add `coverage-log` (automation does both), and do not count it toward the L1-L3 core reward ladder. If the bug is actionable, apply `needs:dapp-report-url` and ask the tester to comment the dApp's own issue / form / support link; clear the label once that link is posted.
 6. **Feature Request / Other** — stay out of the defect pipeline entirely (`feature-request` / plain `feedback`); they are never counted toward rewards.
 
 ## Routed evidence
@@ -118,8 +117,7 @@ node scripts/check-routed-evidence.mjs --repo 0gfoundation/0g-testing-hub
 Don't guess the owner from memory — look the product up in
 [`data/owners.json`](../data/owners.json) (the per-product upstream owner, notify
 channel, and tracker). Keep that file current so routing never depends on who happens
-to be on triage. (Those values are still `TBD` — tracked as G2 in
-[`KNOWN-GAPS.md`](../KNOWN-GAPS.md).)
+to be on triage. (Those values are still `TBD` — fill them in as owners are confirmed.)
 
 ## De-duplication (and the reward rule)
 
