@@ -37,16 +37,21 @@ Focus on the tester side: register once from this README, complete the L0 survey
 
 ### Track your report by its labels
 
-The labels on your feedback issue tell you exactly where it stands — no need to ask. A bot also comments on your issue at every status change, explaining what it means for your reward.
+The labels on your feedback issue tell you exactly where it stands — no need to ask. A bot also comments on your issue at every status change, explaining what it means for your reward. Full guide: [docs/LABELS.md](./docs/LABELS.md).
 
 | Label | What it means for you |
 |-------|-----------------------|
 | `feedback` | Received through the Submit Feedback form |
 | `defect` + `status:filed` | Your Bug Report entered triage — a maintainer will try to reproduce it |
+| `status:needs-info` | **Your move** — triage needs more detail; reply within ~7 days or it closes as rejected |
 | `status:accepted` | Confirmed and reproducible — **this is what counts toward your reward** |
 | `status:routed` | Sent to the owning team — still counts toward your reward |
-| `status:closed` | Resolved, not reproducible, or a duplicate (duplicates credit the first reporter) |
-| `area:*` / `sev:P1`–`P4` | Product family and severity — assigned by maintainers, not by you |
+| `status:closed` + `resolution:*` | The resolution label says why: `fixed` (real bug, resolved — **keeps its credit**), `rejected` (not counted), `duplicate` (credit goes to the first reporter) |
+| `needs:dapp-report-url` | **Your move** — comment the dApp's own report/support link on your ecosystem bug |
+| `area:*` / `product:*` / `sev:P1`–`P4` | Product family, product, and severity — assigned by maintainers/automation, not by you |
+
+**Tip — check before you file:** duplicates credit the first reporter, so filter
+[open issues by `product:*`](https://github.com/0gfoundation/0g-testing-hub/issues?q=is%3Aissue+label%3A%22product%3A0g-app%22) (e.g. `label:"product:0g-chat"`) to see whether your bug is already reported.
 
 **Reward notes / out of bounds:**
 

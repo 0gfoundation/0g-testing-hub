@@ -1,8 +1,11 @@
 # Label taxonomy for 0G Test Week defect tracking — the source of record.
 # Apply/refresh on GitHub with: scripts/setup-labels-and-board.sh
+# Human-readable guide (testers + maintainers): docs/LABELS.md
 #
-# Axes are orthogonal: every triaged defect carries one area:, one sev:, and a
-# status:. `rc:` labels are created on demand to group a shared root cause.
+# Axes are orthogonal: every triaged defect carries one area:, one sev:, a
+# status:, and (when derivable from the form) one product:. A closed defect
+# also carries exactly one resolution:. `rc:` labels are created on demand to
+# group a shared root cause.
 
 # --- Area (routing bucket) ---
 - name: "area:app-suite"
@@ -14,6 +17,62 @@
 - name: "area:ecosystem"
   color: "5319e7"
   description: "Ecosystem dApp coverage — useful, but outside core reward tiers"
+
+# --- Product (auto-derived from the form's Product dropdown; lets anyone
+# filter existing reports for one product before filing — duplicates credit
+# the first filer, so check first). Keep in lockstep with data/targets.json,
+# add-defects-to-board.yml, and scripts/setup-labels-and-board.sh. ---
+- name: "product:0g-app"
+  color: "bfd4f2"
+  description: "0G App (App Suite)"
+- name: "product:genome"
+  color: "bfd4f2"
+  description: "Genome (App Suite)"
+- name: "product:0g-chat"
+  color: "bfd4f2"
+  description: "0G Chat (App Suite)"
+- name: "product:pandaclaw"
+  color: "bfd4f2"
+  description: "PandaClaw (App Suite)"
+- name: "product:0g-hub"
+  color: "bfd4f2"
+  description: "0G Hub (0G Infra)"
+- name: "product:storage-scan"
+  color: "bfd4f2"
+  description: "0G Storage Scan (0G Infra)"
+- name: "product:chain-scan"
+  color: "bfd4f2"
+  description: "Chain Scan (0G Infra)"
+- name: "product:0g-cc"
+  color: "bfd4f2"
+  description: "0G Code to Coin / 0g-cc (0G Infra)"
+- name: "product:tradegpt"
+  color: "bfd4f2"
+  description: "TradeGPT (Ecosystem)"
+- name: "product:jaine"
+  color: "bfd4f2"
+  description: "Jaine (Ecosystem)"
+- name: "product:oku"
+  color: "bfd4f2"
+  description: "Oku (Ecosystem)"
+- name: "product:ai-arena"
+  color: "bfd4f2"
+  description: "AI Arena (Ecosystem)"
+- name: "product:carv"
+  color: "bfd4f2"
+  description: "CARV (Ecosystem)"
+- name: "product:cygnus"
+  color: "bfd4f2"
+  description: "Cygnus Finance (Ecosystem)"
+- name: "product:datahive"
+  color: "bfd4f2"
+  description: "DataHive (Ecosystem)"
+- name: "product:khalani"
+  color: "bfd4f2"
+  description: "Khalani (Ecosystem)"
+- name: "product:merkl"
+  color: "bfd4f2"
+  description: "Merkl (Ecosystem)"
 
 # --- Severity (impact-based; see defects/SEVERITY.md) ---
 - name: "sev:P1"
@@ -33,15 +92,30 @@
 - name: "status:filed"
   color: "ededed"
   description: "In Triage — not yet validated"
+- name: "status:needs-info"
+  color: "f9d0c4"
+  description: "Waiting on the tester — triage needs more detail to reproduce (reply within ~7 days or it closes as rejected)"
 - name: "status:accepted"
   color: "0e8a16"
   description: "Triage confirms real + reproducible (rewardable)"
 - name: "status:routed"
-  color: "1d76db"
+  color: "006b75"
   description: "Tagged with ownership and sent upstream"
 - name: "status:closed"
   color: "5a5a5a"
-  description: "Resolved, rejected, or duplicate"
+  description: "Closed — the paired resolution:* label says why"
+
+# --- Resolution (exactly one, applied when a defect reaches status:closed;
+# tells the tester what the close means for their reward) ---
+- name: "resolution:fixed"
+  color: "0e8a16"
+  description: "Closed as fixed — the defect was real and resolved (still counts toward rewards)"
+- name: "resolution:rejected"
+  color: "d73a4a"
+  description: "Closed as not a defect — not reproducible, out of bounds, or working as intended (not counted)"
+- name: "resolution:duplicate"
+  color: "cfd3d7"
+  description: "Closed as duplicate — the shared root cause (rc:*) credits the first filer"
 
 # --- Type / aggregation ---
 - name: "feedback"
@@ -52,7 +126,7 @@
   description: "Feature Request feedback — recorded, never reward-eligible"
 - name: "defect"
   color: "e99695"
-  description: "A confirmed bug report (added by automation when Category = Bug Report, or manually)"
+  description: "Bug Report in the defect pipeline (auto-applied at intake; confirmation happens at status:accepted)"
 - name: "coverage-log"
   color: "bfdadc"
   description: "Ecosystem dApp coverage log"
@@ -64,7 +138,7 @@
   description: "Auto-labeller could not derive an area from the form — triage by hand"
 - name: "needs:dapp-report-url"
   color: "d4c5f9"
-  description: "Maintainer-applied at triage: ecosystem bug lacks the dApp's own report/support URL"
+  description: "Tester action: comment the dApp's own report/support URL on this ecosystem bug"
 # `rc:<CODE>` labels (e.g. rc:CHAIN_ID_MISSING) are created on demand at triage
 # to group every issue sharing a root cause. See .github/TRIAGE.md.
 
@@ -72,10 +146,10 @@
 - name: "signup"
   color: "0e8a16"
   description: "Testing sign-up issue — the tester's authenticated identity + wallet"
-- name: "needs:fix"
+- name: "signup:needs-fix"
   color: "d4c5f9"
   description: "Sign-up needs a correction (invalid wallet, or a secret pasted)"
-- name: "duplicate"
+- name: "signup:duplicate"
   color: "cfd3d7"
   description: "A repeat sign-up — folded into the tester's earlier (canonical) issue and closed"
 - name: "l0:studio-done"

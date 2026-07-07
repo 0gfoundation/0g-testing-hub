@@ -2,7 +2,8 @@ name: Add defects to board
 
 # Routes Submit Feedback issues (label `feedback`) by their Category field:
 # Bug Report is promoted into the defect pipeline — `defect` + `status:filed` +
-# an `area:*` derived from Product — and dropped on the board in Triage.
+# an `area:*` and `product:*` derived from Product — and dropped on the board
+# in Triage.
 # Feature Request / Other stay plain feedback (Feature Request also gets
 # `feature-request`) and never enter the defect pipeline or reward export.
 # Ecosystem dApps are useful coverage, but L1-L3 rewards come from accepted
@@ -90,14 +91,41 @@ jobs:
           # covers issues that were manually labelled `defect` outside the form.
           gh issue edit "$ISSUE_NUMBER" --repo "$REPO" --add-label "defect" --add-label "status:filed" >/dev/null
 
-          # Product → area map. Product names track data/targets.json; keep this
-          # case in lockstep with the backfill in scripts/setup-labels-and-board.sh.
+          # Product → area + product:* map. Product names track data/targets.json;
+          # keep both cases in lockstep with the backfill in
+          # scripts/setup-labels-and-board.sh and the labels in .github/labels.yml.
           # If no case matches the case falls through and we flag the issue for a
           # human instead of silently shipping it unlabelled. `sev:*` is never
           # applied here — maintainers assign severity at triage.
           NEEDS_MANUAL=0
           IS_ECOSYSTEM=0
           AREA=""
+
+          # product:* lets anyone filter existing reports for one product before
+          # filing — duplicates credit the first filer, so checking first pays.
+          PRODUCT_LABEL=""
+          case "$PRODUCT" in
+            "0G App") PRODUCT_LABEL="product:0g-app" ;;
+            "Genome") PRODUCT_LABEL="product:genome" ;;
+            "0G Chat") PRODUCT_LABEL="product:0g-chat" ;;
+            "PandaClaw") PRODUCT_LABEL="product:pandaclaw" ;;
+            "0G Hub") PRODUCT_LABEL="product:0g-hub" ;;
+            "0G Storage Scan") PRODUCT_LABEL="product:storage-scan" ;;
+            "Chain Scan") PRODUCT_LABEL="product:chain-scan" ;;
+            "0G Code to Coin"*) PRODUCT_LABEL="product:0g-cc" ;;
+            "TradeGPT") PRODUCT_LABEL="product:tradegpt" ;;
+            "Jaine") PRODUCT_LABEL="product:jaine" ;;
+            "Oku") PRODUCT_LABEL="product:oku" ;;
+            "AI Arena") PRODUCT_LABEL="product:ai-arena" ;;
+            "CARV") PRODUCT_LABEL="product:carv" ;;
+            "Cygnus Finance") PRODUCT_LABEL="product:cygnus" ;;
+            "DataHive") PRODUCT_LABEL="product:datahive" ;;
+            "Khalani") PRODUCT_LABEL="product:khalani" ;;
+            "Merkl") PRODUCT_LABEL="product:merkl" ;;
+          esac
+          if [ -n "$PRODUCT_LABEL" ]; then
+            gh issue edit "$ISSUE_NUMBER" --repo "$REPO" --add-label "$PRODUCT_LABEL" >/dev/null
+          fi
 
           case "$PRODUCT" in
             "0G App"|"Genome"|"0G Chat"|"PandaClaw")

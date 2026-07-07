@@ -1,9 +1,11 @@
 name: Notify status change
 
 # Close the feedback loop for testers. When triage moves a defect to
-# status:accepted / status:routed / status:closed, post a short comment on the
-# issue explaining the outcome and what it means for their reward — so a filer
-# doesn't have to read the board (or guess) to learn whether their bug counted.
+# status:needs-info / status:accepted / status:routed / status:closed, applies
+# a resolution:* on close, or asks for a dApp report link, post a short comment
+# on the issue explaining the outcome and what it means for their reward — so a
+# filer doesn't have to read the board (or guess) to learn whether their bug
+# counted. Label changes alone send no GitHub notification; these comments do.
 #
 # Uses the default GITHUB_TOKEN (issues: write) — no PAT needed, since this only
 # comments on issues in this repo.
@@ -19,9 +21,14 @@ permissions:
 jobs:
   comment:
     if: >-
+      github.event.label.name == 'status:needs-info' ||
       github.event.label.name == 'status:accepted' ||
       github.event.label.name == 'status:routed' ||
-      github.event.label.name == 'status:closed'
+      github.event.label.name == 'status:closed' ||
+      github.event.label.name == 'resolution:fixed' ||
+      github.event.label.name == 'resolution:rejected' ||
+      github.event.label.name == 'resolution:duplicate' ||
+      github.event.label.name == 'needs:dapp-report-url'
     runs-on: ubuntu-latest
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -54,12 +61,29 @@ jobs:
           fi
 
           case "$LABEL" in
+            "status:needs-info")
+              MSG="⏳ **More info needed** — triage could not reproduce or validate this from the current Details. Please reply on this issue with the missing pieces (exact steps, environment, screenshots/recording). If there is no reply within **~7 days** it will be closed as \`resolution:rejected\` — a reply keeps your potential reward credit alive." ;;
             "status:accepted")
               MSG="$ACCEPTED_MSG" ;;
             "status:routed")
               MSG="📤 **Routed upstream** to the owning team. If it was a rewardable core defect it still counts — routed and accepted are both rewardable states." ;;
             "status:closed")
+              # The resolution:* handler posts the precise message; only fall back
+              # to the generic one when the close carries no resolution yet.
+              # (TRIAGE.md: apply resolution:* before, or together with, status:closed.)
+              case " $LABELS " in
+                *" resolution:"*)
+                  echo "status:closed with a resolution:* present — the resolution comment covers it."; exit 0 ;;
+              esac
               MSG="🔒 **Closed.** If this was a duplicate, the shared root cause is credited to the first filer. If it was not reproducible or out of bounds, it does not count toward a tier — see [TRIAGE.md](../../blob/main/.github/TRIAGE.md) for the rules." ;;
+            "resolution:fixed")
+              MSG="🎉 **Closed as fixed** — your report was a real defect and it has been resolved. It **still counts** toward your reward tier (a fixed core finding keeps its credit). Thanks for the catch." ;;
+            "resolution:rejected")
+              MSG="🚫 **Closed as rejected** — triage could not confirm this as a defect (not reproducible, out of bounds, or working as intended; see the maintainer's closing comment for the specific reason). It does **not** count toward a reward tier. See [TRIAGE.md](../../blob/main/.github/TRIAGE.md) for what gets accepted." ;;
+            "resolution:duplicate")
+              MSG="👥 **Closed as duplicate** — this shares a root cause with an earlier report (see the \`rc:*\` label and the maintainer's comment linking the canonical issue). Per the reward rules, a shared root cause is credited **once, to the first filer**. Tip: filter open issues by the \`product:*\` label before filing to avoid duplicates." ;;
+            "needs:dapp-report-url")
+              MSG="🔗 **One more step for this ecosystem bug** — it looks actionable, so please also report it to the dApp's **own** support/issue channel and paste that link here as a comment. A maintainer clears this label once the link is posted." ;;
             *)
               echo "Unhandled label: $LABEL"; exit 0 ;;
           esac
@@ -68,9 +92,17 @@ jobs:
           echo "Commented on #$ISSUE_NUMBER for $LABEL."
 
       - name: Update signup progress preview
+        # status:closed / resolution:* are included so the preview refreshes
+        # (down or up) when a previously counted issue is closed — e.g. an
+        # accepted defect later folded as a duplicate, or kept via
+        # resolution:fixed. Without this the signup tracker shows a stale count.
         if: >-
           github.event.label.name == 'status:accepted' ||
-          github.event.label.name == 'status:routed'
+          github.event.label.name == 'status:routed' ||
+          github.event.label.name == 'status:closed' ||
+          github.event.label.name == 'resolution:fixed' ||
+          github.event.label.name == 'resolution:rejected' ||
+          github.event.label.name == 'resolution:duplicate'
         run: |
           set -euo pipefail
 

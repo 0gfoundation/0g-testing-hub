@@ -1,6 +1,8 @@
 # Triage runbook
 
 > For the visual version of both flows, see [`docs/WORKFLOWS.md`](../docs/WORKFLOWS.md).
+> For the plain-language label guide (what each label means to a tester and to triage),
+> see [`docs/LABELS.md`](../docs/LABELS.md).
 
 How a defect moves from intake to routed intel, and how rewards and de-duplication
 are decided. Companion to the [root README](../README.md) and the
@@ -61,15 +63,25 @@ It depends on a repo secret **`PROJECT_PAT`** — a token with the `project` + `
 ## State machine → board columns
 
 ```
-Triage → Accepted → Routed → Closed
+Triage (filed ⇄ needs-info) → Accepted → Routed → Closed (+ one resolution:*)
 ```
 
 | Column / status label | Meaning | What triage does |
 |---|---|---|
 | `status:filed` (**Triage**) | New, unvalidated | Confirm/correct the auto-derived `area:*`, apply one `sev:*`. Try the repro from Details. |
+| `status:needs-info` (**Triage**) | Waiting on the tester | Repro incomplete but plausible — swap `status:filed` for this; the bot asks the tester to reply. No reply in **~7 days** → close as `resolution:rejected`. Reply arrives → back to `status:filed`. |
 | `status:accepted` (**Accepted**) | Real + reproducible | Confirmed. **This is the state that counts toward rewards.** |
 | `status:routed` (**Routed**) | Sent upstream | Owner notified (SDK / docs / config / the product team). |
-| `status:closed` (**Closed**) | Resolved, rejected, or duplicate | Closed with a one-line reason. |
+| `status:closed` (**Closed**) | Closed — resolution says why | Apply exactly one `resolution:*` **before or together with** `status:closed`, plus a one-line reason. The bot turns the resolution into a precise message for the tester. |
+
+**Resolution labels** (exactly one per closed defect — this is what the tester reads
+to know whether their report counted):
+
+- `resolution:fixed` — the defect was real and got resolved. **Keeps its reward credit**
+  (the export counts `status:closed` + `resolution:fixed` as rewardable).
+- `resolution:rejected` — not reproducible, out of bounds, or working as intended. Not counted.
+- `resolution:duplicate` — shares a root cause with an earlier report; pair it with the
+  `rc:*` code and a comment linking the canonical issue. Credit goes to the first filer.
 
 Area is **orthogonal** to severity (see [SEVERITY.md](../defects/SEVERITY.md)): a P1 in an
 Ecosystem dApp is still valuable coverage outside the core reward ladder; a P3 in 0G Infra still routes upstream.
@@ -79,17 +91,22 @@ Ecosystem dApp is still valuable coverage outside the core reward ladder; a P3 i
 Severity, root cause, and routing are **maintainer responsibilities** — the tester only
 supplies Category, Product, Details, and Evidence.
 
-1. **Area** — exactly one: `area:app-suite` · `area:0g-infra` · `area:ecosystem`. Automation
-   derives it from the Product dropdown; confirm or correct it here. The map (kept in
-   lockstep with `add-defects-to-board.yml` and `scripts/setup-labels-and-board.sh`):
+1. **Area + product** — exactly one `area:*` (`area:app-suite` · `area:0g-infra` ·
+   `area:ecosystem`) and one `product:*`. Automation derives both from the Product
+   dropdown; confirm or correct them here. The map (kept in lockstep with
+   `add-defects-to-board.yml` and `scripts/setup-labels-and-board.sh`):
    - 0G App / Genome / 0G Chat / PandaClaw → `area:app-suite`
    - 0G Hub / 0G Storage Scan / Chain Scan / 0G Code to Coin → `area:0g-infra`
    - TradeGPT / Jaine / Oku / AI Arena / CARV / Cygnus Finance / DataHive / Khalani / Merkl → `area:ecosystem`
-   - Product = Other → no auto area; the issue carries `needs:manual-label` — assign by hand.
+   - Product = Other → no auto area/product; the issue carries `needs:manual-label` — assign by hand.
 2. **Severity** — exactly one: `sev:P1`…`sev:P4`, assigned by the maintainer from the
    Details field using the [SEVERITY.md](../defects/SEVERITY.md) rubric. The form no longer
    asks testers for a severity.
-3. **Status** — move `status:filed` → `status:accepted` once you reproduce it; otherwise close with a reason.
+3. **Status** — move `status:filed` → `status:accepted` once you reproduce it. If the repro
+   is incomplete but plausible, swap in `status:needs-info` (the bot asks the tester; ~7 days
+   without a reply → close as `resolution:rejected`). When closing, apply exactly one
+   `resolution:*` (`fixed` / `rejected` / `duplicate`) **before or together with**
+   `status:closed` so the bot posts the precise outcome instead of the generic one.
 4. **Root cause** — when defects share an underlying cause, apply an `rc:<CODE>` label
    (create it once: `gh label create 'rc:CHAIN_ID_MISSING' --color ededed -d 'shared root cause'`).
 5. **Ecosystem coverage** — keep `area:ecosystem`, add `coverage-log` (automation does both), and do not count it toward the L1-L3 core reward ladder. If the bug is actionable, apply `needs:dapp-report-url` and ask the tester to comment the dApp's own issue / form / support link; clear the label once that link is posted.
@@ -124,8 +141,9 @@ to be on triage. (Those values are still `TBD` — fill them in as owners are co
 When several issues share an `rc:` code they are **one** finding, not N:
 
 1. Pick the **earliest** issue as the canonical one; add the `systemic` label.
-2. Label the rest with the same `rc:` code, then close them as duplicates
-   (`status:closed`, comment linking the canonical issue).
+2. Label the rest with the same `rc:` code plus `resolution:duplicate`, then close them
+   (`status:closed`, comment linking the canonical issue — the bot tells the filer the
+   credit went to the first reporter).
 3. Route the canonical `systemic` issue upstream once — not per app.
 
 To find what to collapse, run the read-only finder — it lists issues already sharing
@@ -163,6 +181,15 @@ gh issue list --search 'label:"status:accepted" -label:"status:routed"'
 # All App Suite defects, any severity
 gh issue list --label 'area:app-suite' --label 'defect' --state all
 
+# Everything already filed against one product (the pre-filing dedup check)
+gh issue list --label 'product:0g-chat' --state all
+
+# Closed-but-waiting: defects closed without a resolution label (should be empty)
+gh issue list --search 'label:"status:closed" -label:"resolution:fixed" -label:"resolution:rejected" -label:"resolution:duplicate"'
+
+# Waiting on testers — sweep for the ~7-day needs-info timeout
+gh issue list --label 'status:needs-info'
+
 # Confirmed systemic findings
 gh issue list --label 'systemic' --state all
 ```
@@ -185,7 +212,7 @@ wallets (Sybil), or rewardable users missing a wallet. (A legacy `--signups <csv
 
 Rules enforced by the script:
 
-- `status:accepted` and `status:routed` are rewardable states.
+- `status:accepted`, `status:routed`, and `status:closed` + `resolution:fixed` are rewardable states.
 - `area:ecosystem` coverage logs are excluded from reward counts.
 - Issues sharing one `rc:<CODE>` collapse to the earliest canonical issue and credit the first filer.
 - L3 requires 5+ accepted, deduped core findings, including the L2 App Suite + 0G Infra spread.

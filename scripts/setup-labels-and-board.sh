@@ -26,6 +26,33 @@ echo "==> Owner: $OWNER"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LABELS_FILE="$SCRIPT_DIR/../.github/labels.yml"
 
+# Renamed labels: migrate so existing issues keep their assignments and the
+# old label does not linger online. Fast path is an in-place rename; when the
+# new label already exists (e.g. the sync loop ran first) the rename conflicts,
+# so re-label every issue carrying the old name, then delete the old label.
+migrate_label() {
+  local old="$1" new="$2"
+  if ! gh label list --repo "$REPO" --limit 200 --json name --jq '.[].name' | grep -Fxq "$old"; then
+    return 0  # old label absent — nothing to migrate
+  fi
+  if gh label edit "$old" --repo "$REPO" --name "$new" >/dev/null 2>&1; then
+    echo "    renamed $old → $new"
+    return 0
+  fi
+  echo "    $new already exists — moving issues off $old"
+  while IFS= read -r number; do
+    [ -z "$number" ] && continue
+    gh issue edit "$number" --repo "$REPO" --add-label "$new" --remove-label "$old" >/dev/null 2>&1 || true
+    echo "      #$number: $old → $new"
+  done < <(gh issue list --repo "$REPO" --state all --label "$old" --limit 1000 --json number --jq '.[].number')
+  gh label delete "$old" --repo "$REPO" --yes >/dev/null 2>&1 || true
+  echo "    deleted $old"
+}
+
+echo "==> Migrating renamed labels (needs:fix → signup:needs-fix, duplicate → signup:duplicate)"
+migrate_label "needs:fix" "signup:needs-fix"
+migrate_label "duplicate" "signup:duplicate"
+
 echo "==> Creating / updating labels from $LABELS_FILE"
 name="" ; color="" ; desc=""
 flush() {
@@ -100,7 +127,7 @@ if [ "$created" = "1" ]; then
           {name:\"Triage\",   color:GRAY,   description:\"New, unvalidated (status:filed)\"}
           {name:\"Accepted\", color:GREEN,  description:\"Real + reproducible\"}
           {name:\"Routed\",   color:BLUE,   description:\"Tagged with ownership, sent upstream\"}
-          {name:\"Closed\",   color:PURPLE, description:\"Resolved / rejected / duplicate\"}
+          {name:\"Closed\",   color:PURPLE, description:\"Closed — resolution:* label says why\"}
         ]
       }){ projectV2Field { ... on ProjectV2SingleSelectField { id } } }
     }" >/dev/null
@@ -176,7 +203,8 @@ done < <(gh issue list --repo "$REPO" --label "feedback" --state open --json num
 
 project_option_for_status() {
   case "$1" in
-    "status:filed") printf '%s' "$TRIAGE_OPTION_ID" ;;
+    # needs-info is pre-acceptance, so it parks in the Triage column.
+    "status:filed"|"status:needs-info") printf '%s' "$TRIAGE_OPTION_ID" ;;
     "status:accepted") printf '%s' "$ACCEPTED_OPTION_ID" ;;
     "status:routed") printf '%s' "$ROUTED_OPTION_ID" ;;
     "status:closed") printf '%s' "$CLOSED_OPTION_ID" ;;
@@ -223,6 +251,31 @@ while IFS= read -r number; do
     "area:ecosystem") gh issue edit "$number" --repo "$REPO" --add-label "area:ecosystem" --add-label "coverage-log" >/dev/null 2>&1 || true ;;
     "area:"*) gh issue edit "$number" --repo "$REPO" --add-label "$area" >/dev/null 2>&1 || true ;;
   esac
+  # Product → product:* map — keep in lockstep with add-defects-to-board.yml
+  # and .github/labels.yml.
+  product_label=""
+  case "$product" in
+    "0G App") product_label="product:0g-app" ;;
+    "Genome") product_label="product:genome" ;;
+    "0G Chat") product_label="product:0g-chat" ;;
+    "PandaClaw") product_label="product:pandaclaw" ;;
+    "0G Hub") product_label="product:0g-hub" ;;
+    "0G Storage Scan") product_label="product:storage-scan" ;;
+    "Chain Scan") product_label="product:chain-scan" ;;
+    "0G Code to Coin"*) product_label="product:0g-cc" ;;
+    "TradeGPT") product_label="product:tradegpt" ;;
+    "Jaine") product_label="product:jaine" ;;
+    "Oku") product_label="product:oku" ;;
+    "AI Arena") product_label="product:ai-arena" ;;
+    "CARV") product_label="product:carv" ;;
+    "Cygnus Finance") product_label="product:cygnus" ;;
+    "DataHive") product_label="product:datahive" ;;
+    "Khalani") product_label="product:khalani" ;;
+    "Merkl") product_label="product:merkl" ;;
+  esac
+  if [ -n "$product_label" ]; then
+    gh issue edit "$number" --repo "$REPO" --add-label "$product_label" >/dev/null 2>&1 || true
+  fi
   # Legacy old-form bodies carried a tester-picked Severity; the Submit
   # Feedback form has none — sev:* is maintainer-applied at triage.
   severity=$(get_issue_field "$body" "Severity")
