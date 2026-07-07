@@ -10,7 +10,7 @@
   description: "0G App / Genome / 0G Chat / PandaClaw"
 - name: "area:0g-infra"
   color: "0052cc"
-  description: "0G Hub / 0G Storage Scan / Chain Scan"
+  description: "0G Hub / 0G Storage Scan / Chain Scan / 0G Code to Coin"
 - name: "area:ecosystem"
   color: "5319e7"
   description: "Ecosystem dApp coverage — useful, but outside core reward tiers"

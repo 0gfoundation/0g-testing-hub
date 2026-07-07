@@ -14,7 +14,7 @@ set -euo pipefail
 
 REPO="${REPO:-$(gh repo view --json nameWithOwner -q .nameWithOwner)}"
 OWNER="${REPO%%/*}"
-BOARD_TITLE="${BOARD_TITLE:-0G Test Week — Defects}"
+BOARD_TITLE="${BOARD_TITLE:-0G Testing Hub — Defects}"
 
 echo "==> Repo:  $REPO"
 echo "==> Owner: $OWNER"
