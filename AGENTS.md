@@ -30,7 +30,7 @@ One GitHub issue form is exposed in the chooser: **`submit-feedback.yml`** (labe
   "testingRepo": "https://github.com/0gfoundation/0g-testing-hub",
   "bugReport": "https://github.com/0gfoundation/0g-testing-hub/issues/new?template=submit-feedback.yml",
   "defectBoard": "https://github.com/orgs/0gfoundation/projects/19",
-  "levelRules": "LEVELS.md",
+  "levelRules": "docs/LEVELS.md",
   "rewards": "README.md#test-report-reward",
   "rewardPreflight": "docs/REWARD_PREFLIGHT.md",
   "workflowDiagram": "docs/WORKFLOWS.md",

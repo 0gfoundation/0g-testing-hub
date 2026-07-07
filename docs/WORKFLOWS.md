@@ -2,7 +2,7 @@
 
 How a defect travels from a tester's form to a payout row. Two actors, one automation
 layer between them. This is the visual companion to [`.github/TRIAGE.md`](../.github/TRIAGE.md)
-(the maintainer runbook) and [`LEVELS.md`](../LEVELS.md) (the reward ladder).
+(the maintainer runbook) and [`LEVELS.md`](./LEVELS.md) (the reward ladder).
 
 - **Tester** uses the README registration link, L0 surveys, and the Submit Feedback form — never labels, the board, or `defects/*.md`.
 - **Automation** (GitHub Actions) labels, boards, updates the signup tracker, and closes the feedback loop.
@@ -85,7 +85,7 @@ it triggers) is how the tester learns whether the report counted.
 
 Payout = Credit of the **highest level reached**. Counts **accepted + deduped** core
 (App Suite / 0G Infra) findings; Ecosystem coverage logs are valuable but excluded from core reward tiers. The L0–L3 table
-and pass conditions are the evergreen spec in [`LEVELS.md`](../LEVELS.md), mirrored on the
+and pass conditions are the evergreen spec in [`LEVELS.md`](./LEVELS.md), mirrored on the
 [landing page](../README.md#test-report-reward) — not repeated here so the numbers can't drift.
 
 ## Two things the automation gets right (and recently fixed)
