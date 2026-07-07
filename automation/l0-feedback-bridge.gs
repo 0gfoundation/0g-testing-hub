@@ -1,8 +1,8 @@
 /**
- * 0G Testing Hub — L0 feedback → GitHub bridge (Google Apps Script).
+ * 0G Testing Hub — L0 survey → GitHub bridge (Google Apps Script).
  *
- * Attach this to EACH L0 feedback Google Form (0G Studio Feedback and
- * 0G Private Computer Feedback). On submit it finds the submitter's GitHub
+ * Attach this to EACH L0 survey Google Form (0G Studio Survey and
+ * 0G Private Computer Survey). On submit it finds the submitter's GitHub
  * sign-up issue and adds this form's L0 label. The `mark-l0-cleared.yml`
  * workflow then sets `l0:cleared` once both per-form labels are present.
  *
@@ -11,8 +11,8 @@
  *      types the same GitHub username they used to open their sign-up issue.
  *   2. In the form: ⋮ → Script editor (Extensions → Apps Script) → paste this file.
  *   3. Set FORM_LABEL below:
- *        - 0G Studio Feedback        → 'l0:studio-done'
- *        - 0G Private Computer Feedback → 'l0:pc-done'
+ *        - 0G Studio Survey           → 'l0:studio-done'
+ *        - 0G Private Computer Survey → 'l0:pc-done'
  *   4. Project Settings → Script properties → add a property named GITHUB_TOKEN
  *      whose value is a GitHub token with issue-write access to the repo
  *      (a fine-grained PAT scoped to Issues: Read and write on this repo is ideal).

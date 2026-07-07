@@ -3,7 +3,7 @@
 Maintainers assign every triaged defect a `P1 / P2 / P3 / P4` severity (`sev:*` label)
 at triage — the Submit Feedback form no longer asks testers to pick one. This rubric
 keeps triage consistent: severity is a quality signal for core defects, and it stays
-orthogonal to area for record-only Ecosystem coverage.
+orthogonal to area for Ecosystem coverage.
 
 **Severity is impact-based.** Judge it against *what the user/dev cannot do*, not
 against how hard the fix looks. A one-line CSS fix can still be a P1 if it hides the
@@ -29,5 +29,6 @@ P1/P2. With the table above that gate becomes mechanical:
 ## Routing × severity
 
 Area (App Suite / 0G Infra / Ecosystem dApps) is **orthogonal** to
-severity. A P1 in an Ecosystem dApp is still *record-only* per the README; a P3 in 0G Infra
-still routes upstream. Tag both labels independently — see [`TEMPLATE.md`](./TEMPLATE.md).
+severity. A P1 in an Ecosystem dApp is still useful coverage outside the core reward
+ladder; a P3 in 0G Infra still routes upstream. Tag both labels independently — see
+[`TEMPLATE.md`](./TEMPLATE.md).

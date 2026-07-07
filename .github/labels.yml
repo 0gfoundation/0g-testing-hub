@@ -13,7 +13,7 @@
   description: "0G Hub / 0G Storage Scan / Chain Scan"
 - name: "area:ecosystem"
   color: "5319e7"
-  description: "Ecosystem dApp — record-only, not a 0G defect"
+  description: "Ecosystem dApp coverage — useful, but outside core reward tiers"
 
 # --- Severity (impact-based; see defects/SEVERITY.md) ---
 - name: "sev:P1"
@@ -55,7 +55,7 @@
   description: "A confirmed bug report (added by automation when Category = Bug Report, or manually)"
 - name: "coverage-log"
   color: "bfdadc"
-  description: "Record-only Ecosystem dApp coverage log"
+  description: "Ecosystem dApp coverage log"
 - name: "systemic"
   color: "fef2c0"
   description: "Confirmed cross-app root cause — the one issue N duplicates collapse into"
@@ -68,7 +68,7 @@
 # `rc:<CODE>` labels (e.g. rc:CHAIN_ID_MISSING) are created on demand at triage
 # to group every issue sharing a root cause. See .github/TRIAGE.md.
 
-# --- Sign-up & L0 (GitHub-native registration + feedback tracking) ---
+# --- Sign-up & L0 (GitHub-native registration + survey tracking) ---
 - name: "signup"
   color: "0e8a16"
   description: "Testing sign-up issue — the tester's authenticated identity + wallet"
@@ -80,10 +80,10 @@
   description: "A repeat sign-up — folded into the tester's earlier (canonical) issue and closed"
 - name: "l0:studio-done"
   color: "c2e0c6"
-  description: "0G Studio Feedback submitted (set by the Google Forms bridge)"
+  description: "0G Studio Survey submitted (set by the Google Forms bridge)"
 - name: "l0:pc-done"
   color: "c2e0c6"
-  description: "0G Private Computer Feedback submitted (set by the Google Forms bridge)"
+  description: "0G Private Computer Survey submitted (set by the Google Forms bridge)"
 - name: "l0:cleared"
   color: "0e8a16"
-  description: "Both L0 feedback forms received — L0 Recruit cleared"
+  description: "Both L0 surveys received — L0 Recruit cleared"

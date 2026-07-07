@@ -29,7 +29,7 @@ const issues = await loadIssues(args.issues, repo, args.limit || '1000');
 const signupSource = await loadSignupSource(args, repo);
 const { users: signups, duplicates: signupDuplicates } = signupSource;
 // L0 completion: an explicit --l0 export wins; otherwise derive it from `l0:cleared`
-// labels on sign-up issues (set by the Google Forms bridge + mark-l0-cleared workflow).
+// labels on sign-up issues (set by the Google survey bridge + mark-l0-cleared workflow).
 const l0Done = args.l0 ? await loadL0(args.l0) : (signupSource.l0Done || new Set());
 const rootCauseRegistry = await loadRootCauseRegistry(args['root-causes'] || 'data/root-causes.json');
 const report = buildReport(issues, signups, l0Done);
@@ -111,7 +111,7 @@ Inputs:
              CSV: the issue author is the GitHub username and the body carries the wallet. No
              external form needed. Use --signup-issues <file> to read a JSON fixture instead of gh.
   --l0       Optional CSV or JSON export listing GitHub usernames that completed the
-             required L0 feedback. Any user listed here clears L0 (credit 10) when they
+             required L0 surveys. Any user listed here clears L0 (credit 10) when they
              have no higher issue-driven level. Same username column aliases as --signups.
   --root-causes  Optional root cause registry path. Defaults to data/root-causes.json.
   --blockers-out Write structured payout blockers / warnings to JSON.
@@ -810,7 +810,7 @@ function renderMarkdown(report) {
   lines.push(`Accepted core issues: ${report.totals.acceptedCoreIssues}`);
   lines.push(`Accepted + deduped findings: ${report.totals.acceptedDeduped}`);
   lines.push(`Signup users: ${report.totals.signupUsers}`);
-  lines.push(`L0 feedback completions: ${report.totals.l0Completions}`);
+  lines.push(`L0 survey completions: ${report.totals.l0Completions}`);
   lines.push('');
   lines.push('| GitHub | Wallet | Registered | Issue level | Credit | Accepted deduped | App Suite | Infra | Systemic | Issues | Notes |');
   lines.push('|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|');

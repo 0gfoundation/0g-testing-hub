@@ -1,6 +1,6 @@
 # 0g-testing-hub
 
-**0g-testing-hub** is a testing program for 0G Ecosystem: submit the required feedback, test target apps, file reproducible bugs, and climb **L0-L3** for 0G Compute Credit. **Not a code project** - no build, test, or package manager here.
+**0g-testing-hub** is a testing program for 0G Ecosystem: complete the required L0 surveys, test target apps, file reproducible bugs through Submit Feedback, and climb **L0-L3** for 0G Compute Credit. **Not a code project** - no build, test, or package manager here.
 
 ## Jump to
 
@@ -18,28 +18,28 @@ All rewards are **0G Compute Credit**; payout = the Credit of your **highest lev
 
 | Reach | How it clears | Where to go | Credit |
 |-------|---------------|-------------|:------:|
-| **Sign Up** | Open a sign-up issue with your 0G mainnet wallet (your GitHub account is your identity) | [Sign up (GitHub)](https://github.com/0gfoundation/0g-testing-hub/issues/new?template=signup.yml&labels=signup) | — |
-| **L0** Recruit | 2 feedback forms; no bug required | 1. [0G Studio Feedback (App Suite, all four apps)](https://forms.gle/ymEdZrdTNs4giEm1A)<br>2. [0G Private Computer Feedback](https://forms.gle/G919xrbRyfVJxPZe8) | **10 0G Compute Credit** |
+| **Sign Up** | Register with your 0G mainnet wallet (your GitHub account is your identity) | [Sign up (GitHub)][signup-link] | — |
+| **L0** Recruit | 2 required surveys; no bug required | 1. [0G Studio Survey (App Suite, all four apps)](https://forms.gle/ymEdZrdTNs4giEm1A)<br>2. [0G Private Computer Survey](https://forms.gle/G919xrbRyfVJxPZe8) | **10 0G Compute Credit** |
 | **L1** Tester | 1 accepted · App Suite | [Submit Feedback form](https://github.com/0gfoundation/0g-testing-hub/issues/new?template=submit-feedback.yml) | **20 0G Compute Credit** |
 | **L2** Infra Pioneer | +1 accepted · 0G Infra (2 total) | [Submit Feedback form](https://github.com/0gfoundation/0g-testing-hub/issues/new?template=submit-feedback.yml) | **40 0G Compute Credit** |
 | **L3** Master | 5+ accepted · App Suite + 0G Infra | [Submit Feedback form](https://github.com/0gfoundation/0g-testing-hub/issues/new?template=submit-feedback.yml) | **100 0G Compute Credit** |
 
 ## Tester Path
 
-Two GitHub forms are the entry points; the rest is filling them in and waiting for triage.
+Focus on the tester side: register once from this README, complete the L0 surveys, test the targets, and submit one clear feedback item at a time with enough detail to reproduce.
 
-1. **[Sign up](https://github.com/0gfoundation/0g-testing-hub/issues/new?template=signup.yml&labels=signup)** once — this issue is your tracker and the start of your tester journey.
-2. **Clear L0** — submit the two Google forms above with that same username. No bug needed → **10 0G Compute Credit**.
-3. **Submit feedback** — one bug or piece of feedback per **[Submit Feedback](https://github.com/0gfoundation/0g-testing-hub/issues/new?template=submit-feedback.yml)** issue: pick a **Category** and **Product**, describe what happened in **Details** (steps, expected, actual), and paste screenshots / recordings / links in **Evidence**. That's all — severity, routing, and dedup are triage's job. `Bug Report` enters defect triage; `Feature Request` and `Other` are recorded but never counted toward rewards. Accepted **core** bugs (App Suite / 0G Infra) climb **L1–L3**; Ecosystem dApps are record-only.
-4. **Triage** — maintainers label it; you get a comment when it's accepted, routed, or closed. Track it on [board #19](https://github.com/orgs/0gfoundation/projects/19).
-5. **Progress** — your sign-up issue shows L0 status and a reward-progress preview as defects are accepted.
+1. **[Sign up][signup-link]** once — this registration issue is your tracker and the start of your tester journey.
+2. **Clear L0** — complete the two surveys above with that same GitHub username. No bug needed → **10 0G Compute Credit**.
+3. **Pick a target** — prioritize **0G App Suite** first, then **0G Infra**. They are the core L1–L3 reward path, so accepted bugs there unlock the higher rewards. Ecosystem dApps are also welcome as ecosystem coverage.
+4. **Submit one feedback item at a time** — from L1 upward, open **[Submit Feedback](https://github.com/0gfoundation/0g-testing-hub/issues/new?template=submit-feedback.yml)** for each bug, feature request, or other note. Pick **Category** and **Product**, then use **Details** for steps, expected result, and actual result. Add screenshots, recordings, or links in **Evidence** when useful.
+5. **Follow your tracker** — your sign-up issue shows L0 status and reward-progress previews as accepted core bug reports move you through **L1–L3**. `Feature Request` and `Other` are recorded but do not count toward rewards; Ecosystem dApp findings are useful coverage, while L1–L3 rewards come from accepted App Suite / 0G Infra bugs.
 
-**Won't be accepted / out of bounds:**
+**Reward notes / out of bounds:**
 
 - **Duplicates** or **not-reproducible** "felt off" reports.
 - **Feature requests** - welcome under Category `Feature Request`, but recorded only, never rewarded (unless the docs already promised the behavior — then it's a bug).
 - **P4 cosmetics** with no reproducible P1/P2.
-- **Record-only dApp bugs** - all Ecosystem dApp products in the Product list are record-only: recorded here, never counted toward core-bug rewards. Also report actionable bugs to the dApp's own channel and paste the link as a comment.
+- **Ecosystem dApps** - welcome as ecosystem coverage, but prioritize 0G App Suite and 0G Infra if you are aiming for higher rewards. Also report actionable dApp bugs to the dApp's own channel and paste the link as a comment.
 - **Funds / keys** - never sign or send; stop at the transaction-confirmation screen on swap / bridge / faucet / sign flows.
 
 ## Test Targets
@@ -74,3 +74,5 @@ Two GitHub forms are the entry points; the rest is filling them in and waiting f
 - [**Merkl**](https://app.merkl.xyz/) - claim LIC rewards
 
 <!-- targets:end -->
+
+[signup-link]: https://github.com/0gfoundation/0g-testing-hub/issues/new?title=%5Bsignup%5D%3A%20&labels=signup&body=%23%23%23%200G%20mainnet%20EVM%20wallet%20address%0A%0APaste%20your%20public%200x%20wallet%20address%20here.%0A%0ANever%20paste%20a%20private%20key%20or%20seed%20phrase.

@@ -1,11 +1,8 @@
 blank_issues_enabled: false
 contact_links:
-  - name: "Submit a dApp for testing (project owners)"
-    url: https://github.com/0gfoundation/0g-testing-hub/issues/2
-    about: "Are you a project owner who wants their dApp tested? Post in Issue #2 instead — the Submit Feedback form is for testers."
-  - name: "0G App Suite Feedback / 0G Studio Feedback"
+  - name: "0G Studio Survey (App Suite)"
     url: https://forms.gle/ymEdZrdTNs4giEm1A
-    about: "Required for L0 Recruit. No bug report is required for Recruit."
-  - name: "0G Private Computer Feedback"
+    about: "Required L0 Recruit survey. No bug report is required for Recruit."
+  - name: "0G Private Computer Survey"
     url: https://forms.gle/G919xrbRyfVJxPZe8
-    about: "Required for L0 Recruit. No bug report is required for Recruit."
+    about: "Required L0 Recruit survey. No bug report is required for Recruit."

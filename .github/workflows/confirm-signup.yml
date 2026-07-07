@@ -17,10 +17,10 @@ permissions:
 
 jobs:
   confirm:
-    # Sign-ups always arrive via the form, which applies the `signup` label at
-    # creation — so `opened` alone is enough. (Listening to `labeled` too would
-    # double-fire, because opening with a template label emits both events.)
-    if: contains(github.event.issue.labels.*.name, 'signup')
+    # Sign-ups are linked from README instead of exposed as an issue-template entry.
+    # The direct link tries to apply `signup`, and the `[signup]` title prefix is the
+    # fallback if GitHub does not apply query-string labels for the opener.
+    if: contains(github.event.issue.labels.*.name, 'signup') || startsWith(github.event.issue.title, '[signup]')
     runs-on: ubuntu-latest
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -34,12 +34,20 @@ jobs:
 
           BODY=$(gh issue view "$ISSUE_NUMBER" --repo "$REPO" --json body --jq .body)
 
-          # Pull the wallet field out of the issue-form markdown.
+          # Keep the signup label for export even if the direct URL label was not
+          # applied at creation time.
+          gh issue edit "$ISSUE_NUMBER" --repo "$REPO" --add-label "signup" >/dev/null
+
+          # Prefer the README prefill heading, then fall back to the first public
+          # 0x-address in the body so manual edits still work.
           WALLET=$(awk '
             $0 == "### 0G mainnet EVM wallet address" { found=1; next }
             found && /^### / { exit }
             found && NF { print; exit }
           ' <<<"$BODY")
+          if ! printf '%s' "$WALLET" | grep -Eiq '^0x[0-9a-f]{40}$'; then
+            WALLET=$(printf '%s\n' "$BODY" | grep -Eio '\b0x[0-9a-f]{40}\b' | head -1 || true)
+          fi
 
           # Safety: a 64-hex string is a private key, never a wallet address. If one
           # shows up, flag it loudly instead of leaving a secret in a public issue.
@@ -53,7 +61,7 @@ jobs:
           # Duplicate sign-up guard. The issue author is the reward join key, so one
           # sign-up issue is all a tester needs. If they already have an earlier one,
           # this later issue is a duplicate: strip its `signup` label so the reward
-          # export and the L0 feedback bridge both ignore it and stay on the canonical
+          # export and the L0 survey bridge both ignore it and stay on the canonical
           # (earliest) issue, point the tester back, and close it.
           CANONICAL=$(gh issue list --repo "$REPO" --state all --label signup \
             --author "$AUTHOR" --json number --jq '.[].number' | sort -n | head -1)
@@ -75,9 +83,9 @@ jobs:
 
           Next steps:
 
-          1. Submit [0G Studio Feedback](https://forms.gle/ymEdZrdTNs4giEm1A).
-          2. Submit [0G Private Computer Feedback](https://forms.gle/G919xrbRyfVJxPZe8).
-          3. Wait for this issue to show \`l0:cleared\` after both forms land.
+          1. Complete the [0G Studio Survey](https://forms.gle/ymEdZrdTNs4giEm1A).
+          2. Complete the [0G Private Computer Survey](https://forms.gle/G919xrbRyfVJxPZe8).
+          3. Wait for this issue to show \`l0:cleared\` after both surveys land.
           4. Then climb to L1 by submitting an accepted App Suite bug report: https://github.com/$REPO/issues/new?template=submit-feedback.yml
 
           See the ladder in [README.md](../../blob/main/README.md#test-report-reward).

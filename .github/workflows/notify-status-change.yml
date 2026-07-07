@@ -38,7 +38,7 @@ jobs:
 
           # The reward consequence of "accepted" depends on the issue's area, so a
           # blanket "counts toward your reward tier" would lie to two groups:
-          #   - Ecosystem coverage logs are record-only — never rewardable.
+          #   - Ecosystem coverage is useful, but not part of the core reward ladder.
           #   - An accepted 0G Infra bug does NOT clear L1 on its own (L1 needs App
           #     Suite); it only counts once paired with an accepted App Suite bug.
           LABELS=$(gh issue view "$ISSUE_NUMBER" --repo "$REPO" --json labels --jq '.labels[].name' | tr '\n' ' ')
@@ -46,7 +46,7 @@ jobs:
 
           ACCEPTED_MSG="✅ **Accepted** — triage reproduced and confirmed this defect. It counts toward your reward tier (rewards are on **accepted, deduped** core findings). See [LEVELS.md](../../blob/main/LEVELS.md)."
           if has "area:ecosystem" || has "coverage-log"; then
-            ACCEPTED_MSG="✅ **Coverage logged** — thanks for confirming this. Ecosystem dApps are **record-only**, so this does **not** count toward a reward tier; route the actionable bug to the dApp's own channel. See [LEVELS.md](../../blob/main/LEVELS.md)."
+            ACCEPTED_MSG="✅ **Ecosystem coverage accepted** — thanks for confirming this. It helps ecosystem follow-up, but the higher L1–L3 rewards come from accepted **0G App Suite** and **0G Infra** bugs. If actionable, please also report it to the dApp's own channel. See [LEVELS.md](../../blob/main/LEVELS.md)."
           elif has "area:0g-infra"; then
             ACCEPTED_MSG="✅ **Accepted** — triage reproduced and confirmed this **0G Infra** defect. Note: an Infra bug alone does **not** clear L1 (that needs an accepted **App Suite** bug); paired with one it gets you to L2. See [LEVELS.md](../../blob/main/LEVELS.md)."
           elif has "area:app-suite"; then
@@ -78,7 +78,7 @@ jobs:
           has() { case " $LABELS " in *" $1 "*) return 0 ;; *) return 1 ;; esac }
 
           if has "area:ecosystem" || has "coverage-log"; then
-            echo "Ecosystem coverage is record-only; skipping reward progress preview."
+            echo "Ecosystem coverage is outside the core reward ladder; skipping reward progress preview."
             exit 0
           fi
 

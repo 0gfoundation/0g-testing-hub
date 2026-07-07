@@ -8,9 +8,9 @@ body:
       value: |
         Thanks for testing. **One bug or piece of feedback per issue** — file a separate issue for each.
 
-        Two rules from the program brief:
+        Two notes from the program brief:
         - **Never touch funds or keys.** On swap / bridge / faucet / sign flows, stop at the transaction-confirmation screen. Do not sign, do not send.
-        - **Ecosystem dApps are record-only.** Their bugs are recorded here but don't count toward core-bug rewards.
+        - **Prioritize 0G App Suite and 0G Infra for L1–L3 rewards.** Ecosystem dApp findings are welcome as ecosystem coverage, but the higher reward tiers come from accepted core bugs. If a dApp bug is actionable, also report it to the dApp's own channel and paste that link here.
 
         Just describe what happened — maintainers handle severity, routing, de-duplication, and reward eligibility during triage.
 
