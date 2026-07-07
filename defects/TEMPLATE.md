@@ -1,42 +1,46 @@
 <!--
-Reference template only. Live defects are filed through the GitHub Defect report
-form, not by copying this file into defects/*.md. Keep this file aligned with the
-issue form so example defects and maintainer docs use the same field vocabulary.
+Reference template only. Live feedback is filed through the GitHub Submit Feedback
+form, not by copying this file into defects/*.md. Keep the tester fields aligned
+with the issue form so example defects and maintainer docs use the same field
+vocabulary. Everything under "Maintainer-only" is triage metadata — never asked
+of testers.
 -->
 ---
 title: ""                       # one line, imperative ("Bridge confirm screen never loads")
-ownership: ""                   # App Suite | 0G Infra | Ecosystem dApps
-product: ""                     # which app, e.g. "0G Hub", "TradeGPT"
-severity: ""                    # P1 | P2 | P3 | P4  (see SEVERITY.md)
-status: filed                   # filed | routed | closed
+
+# --- Tester input (mirrors the Submit Feedback form) ---
+category: ""                    # Bug Report | Feature Request | Other
+product: ""                     # which app, e.g. "0G Hub", "TradeGPT", or Other
+
+# --- Maintainer-only (filled at triage, never tester input) ---
+area: ""                        # app-suite | 0g-infra | ecosystem — derived from product, corrected at triage
+severity: ""                    # P1 | P2 | P3 | P4  (see SEVERITY.md; maintainer-assigned)
+status: filed                   # filed | accepted | routed | closed
 reproducible: true              # README rule: only reproducible findings count
-environment:
-  browser: ""                   # e.g. "Chrome 124 / macOS"
-  wallet: ""                    # e.g. "MetaMask 11.x" (omit if N/A)
-  chain_id:                     # e.g. 16661  (the recurring "missing Chain ID" pattern is easy to group on)
-  network: ""                   # e.g. "mainnet" | "galileo" | "aristotle"
 root_cause_code: ""             # OPTIONAL stable tag for grouping, e.g. "CHAIN_ID_MISSING",
                                 # "CAPTCHA_TOKEN_EXPIRY", "STORAGE_ROOT_MISMATCH".
                                 # Two defects sharing this value are the SAME systemic issue.
-reported_to_dapp_url: ""        # Ecosystem only: URL for the dApp's own issue/form/support report.
+reported_to_dapp_url: ""        # Ecosystem only: the dApp's own report link, collected via issue comment
 source: manual                  # manual | tool-generated   (how this defect was produced)
 ---
 
-## Repro steps
+## Details
+
+What happened?
+
+Steps to reproduce:
 
 1.
 2.
 3.
 
-## Expected result
+Expected:
 
-## Actual result
+Actual:
 
-## Screenshot / recording
+## Evidence
 
-## Reported to dApp URL (Ecosystem only)
-
-## Root-cause guess (optional)
+Paste screenshots, recordings, links, or any extra context here.
 
 <!--
 Aggregation tip: when several defects share the same `root_cause_code`

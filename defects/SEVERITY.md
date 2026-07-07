@@ -1,9 +1,9 @@
 # Severity rubric (P1–P4)
 
-The defect form requires every defect or coverage log to carry a `P1 / P2 / P3 / P4`
-severity. This rubric keeps testers and triage aligned: severity is a quality
-signal for core defects, and it stays orthogonal to ownership for record-only
-Ecosystem coverage.
+Maintainers assign every triaged defect a `P1 / P2 / P3 / P4` severity (`sev:*` label)
+at triage — the Submit Feedback form no longer asks testers to pick one. This rubric
+keeps triage consistent: severity is a quality signal for core defects, and it stays
+orthogonal to area for record-only Ecosystem coverage.
 
 **Severity is impact-based.** Judge it against *what the user/dev cannot do*, not
 against how hard the fix looks. A one-line CSS fix can still be a P1 if it hides the
@@ -23,11 +23,11 @@ P1/P2. With the table above that gate becomes mechanical:
 
 - A round with **0 reproducible P1/P2** is a low-signal round → return to happy/error paths.
 - **P4 is for manual downgrade only** — don't open a round by hunting cosmetics.
-- If you're unsure between two levels, file at the **lower** number (more severe) and let
-  triage downgrade; under-reporting a blocker is worse than over-reporting it.
+- When triage is unsure between two levels, assign the **lower** number (more severe) first
+  and downgrade later; under-rating a blocker is worse than over-rating it.
 
 ## Routing × severity
 
-Ownership (App Suite / 0G Infra / Ecosystem dApps) is **orthogonal** to
+Area (App Suite / 0G Infra / Ecosystem dApps) is **orthogonal** to
 severity. A P1 in an Ecosystem dApp is still *record-only* per the README; a P3 in 0G Infra
-still routes upstream. Tag both fields independently — see [`TEMPLATE.md`](./TEMPLATE.md).
+still routes upstream. Tag both labels independently — see [`TEMPLATE.md`](./TEMPLATE.md).

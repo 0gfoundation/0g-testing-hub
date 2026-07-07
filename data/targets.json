@@ -9,11 +9,11 @@
       "pill": "App Suite · escalate",
       "pillKind": "app",
       "recordOnly": false,
-      "notice": "L0 Recruit is feedback-only: 0G Studio Feedback + 0G Private Computer Feedback, no bug required. From L1 upward, submit reproducible bugs through the GitHub defect form.",
+      "notice": "L0 Recruit is feedback-only: 0G Studio Feedback + 0G Private Computer Feedback, no bug required. From L1 upward, submit reproducible bugs through the GitHub Submit Feedback form.",
       "forms": [
         {
-          "label": "Report a bug",
-          "url": "https://github.com/0gfoundation/0g-testing-hub/issues/new?template=defect-report.yml&labels=defect,status:filed"
+          "label": "Submit feedback",
+          "url": "https://github.com/0gfoundation/0g-testing-hub/issues/new?template=submit-feedback.yml"
         }
       ],
       "items": [

@@ -16,18 +16,18 @@ flowchart TD
       T1["Sign up once<br/>wallet; GitHub author = identity"]
       T2["L0: two feedback forms<br/>no bug required"]
       T3["Find + reproduce a bug"]
-      T4["File Defect report form<br/>one issue per defect"]
+      T4["Submit Feedback form<br/>Category · Product · Details · Evidence"]
     end
 
     subgraph A["⚙️ Automation — GitHub Actions"]
       A0["signup issue tracker<br/>auto-title · L0 progress · reward preview"]
-      A1["Issue opened<br/>defect + status:filed"]
-      A2["add-defects-to-board.yml<br/>add to board #19 · parse area/sev · set Triage"]
+      A1["Issue opened<br/>label: feedback"]
+      A2["add-defects-to-board.yml<br/>Bug Report → defect + status:filed + area:* · board #19 Triage<br/>Feature Request / Other → recorded, no reward"]
       A3["notify-status-change.yml<br/>auto-comment outcome to the tester"]
     end
 
     subgraph M["🛠️ Maintainer — triage pipeline"]
-      M1["Verify · correct area:* / sev:*"]
+      M1["Verify · correct area:* · apply sev:*"]
       M2{"Reproducible &<br/>in bounds?"}
       M3["status:accepted<br/>★ counts toward reward"]
       M4["status:closed + reason"]
@@ -51,9 +51,13 @@ flowchart TD
 
 The reward count reads off these labels. `status:accepted` is the state that counts.
 
+Only `Bug Report` submissions enter this state machine — `Feature Request` / `Other`
+stay plain feedback with no `status:*` at all. Rewards still come only from
+**accepted, deduped core bugs** (App Suite / 0G Infra).
+
 ```mermaid
 stateDiagram-v2
-    [*] --> filed: tester files (auto)
+    [*] --> filed: Bug Report promoted (auto)
     filed --> accepted: reproduced
     filed --> closed: not repro / out of bounds
     accepted --> routed: routing evidence added
@@ -79,8 +83,8 @@ and pass conditions are the evergreen spec in [`LEVELS.md`](../LEVELS.md), mirro
 ## Two things the automation gets right (and recently fixed)
 
 - **Triage progress is not clobbered.** `add-defects-to-board.yml` runs only on issue
-  *open* or when the `defect` label is added — not on every later label change — so moving
-  an issue to `status:accepted` no longer gets reset back to Triage.
+  *open* or when the `feedback` / `defect` label is added — not on every later label
+  change — so moving an issue to `status:accepted` no longer gets reset back to Triage.
 - **The accept comment tells the truth per area.** `notify-status-change.yml` branches the
   message: App Suite accept counts; an **0G Infra** accept alone does **not** clear L1
   (needs a paired App Suite bug → L2); an **Ecosystem** coverage log is record-only and

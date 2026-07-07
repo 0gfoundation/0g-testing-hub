@@ -1,0 +1,82 @@
+name: "Submit Feedback"
+description: "Report a bug, request a feature, or share any other feedback. One item per issue."
+title: "[feedback]: "
+labels: ["feedback"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for testing. **One bug or piece of feedback per issue** — file a separate issue for each.
+
+        Two rules from the program brief:
+        - **Never touch funds or keys.** On swap / bridge / faucet / sign flows, stop at the transaction-confirmation screen. Do not sign, do not send.
+        - **Ecosystem dApps are record-only.** Their bugs are recorded here but don't count toward core-bug rewards.
+
+        Just describe what happened — maintainers handle severity, routing, de-duplication, and reward eligibility during triage.
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Category
+      description: "Bug Reports enter defect triage. Feature Requests and Other are welcome and recorded, but are not reward-eligible."
+      options:
+        - "Bug Report"
+        - "Feature Request"
+        - "Other"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: product
+    attributes:
+      label: Product
+      description: "Which product is this about? If it's not listed, pick Other and name it in Details."
+      options:
+        - "0G App"
+        - "Genome"
+        - "0G Chat"
+        - "PandaClaw"
+        - "0G Hub"
+        - "0G Storage Scan"
+        - "Chain Scan"
+        - "0G Code to Coin (0g-cc)"
+        - "TradeGPT"
+        - "Jaine"
+        - "Oku"
+        - "AI Arena"
+        - "CARV"
+        - "Cygnus Finance"
+        - "DataHive"
+        - "Khalani"
+        - "Merkl"
+        - "Other"
+    validations:
+      required: true
+
+  - type: textarea
+    id: details
+    attributes:
+      label: Details
+      description: "Describe what happened. For bugs, include the steps to reproduce and the expected vs. actual result — complete enough for someone else to follow."
+      placeholder: |
+        What happened?
+
+        Steps to reproduce:
+        1.
+        2.
+        3.
+
+        Expected:
+
+        Actual:
+    validations:
+      required: true
+
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence
+      description: "Optional, but strongly recommended for bugs."
+      placeholder: "Paste screenshots, recordings, links, or any extra context here."
+    validations:
+      required: false

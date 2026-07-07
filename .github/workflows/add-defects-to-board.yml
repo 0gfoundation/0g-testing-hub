@@ -1,10 +1,13 @@
 name: Add defects to board
 
-# Replaces the UI-only "Auto-add to project" + "Item added -> set Status" built-in
-# Projects workflows (GitHub exposes no API for those). When an issue is opened or
-# labelled `defect`, add it to the board, add `status:filed`, derive area/severity
-# labels from the issue form body, flag Ecosystem logs missing the dApp report
-# URL, and drop it in the Triage column.
+# Routes Submit Feedback issues (label `feedback`) by their Category field:
+# Bug Report is promoted into the defect pipeline — `defect` + `status:filed` +
+# an `area:*` derived from Product — and dropped on the board in Triage.
+# Feature Request / Other stay plain feedback (Feature Request also gets
+# `feature-request`) and never enter the defect pipeline or reward export.
+# `sev:*` is never auto-applied: severity is a maintainer call at triage.
+# Manually adding `defect` (including to legacy old-form issues) routes through
+# the same board logic.
 #
 # Requires a repo secret `PROJECT_PAT` — a token with `project` + `repo` +
 # `read:org` scope. The default GITHUB_TOKEN cannot write an org Projects v2 board.
@@ -19,13 +22,20 @@ permissions:
 jobs:
   add-to-board:
     # Only act on the intake events: a freshly opened issue, or someone manually
-    # adding the `defect` label to an existing issue. Without the second clause this
-    # job re-fires on *every* later `labeled` event (area:*, sev:*, status:accepted,
-    # rc:*, systemic…), each time re-stamping `status:filed` and forcing the board
-    # back to Triage — clobbering the maintainer's triage progress.
+    # adding the `feedback` / `defect` label to an existing issue. Without the
+    # second clause this job re-fires on *every* later `labeled` event (area:*,
+    # sev:*, status:accepted, rc:*, systemic…), each time re-stamping
+    # `status:filed` and forcing the board back to Triage — clobbering the
+    # maintainer's triage progress. (The run that promotes a Bug Report by
+    # adding `defect` does trigger one more `labeled: defect` run — every
+    # operation here is idempotent and the record-only comment is gated on
+    # `opened`, so that re-fire is a harmless no-op.)
     if: >-
-      contains(github.event.issue.labels.*.name, 'defect') &&
-      (github.event.action == 'opened' || github.event.label.name == 'defect')
+      (contains(github.event.issue.labels.*.name, 'feedback') ||
+       contains(github.event.issue.labels.*.name, 'defect')) &&
+      (github.event.action == 'opened' ||
+       github.event.label.name == 'feedback' ||
+       github.event.label.name == 'defect')
     runs-on: ubuntu-latest
     env:
       GH_TOKEN: ${{ secrets.PROJECT_PAT }}
@@ -34,10 +44,100 @@ jobs:
       PROJECT_NUMBER: "19"
       ISSUE_NODE_ID: ${{ github.event.issue.node_id }}
       ISSUE_NUMBER: ${{ github.event.issue.number }}
+      EVENT_ACTION: ${{ github.event.action }}
+      HAS_DEFECT: ${{ contains(github.event.issue.labels.*.name, 'defect') }}
     steps:
-      - name: Add issue to board and set Status = Triage
+      - name: Route by Category and add Bug Reports to the board
         run: |
           set -euo pipefail
+
+          # Parse GitHub issue-form markdown: field labels render as "### <Label>"
+          # headings, so these strings must match the form labels byte-for-byte.
+          BODY=$(gh issue view "$ISSUE_NUMBER" --repo "$REPO" --json body --jq .body)
+          get_field() {
+            awk -v name="$1" '
+              $0 == "### " name { found=1; next }
+              found && /^### / { exit }
+              found && NF { print; exit }
+            ' <<<"$BODY"
+          }
+
+          CATEGORY=$(get_field "Category")
+          PRODUCT=$(get_field "Product")
+          echo "Parsed Category=[$CATEGORY] Product=[$PRODUCT]"
+
+          # Category gate: only Bug Report enters the defect pipeline. Issues
+          # already labelled `defect` (manual promotion, legacy old-form intake)
+          # skip the gate. Everything else is recorded and left off the board —
+          # it never carries `defect`/`status:*`, so the reward export never
+          # sees it.
+          if [ "$HAS_DEFECT" != "true" ]; then
+            case "$CATEGORY" in
+              "Bug Report"*) ;;
+              "Feature Request"*)
+                gh issue edit "$ISSUE_NUMBER" --repo "$REPO" --add-label "feature-request" >/dev/null
+                echo "Feature Request recorded — not entering the defect pipeline."
+                exit 0 ;;
+              *)
+                echo "Category [$CATEGORY] recorded as plain feedback — not entering the defect pipeline."
+                exit 0 ;;
+            esac
+          fi
+
+          # Keep label state in sync with the board state. This is idempotent and
+          # covers issues that were manually labelled `defect` outside the form.
+          gh issue edit "$ISSUE_NUMBER" --repo "$REPO" --add-label "defect" --add-label "status:filed" >/dev/null
+
+          # Product → area map. Product names track data/targets.json; keep this
+          # case in lockstep with the backfill in scripts/setup-labels-and-board.sh.
+          # If no case matches the case falls through and we flag the issue for a
+          # human instead of silently shipping it unlabelled. `sev:*` is never
+          # applied here — maintainers assign severity at triage.
+          NEEDS_MANUAL=0
+          IS_ECOSYSTEM=0
+          AREA=""
+
+          case "$PRODUCT" in
+            "0G App"|"Genome"|"0G Chat"|"PandaClaw")
+              AREA="area:app-suite" ;;
+            "0G Hub"|"0G Storage Scan"|"Chain Scan"|"0G Code to Coin"*)
+              AREA="area:0g-infra" ;;
+            "TradeGPT"|"Jaine"|"Oku"|"AI Arena"|"CARV"|"Cygnus Finance"|"DataHive"|"Khalani"|"Merkl")
+              AREA="area:ecosystem" ;;
+            "Other Ecosystem dApp"*)
+              # Legacy old-form option.
+              AREA="area:ecosystem" ;;
+            "Other"*)
+              echo "::warning::Product is Other — a maintainer assigns the area at triage."
+              NEEDS_MANUAL=1 ;;
+            *)
+              # Legacy old-form bodies carry an Ownership dropdown instead.
+              OWNERSHIP=$(get_field "Ownership")
+              case "$OWNERSHIP" in
+                "App Suite"*) AREA="area:app-suite" ;;
+                "0G Infra"*) AREA="area:0g-infra" ;;
+                "Ecosystem dApp"*) AREA="area:ecosystem" ;;
+                *) echo "::warning::Could not derive an area from Product=[$PRODUCT] or Ownership=[$OWNERSHIP]"; NEEDS_MANUAL=1 ;;
+              esac ;;
+          esac
+
+          if [ "$AREA" = "area:ecosystem" ]; then
+            IS_ECOSYSTEM=1
+            gh issue edit "$ISSUE_NUMBER" --repo "$REPO" --add-label "area:ecosystem" --add-label "coverage-log" >/dev/null
+          elif [ -n "$AREA" ]; then
+            gh issue edit "$ISSUE_NUMBER" --repo "$REPO" --add-label "$AREA" >/dev/null
+          fi
+
+          if [ "$NEEDS_MANUAL" -eq 1 ]; then
+            gh issue edit "$ISSUE_NUMBER" --repo "$REPO" --add-label "needs:manual-label" >/dev/null
+          fi
+
+          # Ecosystem dApps are record-only: nudge once, on open, to also report
+          # the bug to the dApp's own channel. (Gated on `opened` so the re-fire
+          # from adding `defect` above cannot double-post.)
+          if [ "$IS_ECOSYSTEM" -eq 1 ] && [ "$EVENT_ACTION" = "opened" ]; then
+            gh issue comment "$ISSUE_NUMBER" --repo "$REPO" --body "Thanks — Ecosystem dApp reports are **record-only** in this Hub: they are triaged and recorded, but don't count toward core-bug rewards. If the bug is actionable, please also report it to the dApp's own channel and paste that link here as a comment so triage can follow up."
+          fi
 
           # Resolve the board id, Status field id, and the "Triage" option id at
           # runtime, so this keeps working even if the board is recreated.
@@ -57,62 +157,6 @@ jobs:
           if [ -z "${OPTION_ID:-}" ]; then
             echo "Could not resolve the Triage column — is the board configured?" >&2
             exit 1
-          fi
-
-          # Keep label state in sync with the board state. This is idempotent and
-          # covers issues that were manually labelled `defect` outside the form.
-          gh issue edit "$ISSUE_NUMBER" --repo "$REPO" --add-label "status:filed" >/dev/null
-
-          # Parse GitHub issue-form markdown and apply the first-pass routing labels.
-          # Maintainers can still correct these labels during triage.
-          BODY=$(gh issue view "$ISSUE_NUMBER" --repo "$REPO" --json body --jq .body)
-          get_field() {
-            awk -v name="$1" '
-              $0 == "### " name { found=1; next }
-              found && /^### / { exit }
-              found && NF { print; exit }
-            ' <<<"$BODY"
-          }
-
-          OWNERSHIP=$(get_field "Ownership")
-          SEVERITY=$(get_field "Severity")
-          REPRO=$(get_field "Repro steps")
-          ACTUAL=$(get_field "Actual result")
-          REPORTED_TO=$(get_field "Reported to dApp URL (Ecosystem coverage logs only)")
-          echo "Parsed Ownership=[$OWNERSHIP] Severity=[$SEVERITY] ReportedTo=[$REPORTED_TO]"
-
-          # Track whether each field mapped to a known label. If the issue-form
-          # wording drifts (or the body was hand-edited) the case falls through and
-          # we flag the issue for a human instead of silently shipping it unlabelled.
-          NEEDS_MANUAL=0
-          IS_ECOSYSTEM=0
-
-          case "$OWNERSHIP" in
-            "App Suite"*) gh issue edit "$ISSUE_NUMBER" --repo "$REPO" --add-label "area:app-suite" >/dev/null ;;
-            "0G Infra"*) gh issue edit "$ISSUE_NUMBER" --repo "$REPO" --add-label "area:0g-infra" >/dev/null ;;
-            "Ecosystem dApp"*) IS_ECOSYSTEM=1; gh issue edit "$ISSUE_NUMBER" --repo "$REPO" --add-label "area:ecosystem" --add-label "coverage-log" >/dev/null ;;
-            *) echo "::warning::Ownership did not match a known area label: [$OWNERSHIP]"; NEEDS_MANUAL=1 ;;
-          esac
-
-          case "$SEVERITY" in
-            "P1"*) gh issue edit "$ISSUE_NUMBER" --repo "$REPO" --add-label "sev:P1" >/dev/null ;;
-            "P2"*) gh issue edit "$ISSUE_NUMBER" --repo "$REPO" --add-label "sev:P2" >/dev/null ;;
-            "P3"*) gh issue edit "$ISSUE_NUMBER" --repo "$REPO" --add-label "sev:P3" >/dev/null ;;
-            "P4"*) gh issue edit "$ISSUE_NUMBER" --repo "$REPO" --add-label "sev:P4" >/dev/null ;;
-            *) echo "::warning::Severity did not match a known sev label: [$SEVERITY]"; NEEDS_MANUAL=1 ;;
-          esac
-
-          if [ "$NEEDS_MANUAL" -eq 1 ]; then
-            gh issue edit "$ISSUE_NUMBER" --repo "$REPO" --add-label "needs:manual-label" >/dev/null
-          fi
-
-          trim() {
-            sed -E 's/^[[:space:]]+//; s/[[:space:]]+$//' <<<"$1"
-          }
-
-          if [ "$IS_ECOSYSTEM" -eq 1 ] && [ -n "$(trim "$REPRO")" ] && [ -n "$(trim "$ACTUAL")" ] && [ -z "$(trim "$REPORTED_TO")" ]; then
-            gh issue edit "$ISSUE_NUMBER" --repo "$REPO" --add-label "needs:dapp-report-url" >/dev/null
-            gh issue comment "$ISSUE_NUMBER" --repo "$REPO" --body "Thanks for logging Ecosystem dApp coverage. Ecosystem bugs are record-only in this Hub: please report the actionable bug to the dApp's own channel, then edit this issue and fill **Reported to dApp URL** with that link. We added \`needs:dapp-report-url\` so triage can follow up."
           fi
 
           # Add the issue (no-op if already on the board) and capture the item id.

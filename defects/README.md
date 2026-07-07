@@ -1,13 +1,15 @@
 # `defects/` — reference material
 
 Defects are now filed and tracked as **GitHub issues**, not files. The
-[Defect report form](../.github/ISSUE_TEMPLATE/defect-report.yml) structures them at intake,
-labels carry the routing axes, and aggregation runs against the issue tracker — see
-[`.github/TRIAGE.md`](../.github/TRIAGE.md). This folder is now **reference only**:
+[Submit Feedback form](../.github/ISSUE_TEMPLATE/submit-feedback.yml) structures them at intake
+(Category / Product / Details / Evidence), labels carry the routing axes, and aggregation
+runs against the issue tracker — see [`.github/TRIAGE.md`](../.github/TRIAGE.md). This folder
+is now **reference only**:
 
-1. **[`SEVERITY.md`](./SEVERITY.md)** — the `P1–P4` rubric the form's severity dropdown
-   and the README's signal-to-noise gate both rely on.
-2. **[`TEMPLATE.md`](./TEMPLATE.md)** — the canonical field list (the form mirrors it).
+1. **[`SEVERITY.md`](./SEVERITY.md)** — the `P1–P4` rubric maintainers use to assign
+   `sev:*` at triage; the README's signal-to-noise gate relies on it too.
+2. **[`TEMPLATE.md`](./TEMPLATE.md)** — the canonical field list (tester fields mirror
+   the form; the rest is maintainer-only triage metadata).
 3. **`*.md` example defects** — two worked examples (`appsuite-coop-…`, `storagescan-legacy-…`)
    showing what a fully-specified defect looks like.
 

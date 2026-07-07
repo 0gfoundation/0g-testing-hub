@@ -8,30 +8,29 @@ are decided. Companion to the [root README](../README.md) and the
 structured form; the **maintainer** runs the label → verify → dedup → route pipeline.
 Reward export joins each `signup` issue's author (the **GitHub username**) to its defect issue authors.
 
-## Tester flow (file a defect)
+## Tester flow (submit feedback)
 
 L0 Recruit is feedback-only: 0G App Suite Feedback / 0G Studio Feedback +
 0G Private Computer Feedback.
-It does **not** use this defect flow. This section starts when a tester is filing
+It does **not** use this flow. This section starts when a tester is filing
 a bug to climb beyond Recruit.
 
 Testers never touch `defects/*.md`, labels, or the board — the only action is filling one form.
 
-1. **Find a defect** while walking an app's happy path + an error path. Reproduce it first — "felt off" is not a defect.
-2. **Open the [Defect report form](./ISSUE_TEMPLATE/defect-report.yml)** (`issues/new?template=defect-report.yml&labels=defect,status:filed`) — one issue per defect or coverage log.
-3. **Fill the fields**: ownership + product + severity (dropdowns), environment, repro / expected / actual; optionally a root-cause guess and an `rc:` **root-cause code** if you suspect it's shared with another bug.
-4. **For Ecosystem dApps:** treat the issue as a **coverage log**. Send actionable bugs to the dApp's own channel and paste the `Reported to dApp URL` field.
-5. **Tick the gates**: reproduced it yourself · didn't sign/touch funds or keys · understand Ecosystem dApps are record-only.
-6. **Submit.** The issue is auto-labelled `defect` + `status:filed` and lands in **Triage**. Done — the rest is the maintainer's.
+1. **Find a bug** while walking an app's happy path + an error path. Reproduce it first — "felt off" is not a defect.
+2. **Open the [Submit Feedback form](./ISSUE_TEMPLATE/submit-feedback.yml)** (`issues/new?template=submit-feedback.yml`) — one bug or piece of feedback per issue.
+3. **Fill the four fields**: **Category** (Bug Report / Feature Request / Other) + **Product** (dropdowns), **Details** (what happened, steps to reproduce, expected vs. actual), and optional **Evidence** (screenshots, recordings, links). No severity, ownership, environment breakdown, or root-cause codes — those are maintainer triage work.
+4. **Submit.** The issue lands labelled `feedback`. A `Bug Report` is promoted to `defect` + `status:filed` automatically and enters **Triage**; `Feature Request` / `Other` are recorded as feedback and are not reward-eligible. Done — the rest is the maintainer's.
 
-> Reward is decided on **accepted, deduped** defects (see below), not on how many you file.
+> Reward is decided on **accepted, deduped** core bugs (see below), not on how many you file. Ecosystem dApp products are record-only.
 
 ## Maintainer flow (triage → route)
 
 Everything from here down is the maintainer pipeline.
 
 > One-time setup of labels + board: run [`scripts/setup-labels-and-board.sh`](../scripts/setup-labels-and-board.sh).
-> It is also the safe backfill path for missed open defect issues: existing `status:*`
+> It is also the safe backfill path for missed open issues: `feedback` issues the
+> workflow missed are promoted by Category (Bug Report → `defect`), existing `status:*`
 > labels are preserved, missing statuses get `status:filed`, and multi-status issues
 > are flagged with `needs:manual-label`. Board Status is set from the single
 > existing `status:*` label when it is unambiguous.
@@ -39,17 +38,24 @@ Everything from here down is the maintainer pipeline.
 
 ## Automation (how issues reach the board)
 
-New `defect` issues are labelled `status:filed`, labelled with first-pass `area:*` / `sev:*` values from the issue form, added to the board, and set to **Triage** automatically by the
+New `feedback` issues are routed by their **Category** by the
 [`add-defects-to-board`](./workflows/add-defects-to-board.yml) GitHub Action (it replaces
-the UI-only built-in Projects workflows, which have no API).
+the UI-only built-in Projects workflows, which have no API): a **Bug Report** is promoted
+to `defect` + `status:filed`, gets a first-pass `area:*` derived from **Product** (ecosystem
+also gets `coverage-log` and a record-only notice), is added to the board, and set to
+**Triage**. **Feature Request** gets `feature-request`; **Other** stays plain `feedback` —
+neither enters the defect pipeline. No `sev:*` is ever auto-applied: severity is assigned
+here, at triage.
 
 It depends on a repo secret **`PROJECT_PAT`** — a token with the `project` + `repo` +
 `read:org` scopes, because the default `GITHUB_TOKEN` cannot write an org Projects v2 board.
 
-> **Token rotation:** if `PROJECT_PAT` is revoked or expires, auto-add silently stops
-> (issues still get the `defect` label, they just won't appear on the board). To rotate:
+> **Token rotation:** if `PROJECT_PAT` is revoked or expires, intake routing silently stops
+> (new submissions keep only the `feedback` label — off the board and invisible to the
+> reward export, so the chain fails closed). To rotate:
 > `gh secret set PROJECT_PAT --repo 0gfoundation/0g-testing-hub` with a fresh token, then
-> back-fill any missed open defect issues by re-running `scripts/setup-labels-and-board.sh`.
+> re-run `scripts/setup-labels-and-board.sh` — it promotes missed `feedback` Bug Reports to
+> `defect` and backfills them onto the board.
 > The script does not downgrade existing `status:accepted` / `status:routed` issues;
 > it syncs the Project Status from the existing label.
 
@@ -61,22 +67,34 @@ Triage → Accepted → Routed → Closed
 
 | Column / status label | Meaning | What triage does |
 |---|---|---|
-| `status:filed` (**Triage**) | New, unvalidated | Apply one `area:*` and one `sev:*` label. Try the repro. |
+| `status:filed` (**Triage**) | New, unvalidated | Confirm/correct the auto-derived `area:*`, apply one `sev:*`. Try the repro from Details. |
 | `status:accepted` (**Accepted**) | Real + reproducible | Confirmed. **This is the state that counts toward rewards.** |
 | `status:routed` (**Routed**) | Sent upstream | Owner notified (SDK / docs / config / the product team). |
 | `status:closed` (**Closed**) | Resolved, rejected, or duplicate | Closed with a one-line reason. |
 
-Ownership is **orthogonal** to severity (see [SEVERITY.md](../defects/SEVERITY.md)): a P1 in an
+Area is **orthogonal** to severity (see [SEVERITY.md](../defects/SEVERITY.md)): a P1 in an
 Ecosystem dApp is still record-only; a P3 in 0G Infra still routes upstream.
 
 ## Labelling on intake
 
-1. **Area** — exactly one: `area:app-suite` · `area:0g-infra` · `area:ecosystem`.
-2. **Severity** — exactly one: `sev:P1`…`sev:P4`. If the filer over/under-rated it, fix it here.
+Severity, root cause, and routing are **maintainer responsibilities** — the tester only
+supplies Category, Product, Details, and Evidence.
+
+1. **Area** — exactly one: `area:app-suite` · `area:0g-infra` · `area:ecosystem`. Automation
+   derives it from the Product dropdown; confirm or correct it here. The map (kept in
+   lockstep with `add-defects-to-board.yml` and `scripts/setup-labels-and-board.sh`):
+   - 0G App / Genome / 0G Chat / PandaClaw → `area:app-suite`
+   - 0G Hub / 0G Storage Scan / Chain Scan / 0G Code to Coin → `area:0g-infra`
+   - TradeGPT / Jaine / Oku / AI Arena / CARV / Cygnus Finance / DataHive / Khalani / Merkl → `area:ecosystem`
+   - Product = Other → no auto area; the issue carries `needs:manual-label` — assign by hand.
+2. **Severity** — exactly one: `sev:P1`…`sev:P4`, assigned by the maintainer from the
+   Details field using the [SEVERITY.md](../defects/SEVERITY.md) rubric. The form no longer
+   asks testers for a severity.
 3. **Status** — move `status:filed` → `status:accepted` once you reproduce it; otherwise close with a reason.
-4. **Root cause** — if the issue names a root-cause code, apply an `rc:<CODE>` label
+4. **Root cause** — when defects share an underlying cause, apply an `rc:<CODE>` label
    (create it once: `gh label create 'rc:CHAIN_ID_MISSING' --color ededed -d 'shared root cause'`).
-5. **Ecosystem coverage** — keep `area:ecosystem`, add `coverage-log`, do not mark as a rewardable 0G defect, and clear `needs:dapp-report-url` only after the `Reported to dApp URL` field points to the dApp's own issue / form / support channel for the actionable bug.
+5. **Ecosystem coverage** — keep `area:ecosystem`, add `coverage-log` (automation does both), and never mark as a rewardable 0G defect. If the bug is actionable, apply `needs:dapp-report-url` and ask the tester to comment the dApp's own issue / form / support link; clear the label once that link is posted.
+6. **Feature Request / Other** — stay out of the defect pipeline entirely (`feature-request` / plain `feedback`); they are never counted toward rewards.
 
 ## Routed evidence
 
@@ -184,9 +202,9 @@ then close #3. (Maintainer action — not automated.)
 
 | Step | Tester | Maintainer |
 |---|---|---|
-| Intake | Fills the form → issue auto-labelled `defect` (Triage) | — |
-| Classify | — | Automation applies first-pass `area:*` + `sev:*`; maintainer corrects if needed |
+| Intake | Picks Category + Product, writes Details / Evidence → Bug Reports auto-promoted to `defect` (Triage) | — |
+| Classify | — | Automation derives first-pass `area:*` from Product; maintainer corrects it and applies `sev:*` |
 | Verify | — | `status:accepted` if reproducible, else close with a reason |
-| Dedup | (optional) suggests an `rc:` code | `rc:`/`systemic` labels; collapse duplicates to one |
+| Dedup | — | `rc:`/`systemic` labels; collapse duplicates to one |
 | Route | — | Add routed evidence comment, then `status:routed`, send upstream once |
 | Reward | Supplies GitHub username + wallet through signup | Runs `scripts/export-reward-report.mjs`; counts **accepted + deduped** defects per GitHub username and exports wallet |

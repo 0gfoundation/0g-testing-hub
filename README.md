@@ -20,9 +20,9 @@ All rewards are **0G Compute Credit**; payout = the Credit of your **highest lev
 |-------|---------------|-------------|:------:|
 | **Sign Up** | Open a sign-up issue with your 0G mainnet wallet (your GitHub account is your identity) | [Sign up (GitHub)](https://github.com/0gfoundation/0g-testing-hub/issues/new?template=signup.yml&labels=signup) | — |
 | **L0** Recruit | 2 feedback forms; no bug required | 1. [0G Studio Feedback (App Suite, all four apps)](https://forms.gle/ymEdZrdTNs4giEm1A)<br>2. [0G Private Computer Feedback](https://forms.gle/G919xrbRyfVJxPZe8) | **10 0G Compute Credit** |
-| **L1** Tester | 1 accepted · App Suite | [Defect report form](https://github.com/0gfoundation/0g-testing-hub/issues/new?template=defect-report.yml&labels=defect,status:filed) | **20 0G Compute Credit** |
-| **L2** Infra Pioneer | +1 accepted · 0G Infra (2 total) | [Defect report form](https://github.com/0gfoundation/0g-testing-hub/issues/new?template=defect-report.yml&labels=defect,status:filed) | **40 0G Compute Credit** |
-| **L3** Master | 5+ accepted · App Suite + 0G Infra | [Defect report form](https://github.com/0gfoundation/0g-testing-hub/issues/new?template=defect-report.yml&labels=defect,status:filed) | **100 0G Compute Credit** |
+| **L1** Tester | 1 accepted · App Suite | [Submit Feedback form](https://github.com/0gfoundation/0g-testing-hub/issues/new?template=submit-feedback.yml) | **20 0G Compute Credit** |
+| **L2** Infra Pioneer | +1 accepted · 0G Infra (2 total) | [Submit Feedback form](https://github.com/0gfoundation/0g-testing-hub/issues/new?template=submit-feedback.yml) | **40 0G Compute Credit** |
+| **L3** Master | 5+ accepted · App Suite + 0G Infra | [Submit Feedback form](https://github.com/0gfoundation/0g-testing-hub/issues/new?template=submit-feedback.yml) | **100 0G Compute Credit** |
 
 ## Tester Path
 
@@ -30,16 +30,16 @@ Two GitHub forms are the entry points; the rest is filling them in and waiting f
 
 1. **[Sign up](https://github.com/0gfoundation/0g-testing-hub/issues/new?template=signup.yml&labels=signup)** once — this issue is your tracker and the start of your tester journey.
 2. **Clear L0** — submit the two Google forms above with that same username. No bug needed → **10 0G Compute Credit**.
-3. **File defects** — one bug or coverage log per **[Defect report](https://github.com/0gfoundation/0g-testing-hub/issues/new?template=defect-report.yml&labels=defect,status:filed)**, with Ownership / Product / Severity. Accepted **core** defects (App Suite / 0G Infra) climb **L1–L3**; Ecosystem dApps are record-only.
+3. **Submit feedback** — one bug or piece of feedback per **[Submit Feedback](https://github.com/0gfoundation/0g-testing-hub/issues/new?template=submit-feedback.yml)** issue: pick a **Category** and **Product**, describe what happened in **Details** (steps, expected, actual), and paste screenshots / recordings / links in **Evidence**. That's all — severity, routing, and dedup are triage's job. `Bug Report` enters defect triage; `Feature Request` and `Other` are recorded but never counted toward rewards. Accepted **core** bugs (App Suite / 0G Infra) climb **L1–L3**; Ecosystem dApps are record-only.
 4. **Triage** — maintainers label it; you get a comment when it's accepted, routed, or closed. Track it on [board #19](https://github.com/orgs/0gfoundation/projects/19).
 5. **Progress** — your sign-up issue shows L0 status and a reward-progress preview as defects are accepted.
 
 **Won't be accepted / out of bounds:**
 
 - **Duplicates** or **not-reproducible** "felt off" reports.
-- **Feature requests** - unless the docs already promised the behavior.
+- **Feature requests** - welcome under Category `Feature Request`, but recorded only, never rewarded (unless the docs already promised the behavior — then it's a bug).
 - **P4 cosmetics** with no reproducible P1/P2.
-- **Record-only dApp bugs** - route to the dApp's own channel; the Hub only logs coverage. If you log Ecosystem coverage here, include the dApp report URL when there is an actionable bug.
+- **Record-only dApp bugs** - all Ecosystem dApp products in the Product list are record-only: recorded here, never counted toward core-bug rewards. Also report actionable bugs to the dApp's own channel and paste the link as a comment.
 - **Funds / keys** - never sign or send; stop at the transaction-confirmation screen on swap / bridge / faucet / sign flows.
 
 ## Test Targets
