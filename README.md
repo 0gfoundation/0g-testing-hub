@@ -6,6 +6,7 @@
 
 - [Test, Report, Reward](#test-report-reward)
 - [Tester Path](#tester-path)
+- [Track your report by its labels](#track-your-report-by-its-labels)
 - [Test Targets](#test-targets)
 
 ## Test, Report, Reward
@@ -33,6 +34,24 @@ Focus on the tester side: register once from this README, complete the L0 survey
 3. **Pick a target** — prioritize **0G App Suite** first, then **0G Infra**. They are the core L1–L3 reward path, so accepted bugs there unlock the higher rewards. Ecosystem dApps are also welcome as ecosystem coverage.
 4. **Submit one feedback item at a time** — from L1 upward, open **[Submit Feedback](https://github.com/0gfoundation/0g-testing-hub/issues/new?template=submit-feedback.yml)** for each bug, feature request, or other note. Pick **Category** and **Product**, then use **Details** for steps, expected result, and actual result. Add screenshots, recordings, or links in **Evidence** when useful.
 5. **Follow your tracker** — your sign-up issue shows L0 status and reward-progress previews as accepted core bug reports move you through **L1–L3**. `Feature Request` and `Other` are recorded but do not count toward rewards; Ecosystem dApp findings are useful coverage, while L1–L3 rewards come from accepted App Suite / 0G Infra bugs.
+
+### Track your report by its labels
+
+The labels on your feedback issue tell you exactly where it stands — no need to ask. A bot also comments on your issue at every status change, explaining what it means for your reward. Full guide: [docs/LABELS.md](./docs/LABELS.md).
+
+| Label | What it means for you |
+|-------|-----------------------|
+| `feedback` | Received through the Submit Feedback form |
+| `defect` + `status:filed` | Your Bug Report entered triage — a maintainer will try to reproduce it |
+| `status:needs-info` | **Your move** — triage needs more detail; reply within ~7 days or it closes as rejected |
+| `status:accepted` | Confirmed and reproducible — **this is what counts toward your reward** |
+| `status:routed` | Sent to the owning team — still counts toward your reward |
+| `status:closed` + `resolution:*` | The resolution label says why: `fixed` (real bug, resolved — **keeps its credit**), `rejected` (not counted), `duplicate` (credit goes to the first reporter) |
+| `needs:dapp-report-url` | **Your move** — comment the dApp's own report/support link on your ecosystem bug |
+| `area:*` / `product:*` / `sev:P1`–`P4` | Product family, product, and severity — assigned by maintainers/automation, not by you |
+
+**Tip — check before you file:** duplicates credit the first reporter, so filter
+[open issues by `product:*`](https://github.com/0gfoundation/0g-testing-hub/issues?q=is%3Aissue+label%3A%22product%3A0g-app%22) (e.g. `label:"product:0g-chat"`) to see whether your bug is already reported.
 
 **Reward notes / out of bounds:**
 

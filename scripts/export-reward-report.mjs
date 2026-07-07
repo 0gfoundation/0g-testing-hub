@@ -122,7 +122,8 @@ Inputs:
              pre-payout CI gate. Lightweight quality warnings do not fail strict mode.
 
 Notes:
-  Rewardable issues are core App Suite / 0G Infra issues with status:accepted or status:routed.
+  Rewardable issues are core App Suite / 0G Infra issues with status:accepted or status:routed
+  (or status:closed + resolution:fixed — a fixed defect keeps its credit).
   Issues sharing the same rc:<CODE> label collapse to the earliest canonical issue.
   Ecosystem dApp coverage logs are excluded from reward counts.
   Feature Request / Other feedback never carries the defect label, so this export never sees it.
@@ -648,11 +649,19 @@ function emptyUser(username, registered, wallet = '', l0Done = false) {
 function isRewardableAcceptedCore(issue) {
   if (hasLabel(issue, 'area:ecosystem')) return false;
   if (!hasLabel(issue, 'area:app-suite') && !hasLabel(issue, 'area:0g-infra')) return false;
-  return hasLabel(issue, 'status:accepted') || hasLabel(issue, 'status:routed');
+  return isRewardableState(issue);
 }
 
 function isAcceptedOrRouted(issue) {
-  return hasLabel(issue, 'status:accepted') || hasLabel(issue, 'status:routed');
+  return isRewardableState(issue);
+}
+
+// A defect that was fixed was necessarily real — closing it as resolution:fixed
+// must not strip the credit its acceptance earned. rejected/duplicate closes
+// stay non-rewardable (duplicates credit the first filer via rc: collapse).
+function isRewardableState(issue) {
+  if (hasLabel(issue, 'status:accepted') || hasLabel(issue, 'status:routed')) return true;
+  return hasLabel(issue, 'status:closed') && hasLabel(issue, 'resolution:fixed');
 }
 
 function rootCauseKey(issue) {

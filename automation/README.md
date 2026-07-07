@@ -24,7 +24,7 @@ only fires from the default branch). Details for each form step are in **One-tim
 
 1. **Merge to `main`.** The workflow, labels, and the export's `l0:cleared` reader must be on
    the default branch.
-2. **Create the labels:** `bash scripts/setup-labels-and-board.sh` (adds `signup`, `needs:fix`,
+2. **Create the labels:** `bash scripts/setup-labels-and-board.sh` (adds `signup`, `signup:needs-fix`,
    `l0:studio-done`, `l0:pc-done`, `l0:cleared`).
 3. **Mint a token:** a fine-grained PAT scoped to *Issues: Read and write* on
    `0gfoundation/0g-testing-hub`.

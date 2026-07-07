@@ -2,7 +2,7 @@
 
 How a defect travels from a tester's form to a payout row. Two actors, one automation
 layer between them. This is the visual companion to [`.github/TRIAGE.md`](../.github/TRIAGE.md)
-(the maintainer runbook) and [`LEVELS.md`](../LEVELS.md) (the reward ladder).
+(the maintainer runbook) and [`LEVELS.md`](./LEVELS.md) (the reward ladder).
 
 - **Tester** uses the README registration link, L0 surveys, and the Submit Feedback form — never labels, the board, or `defects/*.md`.
 - **Automation** (GitHub Actions) labels, boards, updates the signup tracker, and closes the feedback loop.
@@ -22,7 +22,7 @@ flowchart TD
     subgraph A["⚙️ Automation — GitHub Actions"]
       A0["signup issue tracker<br/>auto-title · L0 progress · reward preview"]
       A1["Issue opened<br/>label: feedback"]
-      A2["add-defects-to-board.yml<br/>Bug Report → defect + status:filed + area:* · board #19 Triage<br/>Feature Request / Other → recorded, no reward"]
+      A2["add-defects-to-board.yml<br/>Bug Report → defect + status:filed + area:* + product:* · board #19 Triage<br/>Feature Request / Other → recorded, no reward"]
       A3["notify-status-change.yml<br/>auto-comment outcome to the tester"]
     end
 
@@ -30,7 +30,7 @@ flowchart TD
       M1["Verify · correct area:* · apply sev:*"]
       M2{"Reproducible &<br/>in bounds?"}
       M3["status:accepted<br/>★ counts toward reward"]
-      M4["status:closed + reason"]
+      M4["status:closed + resolution:*<br/>(fixed / rejected / duplicate)"]
       M5["Dedup — find-duplicate-candidates.mjs<br/>rc: code · systemic · collapse to first filer"]
       M6["Route — check-routed-evidence.mjs<br/>Routed to / Upstream link → status:routed"]
       M7["export-reward-report.mjs<br/>join username → wallet · tally L0–L3"]
@@ -58,26 +58,34 @@ stay plain feedback with no `status:*` at all. Rewards still come only from
 ```mermaid
 stateDiagram-v2
     [*] --> filed: Bug Report promoted (auto)
+    filed --> needs_info: repro incomplete — bot asks the tester
+    needs_info --> filed: tester replies
+    needs_info --> closed: no reply ~7 days (resolution·rejected)
     filed --> accepted: reproduced
-    filed --> closed: not repro / out of bounds
+    filed --> closed: not repro / out of bounds (resolution·rejected)
     accepted --> routed: routing evidence added
-    accepted --> closed: duplicate (folds to first filer)
-    routed --> closed: resolved upstream
+    accepted --> closed: duplicate (resolution·duplicate, credits first filer)
+    routed --> closed: resolved upstream (resolution·fixed, keeps credit)
     closed --> [*]
 ```
+
+Every close carries exactly one `resolution:*` label — that label (and the bot comment
+it triggers) is how the tester learns whether the report counted.
 
 | Status label | Board column | Rewardable? |
 |---|---|:---:|
 | `status:filed` | Triage | no (unvalidated) |
+| `status:needs-info` | Triage | no — waiting on the tester |
 | `status:accepted` | Accepted | **yes** |
 | `status:routed` | Routed | **yes** |
-| `status:closed` | Closed | no |
+| `status:closed` + `resolution:fixed` | Closed | **yes** — a fixed defect keeps its credit |
+| `status:closed` + `resolution:rejected` / `resolution:duplicate` | Closed | no (duplicates credit the first filer) |
 
 ## Reward ladder (what the export computes)
 
 Payout = Credit of the **highest level reached**. Counts **accepted + deduped** core
 (App Suite / 0G Infra) findings; Ecosystem coverage logs are valuable but excluded from core reward tiers. The L0–L3 table
-and pass conditions are the evergreen spec in [`LEVELS.md`](../LEVELS.md), mirrored on the
+and pass conditions are the evergreen spec in [`LEVELS.md`](./LEVELS.md), mirrored on the
 [landing page](../README.md#test-report-reward) — not repeated here so the numbers can't drift.
 
 ## Two things the automation gets right (and recently fixed)

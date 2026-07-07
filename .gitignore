@@ -8,3 +8,6 @@ Screen Shot*.png
 
 # Local-only setup notes / tutorials — never published
 local-setup-notes/
+
+# Internal collaboration notes — local only, never published
+docs-internal/

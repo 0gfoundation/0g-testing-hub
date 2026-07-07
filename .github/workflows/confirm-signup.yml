@@ -52,7 +52,7 @@ jobs:
           # Safety: a 64-hex string is a private key, never a wallet address. If one
           # shows up, flag it loudly instead of leaving a secret in a public issue.
           if printf '%s' "$BODY" | grep -Eiq '\b(0x)?[0-9a-f]{64}\b'; then
-            gh issue edit "$ISSUE_NUMBER" --repo "$REPO" --add-label "needs:fix" >/dev/null
+            gh issue edit "$ISSUE_NUMBER" --repo "$REPO" --add-label "signup:needs-fix" >/dev/null
             gh issue comment "$ISSUE_NUMBER" --repo "$REPO" --body "⚠️ This looks like it may contain a **private key**. Please **edit it out immediately** and keep only your public \`0x…\` wallet address. Never share secrets."
             echo "Flagged #$ISSUE_NUMBER for a possible private key."
             exit 0
@@ -67,7 +67,7 @@ jobs:
             --author "$AUTHOR" --json number --jq '.[].number' | sort -n | head -1)
           if [ -n "$CANONICAL" ] && [ "$CANONICAL" != "$ISSUE_NUMBER" ]; then
             gh issue edit "$ISSUE_NUMBER" --repo "$REPO" --remove-label "signup" >/dev/null
-            gh issue edit "$ISSUE_NUMBER" --repo "$REPO" --add-label "duplicate" >/dev/null 2>&1 || true
+            gh issue edit "$ISSUE_NUMBER" --repo "$REPO" --add-label "signup:duplicate" >/dev/null 2>&1 || true
             gh issue comment "$ISSUE_NUMBER" --repo "$REPO" --body "👋 You already registered in #$CANONICAL — that issue is your tracker. Your GitHub account is your identity, so one sign-up is all you need. Edit **#$CANONICAL** instead of opening new ones (need to fix your wallet? edit it there). Closing this duplicate."
             gh issue close "$ISSUE_NUMBER" --repo "$REPO" >/dev/null
             echo "Closed duplicate sign-up #$ISSUE_NUMBER (@$AUTHOR); canonical is #$CANONICAL."
@@ -92,7 +92,7 @@ jobs:
           EOF
             echo "Confirmed sign-up #$ISSUE_NUMBER (@$AUTHOR -> $WALLET)."
           else
-            gh issue edit "$ISSUE_NUMBER" --repo "$REPO" --add-label "needs:fix" >/dev/null
+            gh issue edit "$ISSUE_NUMBER" --repo "$REPO" --add-label "signup:needs-fix" >/dev/null
             gh issue comment "$ISSUE_NUMBER" --repo "$REPO" --body "⚠️ Couldn't read a valid **0G mainnet EVM wallet** (expected \`0x\` + 40 hex characters). Please edit the issue and fix the wallet field so your reward can be paid."
             echo "Flagged #$ISSUE_NUMBER for an invalid/missing wallet."
           fi
