@@ -94,7 +94,7 @@
   description: "In Triage — not yet validated"
 - name: "status:needs-info"
   color: "f9d0c4"
-  description: "Waiting on the tester — triage needs more detail to reproduce (reply within ~7 days or it closes as rejected)"
+  description: "Waiting on the tester — reply with repro details within ~7 days or it closes as rejected"
 - name: "status:accepted"
   color: "0e8a16"
   description: "Triage confirms real + reproducible (rewardable)"
