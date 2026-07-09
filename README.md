@@ -6,7 +6,6 @@
 
 - [Test, Report, Reward](#test-report-reward)
 - [Tester Path](#tester-path)
-- [Track your report by its labels](#track-your-report-by-its-labels)
 - [Test Targets](#test-targets)
 
 ## Test, Report, Reward
@@ -27,31 +26,12 @@ All rewards are **0G Compute Credit**; payout = the Credit of your **highest lev
 
 ## Tester Path
 
-Focus on the tester side: register once from this README, complete the L0 surveys, test the targets, and submit one clear feedback item at a time with enough detail to reproduce.
+1. **[Sign up][signup-link]** once with your public 0G mainnet wallet. Keep the default title; the issue is your tracker.
+2. **Clear L0** by completing both surveys in the table above. No bug is required for L0.
+3. **Test core targets first:** 0G App Suite for L1, then 0G Infra for L2/L3. Ecosystem dApps are useful coverage, but not core reward gates.
+4. **Submit one item at a time** with [Submit Feedback](https://github.com/0gfoundation/0g-testing-hub/issues/new?template=submit-feedback.yml). For bugs, include steps, expected result, actual result, and evidence. Then wait for maintainer triage.
 
-1. **[Sign up][signup-link]** once — this registration issue is your tracker and the start of your tester journey.
-2. **Clear L0** — complete the two surveys above with that same GitHub username. No bug needed → **10 0G Compute Credit**.
-3. **Pick a target** — prioritize **0G App Suite** first, then **0G Infra**. They are the core L1–L3 reward path, so accepted bugs there unlock the higher rewards. Ecosystem dApps are also welcome as ecosystem coverage.
-4. **Submit one feedback item at a time** — from L1 upward, open **[Submit Feedback](https://github.com/0gfoundation/0g-testing-hub/issues/new?template=submit-feedback.yml)** for each bug, feature request, or other note. Pick **Category** and **Product**, then use **Details** for steps, expected result, and actual result. Add screenshots, recordings, or links in **Evidence** when useful.
-5. **Follow your tracker** — your sign-up issue shows L0 status and reward-progress previews as accepted core bug reports move you through **L1–L3**. `Feature Request` and `Other` are recorded but do not count toward rewards; Ecosystem dApp findings are useful coverage, while L1–L3 rewards come from accepted App Suite / 0G Infra bugs.
-
-### Track your report by its labels
-
-The labels on your feedback issue tell you exactly where it stands — no need to ask. A bot also comments on your issue at every status change, explaining what it means for your reward. Full guide: [docs/LABELS.md](./docs/LABELS.md).
-
-| Label | What it means for you |
-|-------|-----------------------|
-| `feedback` | Received through the Submit Feedback form |
-| `defect` + `status:filed` | Your Bug Report entered triage — a maintainer will try to reproduce it |
-| `status:needs-info` | **Your move** — triage needs more detail; reply within ~7 days or it closes as rejected |
-| `status:accepted` | Confirmed and reproducible — **this is what counts toward your reward** |
-| `status:routed` | Sent to the owning team — still counts toward your reward |
-| `status:closed` + `resolution:*` | The resolution label says why: `fixed` (real bug, resolved — **keeps its credit**), `rejected` (not counted), `duplicate` (credit goes to the first reporter) |
-| `needs:dapp-report-url` | **Your move** — comment the dApp's own report/support link on your ecosystem bug |
-| `area:*` / `product:*` / `sev:P1`–`P4` | Product family, product, and severity — assigned by maintainers/automation, not by you |
-
-**Tip — check before you file:** duplicates credit the first reporter, so filter
-[open issues by `product:*`](https://github.com/0gfoundation/0g-testing-hub/issues?q=is%3Aissue+label%3A%22product%3A0g-app%22) (e.g. `label:"product:0g-chat"`) to see whether your bug is already reported.
+Before filing, [search existing reports](https://github.com/0gfoundation/0g-testing-hub/issues?q=is%3Aissue%20label%3Afeedback). Duplicates credit the first reporter.
 
 **Reward notes / out of bounds:**
 
@@ -65,12 +45,14 @@ The labels on your feedback issue tell you exactly where it stands — no need t
 
 <!-- targets:start -->
 
+Test the core user flow for each target, including one happy path and one error path. File reproducible DX friction: confusing setup, unclear errors, broken docs, wallet/network issues, blocked flows, or behavior that diverges from what the product promises.
+
 ### 0G App Suite · core (L0-L1)
 
 - [**0G App**](https://app.0g.ai/) - flagship app builder, live on mainnet
-- [**Genome**](https://dev.0g-vibe.pages.dev/genome) - paste a URL/screenshot, produces production-grade design DNA
-- [**0G Chat**](https://dev.0g-vibe.pages.dev/private-chat) - end-to-end encrypted private chat (UI still WIP)
-- [**PandaClaw**](https://dev.0g-vibe.pages.dev/agents) - agent launchpad + skill marketplace (Hermes + OpenClaw harness)
+- [**Genome**](https://app.0g.ai/genome) - paste a URL/screenshot, produces production-grade design DNA
+- [**0G Chat**](https://app.0g.ai/private-chat) - end-to-end encrypted private chat (UI still WIP)
+- [**Agent launchpad**](https://app.0g.ai/agent-launchpad) - agent launchpad + skill marketplace (Hermes + OpenClaw harness)
 
 ### 0G Infra · core (L2)
 
@@ -94,4 +76,4 @@ The labels on your feedback issue tell you exactly where it stands — no need t
 
 <!-- targets:end -->
 
-[signup-link]: https://github.com/0gfoundation/0g-testing-hub/issues/new?title=%5Bsignup%5D%3A%20tester%20registration&labels=signup&body=%23%23%23%200G%20mainnet%20EVM%20wallet%20address%0A%0AReplace%20this%20line%20with%20your%20public%200x%20wallet%20address.%20Never%20paste%20a%20private%20key%20or%20seed%20phrase.%0A%0A---%0A%0A%2A%2AThis%20issue%20is%20your%20one-time%20registration%20and%20permanent%20reward%20tracker.%2A%2A%20Leave%20the%20title%20as%20is%20%E2%80%94%20a%20bot%20renames%20it%20to%20your%20GitHub%20username.%20After%20you%20submit%2C%20the%20bot%20validates%20your%20wallet%20and%20comments%20your%20next%20step%20here%3B%20labels%20on%20this%20issue%20show%20your%20progress.%0A%0A%23%23%23%20Your%20path%20%E2%80%94%20tick%20each%20box%20as%20you%20go%0A%0A-%20%5B%20%5D%20Replace%20the%20placeholder%20above%20with%20my%20public%200x%20wallet%2C%20then%20press%20%2A%2ASubmit%20new%20issue%2A%2A%0A-%20%5B%20%5D%20Bot%20confirmed%20my%20wallet%20%28if%20it%20flags%20%60signup%3Aneeds-fix%60%2C%20edit%20this%20issue%20to%20fix%20it%29%0A-%20%5B%20%5D%20Completed%20the%20%5B0G%20Studio%20Survey%5D%28https%3A%2F%2Fforms.gle%2FymEdZrdTNs4giEm1A%29%0A-%20%5B%20%5D%20Completed%20the%20%5B0G%20Private%20Computer%20Survey%5D%28https%3A%2F%2Fforms.gle%2FG919xrbRyfVJxPZe8%29%0A-%20%5B%20%5D%20%60l0%3Acleared%60%20label%20appeared%20%E2%86%92%20%2A%2AL0%20done%2C%2010%20Credit%2A%2A%0A-%20%5B%20%5D%20Filed%20my%20first%20reproducible%20App%20Suite%20bug%20via%20%5BSubmit%20Feedback%5D%28https%3A%2F%2Fgithub.com%2F0gfoundation%2F0g-testing-hub%2Fissues%2Fnew%3Ftemplate%3Dsubmit-feedback.yml%29%20%E2%86%92%20%2A%2AL1%20when%20accepted%2C%2020%20Credit%2A%2A
+[signup-link]: https://github.com/0gfoundation/0g-testing-hub/issues/new?title=%5Bsignup%5D%3A%20tester%20registration&labels=signup&body=%23%23%23%200G%20mainnet%20EVM%20wallet%20address%0A%0AReplace%20this%20line%20with%20your%20public%200x%20wallet%20address.%0A%0ADo%20not%20paste%20a%20private%20key%2C%20seed%20phrase%2C%20or%20any%20secret.%0A%0A---%0A%0A%23%23%23%20Before%20you%20click%20Create%0A%0A-%20Keep%20the%20title%20as%20%60%5Bsignup%5D%3A%20tester%20registration%60%3B%20the%20bot%20will%20rename%20it%20to%20your%20GitHub%20username.%0A-%20Check%20that%20the%20wallet%20above%20is%20your%20public%200x%20address.%0A-%20Click%20**Create**%20to%20submit%20this%20signup%20issue.%0A%0A%23%23%23%20What%20happens%20next%0A%0A-%20The%20bot%20validates%20your%20wallet%20and%20comments%20here.%0A-%20Complete%20the%20%5B0G%20Studio%20Survey%5D(https%3A%2F%2Fforms.gle%2FymEdZrdTNs4giEm1A).%0A-%20Complete%20the%20%5B0G%20Private%20Computer%20Survey%5D(https%3A%2F%2Fforms.gle%2FG919xrbRyfVJxPZe8).%0A-%20When%20%60l0%3Acleared%60%20appears%2C%20L0%20is%20done%3A%20**10%200G%20Compute%20Credit**.%0A-%20After%20L0%2C%20use%20%5BSubmit%20Feedback%5D(https%3A%2F%2Fgithub.com%2F0gfoundation%2F0g-testing-hub%2Fissues%2Fnew%3Ftemplate%3Dsubmit-feedback.yml)%20for%20reproducible%20App%20Suite%20bugs%20toward%20L1.%0A%0A%23%23%23%20How%20to%20track%20progress%0A%0A-%20This%20sign-up%20issue%20tracks%20L0%20and%20reward%20progress.%0A-%20Each%20feedback%20issue%20shows%20triage%20labels%20and%20bot%20comments%20after%20maintainer%20review.%0A-%20%60feedback%60%3A%20received.%0A-%20%60defect%60%20%2B%20%60status%3Afiled%60%3A%20bug%20entered%20triage.%0A-%20%60status%3Aneeds-info%60%3A%20reply%20with%20more%20detail.%0A-%20%60status%3Aaccepted%60%3A%20confirmed%3B%20counts%20for%20rewards%20when%20it%20is%20a%20core%20App%20Suite%20%2F%200G%20Infra%20bug.%0A-%20%60status%3Arouted%60%3A%20sent%20upstream%3B%20still%20counts%20if%20rewardable.%0A-%20%60status%3Aclosed%60%20%2B%20%60resolution%3A*%60%3A%20fixed%20keeps%20credit%3B%20rejected%2Fduplicate%20do%20not.%0A

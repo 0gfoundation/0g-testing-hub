@@ -1,5 +1,6 @@
 {
   "note": "Single source of truth for README -> Test targets. Edit here, then run `node scripts/render-targets-readme.mjs --write`.",
+  "intro": "Test the core user flow for each target, including one happy path and one error path. File reproducible DX friction: confusing setup, unclear errors, broken docs, wallet/network issues, blocked flows, or behavior that diverges from what the product promises.",
   "buckets": [
     {
       "key": "app",
@@ -25,17 +26,17 @@
         {
           "name": "Genome",
           "desc": "paste a URL/screenshot, produces production-grade design DNA",
-          "url": "https://dev.0g-vibe.pages.dev/genome"
+          "url": "https://app.0g.ai/genome"
         },
         {
           "name": "0G Chat",
           "desc": "end-to-end encrypted private chat (UI still WIP)",
-          "url": "https://dev.0g-vibe.pages.dev/private-chat"
+          "url": "https://app.0g.ai/private-chat"
         },
         {
-          "name": "PandaClaw",
+          "name": "Agent launchpad",
           "desc": "agent launchpad + skill marketplace (Hermes + OpenClaw harness)",
-          "url": "https://dev.0g-vibe.pages.dev/agents"
+          "url": "https://app.0g.ai/agent-launchpad"
         }
       ]
     },
