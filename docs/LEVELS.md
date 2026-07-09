@@ -1,7 +1,7 @@
 # 0G Testing Hub — Levels
 
 > **Evergreen spec.** This file defines how the reward ladder works. The current
-> public reward table lives in [`README.md`](./README.md#test-report-reward).
+> public reward table lives in [`README.md`](../README.md#test-report-reward).
 
 ## The shape
 
