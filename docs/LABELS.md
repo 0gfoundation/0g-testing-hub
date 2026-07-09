@@ -26,7 +26,7 @@ feedback → defect + status:filed → status:accepted → status:routed
 | `feedback` | Your submission arrived | No |
 | `defect` + `status:filed` | Your Bug Report is in triage; a maintainer will try to reproduce it | No — wait |
 | `status:needs-info` | Triage couldn't reproduce it from your Details | **Yes** — reply with the missing steps/environment/evidence within ~7 days, or it closes as rejected |
-| `status:accepted` | Confirmed real and reproducible — **counts toward your reward** | No |
+| `status:accepted` | Confirmed real and reproducible — counts for rewards when it is a core App Suite / 0G Infra bug | No |
 | `status:routed` | Sent to the owning team — still counts | No |
 | `status:closed` + `resolution:fixed` | Your bug was real and got fixed — **keeps its reward credit** | No 🎉 |
 | `status:closed` + `resolution:rejected` | Not reproducible, out of bounds, or working as intended — not counted | Read the closing comment for the reason |
