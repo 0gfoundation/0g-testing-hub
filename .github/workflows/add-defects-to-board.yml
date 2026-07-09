@@ -88,8 +88,25 @@ jobs:
           fi
 
           # Keep label state in sync with the board state. This is idempotent and
-          # covers issues that were manually labelled `defect` outside the form.
-          gh issue edit "$ISSUE_NUMBER" --repo "$REPO" --add-label "defect" --add-label "status:filed" >/dev/null
+          # covers issues that were manually labelled `defect` outside the form,
+          # without adding a second status or pushing already-triaged issues back
+          # to Triage.
+          LABELS=$(gh issue view "$ISSUE_NUMBER" --repo "$REPO" --json labels --jq '.labels[].name' | tr '\n' ' ')
+          status_labels=$(printf '%s\n' "$LABELS" | tr ' ' '\n' | grep '^status:' || true)
+          status_count=$(printf '%s\n' "$status_labels" | sed '/^$/d' | wc -l | tr -d ' ')
+
+          gh issue edit "$ISSUE_NUMBER" --repo "$REPO" --add-label "defect" >/dev/null
+          if [ "$status_count" -eq 0 ]; then
+            gh issue edit "$ISSUE_NUMBER" --repo "$REPO" --add-label "status:filed" >/dev/null
+            board_status="status:filed"
+          elif [ "$status_count" -eq 1 ]; then
+            board_status="$status_labels"
+          else
+            status_list=$(printf '%s' "$status_labels" | tr '\n' ' ' | sed -E 's/[[:space:]]+$//')
+            echo "::warning::Issue has multiple status labels: $status_list"
+            gh issue edit "$ISSUE_NUMBER" --repo "$REPO" --add-label "needs:manual-label" >/dev/null
+            board_status=""
+          fi
 
           # Product → area + product:* map. Product names track data/targets.json;
           # keep both cases in lockstep with the backfill in
@@ -170,9 +187,14 @@ jobs:
             gh issue comment "$ISSUE_NUMBER" --repo "$REPO" --body "Thanks — Ecosystem dApp findings are useful coverage in this Hub. If you are aiming for higher L1–L3 rewards, prioritize accepted bugs in **0G App Suite** and **0G Infra**. If this dApp bug is actionable, please also report it to the dApp's own channel and paste that link here as a comment so triage can follow up."
           fi
 
-          # Resolve the board id, Status field id, and the "Triage" option id at
-          # runtime, so this keeps working even if the board is recreated.
-          read -r PROJECT_ID FIELD_ID OPTION_ID < <(
+          if [ -z "$board_status" ]; then
+            echo "Issue has ambiguous status labels; skipped board Status update."
+            exit 0
+          fi
+
+          # Resolve the board id, Status field id, and Status option ids at runtime,
+          # so this keeps working even if the board is recreated.
+          read -r PROJECT_ID FIELD_ID TRIAGE_OPTION_ID ACCEPTED_OPTION_ID ROUTED_OPTION_ID CLOSED_OPTION_ID < <(
             gh api graphql -f query='
               query($l:String!,$n:Int!){
                 organization(login:$l){ projectV2(number:$n){
@@ -182,13 +204,31 @@ jobs:
                   }
                 }}
               }' -F l="$OWNER" -F n="$PROJECT_NUMBER" \
-              --jq '.data.organization.projectV2 | "\(.id) \(.field.id) \(.field.options[] | select(.name=="Triage") | .id)"'
+              --jq '.data.organization.projectV2 as $p | [
+                $p.id,
+                $p.field.id,
+                ($p.field.options[] | select(.name=="Triage") | .id),
+                ($p.field.options[] | select(.name=="Accepted") | .id),
+                ($p.field.options[] | select(.name=="Routed") | .id),
+                ($p.field.options[] | select(.name=="Closed") | .id)
+              ] | @tsv'
           )
 
-          if [ -z "${OPTION_ID:-}" ]; then
-            echo "Could not resolve the Triage column — is the board configured?" >&2
+          if [ -z "${PROJECT_ID:-}" ] || [ -z "${FIELD_ID:-}" ] || [ -z "${TRIAGE_OPTION_ID:-}" ] || [ -z "${ACCEPTED_OPTION_ID:-}" ] || [ -z "${ROUTED_OPTION_ID:-}" ] || [ -z "${CLOSED_OPTION_ID:-}" ]; then
+            echo "Could not resolve the board Status field/options — is the board configured?" >&2
             exit 1
           fi
+
+          case "$board_status" in
+            "status:filed"|"status:needs-info") OPTION_ID="$TRIAGE_OPTION_ID" ;;
+            "status:accepted") OPTION_ID="$ACCEPTED_OPTION_ID" ;;
+            "status:routed") OPTION_ID="$ROUTED_OPTION_ID" ;;
+            "status:closed") OPTION_ID="$CLOSED_OPTION_ID" ;;
+            *)
+              echo "::warning::Unknown status label: $board_status"
+              gh issue edit "$ISSUE_NUMBER" --repo "$REPO" --add-label "needs:manual-label" >/dev/null
+              exit 0 ;;
+          esac
 
           # Add the issue (no-op if already on the board) and capture the item id.
           ITEM_ID=$(gh api graphql -f query='
@@ -197,7 +237,7 @@ jobs:
             }' -F p="$PROJECT_ID" -F c="$ISSUE_NODE_ID" \
             --jq '.data.addProjectV2ItemById.item.id')
 
-          # Park it in Triage.
+          # Sync board Status to the issue status label.
           gh api graphql -f query='
             mutation($p:ID!,$i:ID!,$f:ID!,$o:String!){
               updateProjectV2ItemFieldValue(input:{
@@ -206,4 +246,4 @@ jobs:
               }){ projectV2Item { id } }
             }' -F p="$PROJECT_ID" -F i="$ITEM_ID" -F f="$FIELD_ID" -F o="$OPTION_ID" >/dev/null
 
-          echo "Issue #$ISSUE_NUMBER added to the board in Triage."
+          echo "Issue #$ISSUE_NUMBER added to the board with Status synced from $board_status."
