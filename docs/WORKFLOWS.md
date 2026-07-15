@@ -27,7 +27,7 @@ flowchart TD
     end
 
     subgraph M["🛠️ Maintainer — triage pipeline"]
-      M1["Verify · correct area:* · apply sev:*"]
+      M1["Verify · correct area/product labels"]
       M2{"Reproducible &<br/>in bounds?"}
       M3["status:accepted<br/>★ counts toward reward"]
       M4["status:closed + resolution:*<br/>(fixed / rejected / duplicate)"]
@@ -75,7 +75,7 @@ it triggers) is how the tester learns whether the report counted.
 | Status label | Board column | Rewardable? |
 |---|---|:---:|
 | `status:filed` | Triage | no (unvalidated) |
-| `status:needs-info` | Triage | no — waiting on the tester |
+| `status:needs-info` | Needs Info | no — waiting on the tester |
 | `status:accepted` | Accepted | **yes** |
 | `status:routed` | Routed | **yes** |
 | `status:closed` + `resolution:fixed` | Closed | **yes** — a fixed defect keeps its credit |
@@ -90,9 +90,11 @@ and pass conditions are the evergreen spec in [`LEVELS.md`](./LEVELS.md), mirror
 
 ## Two things the automation gets right (and recently fixed)
 
-- **Triage progress is not clobbered.** `add-defects-to-board.yml` runs only on issue
-  *open* or when the `feedback` / `defect` label is added — not on every later label
-  change — so moving an issue to `status:accepted` no longer gets reset back to Triage.
+- **Triage progress is not clobbered.** `add-defects-to-board.yml` runs on issue
+  *open*, `feedback` / `defect` intake labels, and `status:*` transitions — not on
+  unrelated later labels like `area:*`, `product:*`, or `rc:*`. Moving an issue to
+  `status:needs-info`, `status:accepted`, `status:routed`, or `status:closed` syncs
+  the board without resetting it back to Triage.
 - **The accept comment tells the truth per area.** `notify-status-change.yml` branches the
   message: App Suite accept counts; an **0G Infra** accept alone does **not** clear L1
   (needs a paired App Suite bug → L2); an **Ecosystem** coverage log helps follow-up

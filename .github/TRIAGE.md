@@ -20,7 +20,7 @@ Testers never touch `defects/*.md`, labels, or the board — the only action is 
 
 1. **Find a bug** while walking an app's happy path + an error path. Reproduce it first — "felt off" is not a defect.
 2. **Open the [Submit Feedback form](./ISSUE_TEMPLATE/submit-feedback.yml)** (`issues/new?template=submit-feedback.yml`) — one bug or piece of feedback per issue.
-3. **Fill the four fields**: **Category** (Bug Report / Feature Request / Other) + **Product** (dropdowns), **Details** (what happened, steps to reproduce, expected vs. actual), and optional **Evidence** (screenshots, recordings, links). No severity, ownership, environment breakdown, or root-cause codes — those are maintainer triage work.
+3. **Fill the four fields**: **Category** (Bug Report / Feature Request / Other) + **Product** (dropdowns), **Details** (what happened, steps to reproduce, expected vs. actual), and optional **Evidence** (screenshots, recordings, links). No ownership, environment breakdown, or root-cause codes — those are maintainer triage work.
 4. **Submit.** The issue lands labelled `feedback`. A `Bug Report` is promoted to `defect` + `status:filed` automatically and enters **Triage**; `Feature Request` / `Other` are recorded as feedback and are not reward-eligible. Done — the rest is the maintainer's.
 
 > Reward is decided on **accepted, deduped** core bugs (see below), not on how many you file. Ecosystem dApp findings are useful coverage, but the L1-L3 reward path is App Suite + 0G Infra.
@@ -45,8 +45,7 @@ the UI-only built-in Projects workflows, which have no API): a **Bug Report** is
 to `defect` + `status:filed`, gets a first-pass `area:*` derived from **Product** (ecosystem
 also gets `coverage-log` and an ecosystem-routing notice), is added to the board, and set to
 **Triage**. **Feature Request** gets `feature-request`; **Other** stays plain `feedback` —
-neither enters the defect pipeline. No `sev:*` is ever auto-applied: severity is assigned
-here, at triage.
+neither enters the defect pipeline.
 
 It depends on a repo secret **`PROJECT_PAT`** — a token with the `project` + `repo` +
 `read:org` scopes, because the default `GITHUB_TOKEN` cannot write an org Projects v2 board.
@@ -60,16 +59,26 @@ It depends on a repo secret **`PROJECT_PAT`** — a token with the `project` + `
 > The script does not downgrade existing `status:accepted` / `status:routed` issues;
 > it syncs the Project Status from the existing label.
 
+Recommended **View 1** table columns:
+
+```text
+Title | Status | Assignees | Labels | Updated | Created
+```
+
+Keep `Linked pull requests` and `Sub-issues progress` hidden in the default triage
+view. They are useful GitHub defaults, but this repo routes defect intel upstream
+through labels and routed evidence instead of local PR/sub-issue workflows.
+
 ## State machine → board columns
 
-```
-Triage (filed ⇄ needs-info) → Accepted → Routed → Closed (+ one resolution:*)
+```text
+Triage (filed) ⇄ Needs Info → Accepted → Routed → Closed (+ one resolution:*)
 ```
 
 | Column / status label | Meaning | What triage does |
 |---|---|---|
-| `status:filed` (**Triage**) | New, unvalidated | Confirm/correct the auto-derived `area:*`, apply one `sev:*`. Try the repro from Details. |
-| `status:needs-info` (**Triage**) | Waiting on the tester | Repro incomplete but plausible — swap `status:filed` for this; the bot asks the tester to reply. No reply in **~7 days** → close as `resolution:rejected`. Reply arrives → back to `status:filed`. |
+| `status:filed` (**Triage**) | New, unvalidated | Confirm/correct the auto-derived `area:*` and `product:*`. Try the repro from Details. |
+| `status:needs-info` (**Needs Info**) | Waiting on the tester | Repro incomplete but plausible — swap `status:filed` for this; the bot asks the tester to reply. No reply in **~7 days** → close as `resolution:rejected`. Reply arrives → back to `status:filed`. |
 | `status:accepted` (**Accepted**) | Real + reproducible | Confirmed. **This is the state that counts toward rewards.** |
 | `status:routed` (**Routed**) | Sent upstream | Owner notified (SDK / docs / config / the product team). |
 | `status:closed` (**Closed**) | Closed — resolution says why | Apply exactly one `resolution:*` **before or together with** `status:closed`, plus a one-line reason. The bot turns the resolution into a precise message for the tester. |
@@ -83,13 +92,13 @@ to know whether their report counted):
 - `resolution:duplicate` — shares a root cause with an earlier report; pair it with the
   `rc:*` code and a comment linking the canonical issue. Credit goes to the first filer.
 
-Area is **orthogonal** to severity (see [SEVERITY.md](../defects/SEVERITY.md)): a P1 in an
-Ecosystem dApp is still valuable coverage outside the core reward ladder; a P3 in 0G Infra still routes upstream.
+Area is about routing and reward scope: Ecosystem dApp issues are useful coverage
+outside the core reward ladder, while App Suite and 0G Infra are the core reward path.
 
 ## Labelling on intake
 
-Severity, root cause, and routing are **maintainer responsibilities** — the tester only
-supplies Category, Product, Details, and Evidence.
+Root cause and routing are **maintainer responsibilities** — the tester only supplies
+Category, Product, Details, and Evidence.
 
 1. **Area + product** — exactly one `area:*` (`area:app-suite` · `area:0g-infra` ·
    `area:ecosystem`) and one `product:*`. Automation derives both from the Product
@@ -99,18 +108,15 @@ supplies Category, Product, Details, and Evidence.
    - 0G Hub / 0G Storage Scan / Chain Scan / 0G Code to Coin → `area:0g-infra`
    - TradeGPT / Jaine / Oku / AI Arena / CARV / Cygnus Finance / DataHive / Khalani / Merkl → `area:ecosystem`
    - Product = Other → no auto area/product; the issue carries `needs:manual-label` — assign by hand.
-2. **Severity** — exactly one: `sev:P1`…`sev:P4`, assigned by the maintainer from the
-   Details field using the [SEVERITY.md](../defects/SEVERITY.md) rubric. The form no longer
-   asks testers for a severity.
-3. **Status** — move `status:filed` → `status:accepted` once you reproduce it. If the repro
+2. **Status** — move `status:filed` → `status:accepted` once you reproduce it. If the repro
    is incomplete but plausible, swap in `status:needs-info` (the bot asks the tester; ~7 days
    without a reply → close as `resolution:rejected`). When closing, apply exactly one
    `resolution:*` (`fixed` / `rejected` / `duplicate`) **before or together with**
    `status:closed` so the bot posts the precise outcome instead of the generic one.
-4. **Root cause** — when defects share an underlying cause, apply an `rc:<CODE>` label
+3. **Root cause** — when defects share an underlying cause, apply an `rc:<CODE>` label
    (create it once: `gh label create 'rc:CHAIN_ID_MISSING' --color ededed -d 'shared root cause'`).
-5. **Ecosystem coverage** — keep `area:ecosystem`, add `coverage-log` (automation does both), and do not count it toward the L1-L3 core reward ladder. If the bug is actionable, apply `needs:dapp-report-url` and ask the tester to comment the dApp's own issue / form / support link; clear the label once that link is posted.
-6. **Feature Request / Other** — stay out of the defect pipeline entirely (`feature-request` / plain `feedback`); they are never counted toward rewards.
+4. **Ecosystem coverage** — keep `area:ecosystem`, add `coverage-log` (automation does both), and do not count it toward the L1-L3 core reward ladder. If the bug is actionable, apply `needs:dapp-report-url` and ask the tester to comment the dApp's own issue / form / support link; clear the label once that link is posted.
+5. **Feature Request / Other** — stay out of the defect pipeline entirely (`feature-request` / plain `feedback`); they are never counted toward rewards.
 
 ## Routed evidence
 
@@ -160,8 +166,8 @@ before use — that's the single source for codes so `CHAIN_ID_MISSING` doesn't 
 
 **Reward consequence:** a tester is credited for **accepted, deduped** defects, not raw filings.
 A cluster of issues sharing one `rc:` code counts as **one** rewardable defect, credited to the
-first filer. A round that is all `sev:P4` cosmetics does not meet a tier — this is the README's
-signal-to-noise gate, enforced.
+first filer. Cosmetic-only reports with no reproducible functional impact do not meet a tier —
+this is the README's signal-to-noise gate, enforced.
 
 ## Aggregation queries
 
@@ -172,13 +178,10 @@ These replace the old grep-on-files one-liners (kept for reference in
 # Everything sharing a root cause — the systemic-pattern view
 gh issue list --label 'rc:CHAIN_ID_MISSING' --state all
 
-# Unrouted blockers (P1) — the signal-positive backlog
-gh issue list --search 'label:"sev:P1" -label:"status:routed" state:open'
-
-# Accepted-but-not-yet-routed across P1+P2
+# Accepted-but-not-yet-routed
 gh issue list --search 'label:"status:accepted" -label:"status:routed"'
 
-# All App Suite defects, any severity
+# All App Suite defects
 gh issue list --label 'area:app-suite' --label 'defect' --state all
 
 # Everything already filed against one product (the pre-filing dedup check)
@@ -228,7 +231,7 @@ then close #3. (Maintainer action — not automated.)
 | Step | Tester | Maintainer |
 |---|---|---|
 | Intake | Picks Category + Product, writes Details / Evidence → Bug Reports auto-promoted to `defect` (Triage) | — |
-| Classify | — | Automation derives first-pass `area:*` from Product; maintainer corrects it and applies `sev:*` |
+| Classify | — | Automation derives first-pass `area:*` / `product:*` from Product; maintainer corrects them if needed |
 | Verify | — | `status:accepted` if reproducible, else close with a reason |
 | Dedup | — | `rc:`/`systemic` labels; collapse duplicates to one |
 | Route | — | Add routed evidence comment, then `status:routed`, send upstream once |

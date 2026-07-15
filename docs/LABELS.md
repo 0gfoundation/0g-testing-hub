@@ -32,7 +32,7 @@ feedback → defect + status:filed → status:accepted → status:routed
 | `status:closed` + `resolution:rejected` | Not reproducible, out of bounds, or working as intended — not counted | Read the closing comment for the reason |
 | `status:closed` + `resolution:duplicate` | Same root cause as an earlier report — credit goes to the **first** filer | Check the linked canonical issue |
 | `needs:dapp-report-url` | Your ecosystem bug looks actionable | **Yes** — comment the dApp's own report/support link |
-| `area:*`, `product:*`, `sev:P1`–`P4` | Routing bucket, product, and severity — maintainer/automation calls | No |
+| `area:*`, `product:*` | Routing bucket and product — maintainer/automation calls | No |
 
 **Check before you file.** Duplicates credit the first reporter, so one click saves a
 wasted report: filter issues by your product's label, e.g.
@@ -48,8 +48,8 @@ earlier issue is the one that counts.
 
 Full runbook: [`.github/TRIAGE.md`](../.github/TRIAGE.md). The invariants:
 
-- **One label per axis.** Every triaged defect carries exactly one `area:*`, one
-  `sev:*`, one `status:*` — plus one `product:*` when derivable from the form. Two
+- **One label per axis.** Every triaged defect carries exactly one `area:*` and one
+  `status:*` — plus one `product:*` when derivable from the form. Two
   `status:*` labels on one issue is a bug (`setup-labels-and-board.sh` flags it with
   `needs:manual-label`).
 - **Every close carries exactly one `resolution:*`**, applied *before or together
@@ -72,13 +72,13 @@ Full runbook: [`.github/TRIAGE.md`](../.github/TRIAGE.md). The invariants:
   it once the link is posted).
 - **Automation owns the first pass**: `feedback`, `defect`, `status:filed`, `area:*`,
   `product:*`, `coverage-log`, and everything on signup issues (`signup`,
-  `signup:needs-fix`, `signup:duplicate`, `l0:*`) are applied by workflows. `sev:*`,
-  status transitions, `rc:*`, `systemic`, and `resolution:*` are yours alone.
+  `signup:needs-fix`, `signup:duplicate`, `l0:*`) are applied by workflows. Status
+  transitions, `rc:*`, `systemic`, and `resolution:*` are yours alone.
 
 ### Colors are per-axis on purpose
 
-Areas are blues/purple, `product:*` a uniform light blue, `sev:*` a red→green impact
-ramp, `status:*` runs grey → salmon (needs-info) → green (accepted) → teal (routed) →
+Areas are blues/purple, `product:*` a uniform light blue, `status:*` runs grey → salmon
+(needs-info) → green (accepted) → teal (routed) →
 dark grey (closed), `resolution:*` echoes its meaning (green fixed / red rejected /
 grey duplicate), and `needs:*` is violet. Scanning a board row, no two labels that
 routinely co-occur share a color.

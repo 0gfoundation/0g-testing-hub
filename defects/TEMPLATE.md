@@ -14,7 +14,6 @@ product: ""                     # which app, e.g. "0G Hub", "TradeGPT", or Other
 
 # --- Maintainer-only (filled at triage, never tester input) ---
 area: ""                        # app-suite | 0g-infra | ecosystem — derived from product, corrected at triage
-severity: ""                    # P1 | P2 | P3 | P4  (see SEVERITY.md; maintainer-assigned)
 status: filed                   # filed | accepted | routed | closed
 reproducible: true              # README rule: only reproducible findings count
 root_cause_code: ""             # OPTIONAL stable tag for grouping, e.g. "CHAIN_ID_MISSING",

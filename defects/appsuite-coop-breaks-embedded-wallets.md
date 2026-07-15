@@ -2,7 +2,6 @@
 title: "COOP: same-origin breaks Coinbase/Base wallet SDKs and blocks Privy embedded wallet across App Suite"
 ownership: "App Suite"
 product: "0G App + Genome + 0G Chat + PandaClaw (shared frontend headers)"
-severity: "P2"
 status: filed
 reproducible: true
 environment:
@@ -45,8 +44,9 @@ Confirmed: the headers, the two SDK errors, and the Privy network block all repr
 Inferred (needs a manual connect-flow pass to confirm user-visible failure): users
 choosing Coinbase Smart Wallet / Base / Privy-embedded as their login method cannot
 complete sign-in; injected (MetaMask) / WalletConnect likely still work, which is why
-this is P2 (workaround exists) rather than P1. If Privy is the *sole* sign-in path on
-the 0g-vibe pages ("Sign in to sync projects and access 0G Compute"), escalate to P1.
+this remains functionally important because wallet sign-in is a core App Suite path.
+If Privy is the *sole* sign-in path on the 0g-vibe pages ("Sign in to sync projects
+and access 0G Compute"), treat it as a launch-blocking issue.
 
 ```
 $ curl -sS -D - -o /dev/null https://app.0g.ai/

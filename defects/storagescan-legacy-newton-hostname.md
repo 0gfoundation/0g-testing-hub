@@ -1,12 +1,11 @@
 <!--
 SAMPLE / format demo — but a real, reproducible finding (not fabricated).
-Created by copying defects/TEMPLATE.md and filling it in. Severity per defects/SEVERITY.md.
+Created by copying defects/TEMPLATE.md and filling it in.
 -->
 ---
 title: "Storage Scan still served from legacy 'newton' hostname (301 to galileo)"
 ownership: "0G Infra"
 product: "0G Storage Scan"
-severity: "P4"
 status: filed
 reproducible: true
 environment:

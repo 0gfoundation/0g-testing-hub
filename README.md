@@ -37,7 +37,7 @@ Before filing, [search existing reports](https://github.com/0gfoundation/0g-test
 
 - **Duplicates** or **not-reproducible** "felt off" reports.
 - **Feature requests** - welcome under Category `Feature Request`, but recorded only, never rewarded (unless the docs already promised the behavior — then it's a bug).
-- **P4 cosmetics** with no reproducible P1/P2.
+- **Cosmetic-only reports** with no reproducible functional impact.
 - **Ecosystem dApps** - welcome as ecosystem coverage, but prioritize 0G App Suite and 0G Infra if you are aiming for higher rewards. Also report actionable dApp bugs to the dApp's own channel and paste the link as a comment.
 - **Funds / keys** - never sign or send; stop at the transaction-confirmation screen on swap / bridge / faucet / sign flows.
 

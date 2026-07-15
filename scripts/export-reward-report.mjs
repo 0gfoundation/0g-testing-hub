@@ -529,10 +529,6 @@ function qualityWarningBlockers(issues, rootCauseRegistry) {
       blockers.push(issueBlocker(issue, 'accepted_missing_area', 'warning', 'Accepted/routed defect is missing an area:* label.'));
     }
 
-    if (hasCoreArea && !labels.some((label) => label.startsWith('sev:'))) {
-      blockers.push(issueBlocker(issue, 'accepted_missing_severity', 'warning', 'Accepted/routed rewardable defect is missing a sev:* label.'));
-    }
-
     if (hasCoreArea && rcLabels.length === 0) {
       blockers.push(issueBlocker(issue, 'accepted_missing_rc', 'warning', 'Accepted/routed rewardable defect is missing an rc:* root-cause label.'));
     }
