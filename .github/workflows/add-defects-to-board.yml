@@ -8,7 +8,6 @@ name: Add defects to board
 # `feature-request`) and never enter the defect pipeline or reward export.
 # Ecosystem dApps are useful coverage, but L1-L3 rewards come from accepted
 # App Suite / 0G Infra bugs.
-# `sev:*` is never auto-applied: severity is a maintainer call at triage.
 # Manually adding `defect` (including to legacy old-form issues) routes through
 # the same board logic.
 #
@@ -24,21 +23,19 @@ permissions:
 
 jobs:
   add-to-board:
-    # Only act on the intake events: a freshly opened issue, or someone manually
-    # adding the `feedback` / `defect` label to an existing issue. Without the
-    # second clause this job re-fires on *every* later `labeled` event (area:*,
-    # sev:*, status:accepted, rc:*, systemic…), each time re-stamping
-    # `status:filed` and forcing the board back to Triage — clobbering the
-    # maintainer's triage progress. (The run that promotes a Bug Report by
-    # adding `defect` does trigger one more `labeled: defect` run — every
-    # operation here is idempotent and the ecosystem coverage comment is gated on
-    # `opened`, so that re-fire is a harmless no-op.)
+    # Act on intake events plus status transitions. Avoid firing on unrelated
+    # later labels (area:*, product:*, rc:*…), but keep Project Status in
+    # sync when a maintainer changes the issue's single `status:*` label.
+    # Re-runs are idempotent and do not re-stamp `status:filed` when one status
+    # label already exists. If a maintainer accidentally leaves multiple
+    # `status:*` labels, the job flags `needs:manual-label` and skips board sync.
     if: >-
       (contains(github.event.issue.labels.*.name, 'feedback') ||
        contains(github.event.issue.labels.*.name, 'defect')) &&
       (github.event.action == 'opened' ||
        github.event.label.name == 'feedback' ||
-       github.event.label.name == 'defect')
+       github.event.label.name == 'defect' ||
+       startsWith(github.event.label.name, 'status:'))
     runs-on: ubuntu-latest
     env:
       GH_TOKEN: ${{ secrets.PROJECT_PAT }}
@@ -112,8 +109,7 @@ jobs:
           # keep both cases in lockstep with the backfill in
           # scripts/setup-labels-and-board.sh and the labels in .github/labels.yml.
           # If no case matches the case falls through and we flag the issue for a
-          # human instead of silently shipping it unlabelled. `sev:*` is never
-          # applied here — maintainers assign severity at triage.
+          # human instead of silently shipping it unlabelled.
           NEEDS_MANUAL=0
           IS_ECOSYSTEM=0
           AREA=""
@@ -170,7 +166,7 @@ jobs:
 
           if [ "$AREA" = "area:ecosystem" ]; then
             IS_ECOSYSTEM=1
-            gh issue edit "$ISSUE_NUMBER" --repo "$REPO" --add-label "area:ecosystem" --add-label "coverage-log" >/dev/null
+            gh issue edit "$ISSUE_NUMBER" --repo "$REPO" --add-label "area:ecosystem" >/dev/null
           elif [ -n "$AREA" ]; then
             gh issue edit "$ISSUE_NUMBER" --repo "$REPO" --add-label "$AREA" >/dev/null
           fi
@@ -194,7 +190,7 @@ jobs:
 
           # Resolve the board id, Status field id, and Status option ids at runtime,
           # so this keeps working even if the board is recreated.
-          read -r PROJECT_ID FIELD_ID TRIAGE_OPTION_ID ACCEPTED_OPTION_ID ROUTED_OPTION_ID CLOSED_OPTION_ID < <(
+          IFS=$'\037' read -r PROJECT_ID FIELD_ID TRIAGE_OPTION_ID NEEDS_INFO_OPTION_ID ACCEPTED_OPTION_ID ROUTED_OPTION_ID CLOSED_OPTION_ID < <(
             gh api graphql -f query='
               query($l:String!,$n:Int!){
                 organization(login:$l){ projectV2(number:$n){
@@ -207,20 +203,22 @@ jobs:
               --jq '.data.organization.projectV2 as $p | [
                 $p.id,
                 $p.field.id,
-                ($p.field.options[] | select(.name=="Triage") | .id),
-                ($p.field.options[] | select(.name=="Accepted") | .id),
-                ($p.field.options[] | select(.name=="Routed") | .id),
-                ($p.field.options[] | select(.name=="Closed") | .id)
-              ] | @tsv'
+                ([$p.field.options[] | select(.name=="Triage") | .id][0] // ""),
+                ([$p.field.options[] | select(.name=="Needs Info") | .id][0] // ""),
+                ([$p.field.options[] | select(.name=="Accepted") | .id][0] // ""),
+                ([$p.field.options[] | select(.name=="Routed") | .id][0] // ""),
+                ([$p.field.options[] | select(.name=="Closed") | .id][0] // "")
+              ] | join("\u001f")'
           )
 
-          if [ -z "${PROJECT_ID:-}" ] || [ -z "${FIELD_ID:-}" ] || [ -z "${TRIAGE_OPTION_ID:-}" ] || [ -z "${ACCEPTED_OPTION_ID:-}" ] || [ -z "${ROUTED_OPTION_ID:-}" ] || [ -z "${CLOSED_OPTION_ID:-}" ]; then
+          if [ -z "${PROJECT_ID:-}" ] || [ -z "${FIELD_ID:-}" ] || [ -z "${TRIAGE_OPTION_ID:-}" ] || [ -z "${NEEDS_INFO_OPTION_ID:-}" ] || [ -z "${ACCEPTED_OPTION_ID:-}" ] || [ -z "${ROUTED_OPTION_ID:-}" ] || [ -z "${CLOSED_OPTION_ID:-}" ]; then
             echo "Could not resolve the board Status field/options — is the board configured?" >&2
             exit 1
           fi
 
           case "$board_status" in
-            "status:filed"|"status:needs-info") OPTION_ID="$TRIAGE_OPTION_ID" ;;
+            "status:filed") OPTION_ID="$TRIAGE_OPTION_ID" ;;
+            "status:needs-info") OPTION_ID="$NEEDS_INFO_OPTION_ID" ;;
             "status:accepted") OPTION_ID="$ACCEPTED_OPTION_ID" ;;
             "status:routed") OPTION_ID="$ROUTED_OPTION_ID" ;;
             "status:closed") OPTION_ID="$CLOSED_OPTION_ID" ;;

@@ -1,12 +1,11 @@
 <!--
 SAMPLE / format demo — but a real, reproducible finding (not fabricated).
-Created by copying defects/TEMPLATE.md and filling it in. Severity per defects/SEVERITY.md.
+Created by copying defects/TEMPLATE.md and filling it in.
 -->
 ---
 title: "Storage Scan still served from legacy 'newton' hostname (301 to galileo)"
 ownership: "0G Infra"
 product: "0G Storage Scan"
-severity: "P4"
 status: filed
 reproducible: true
 environment:
@@ -58,7 +57,7 @@ Newton → Galileo testnet rename; the old host was kept as a 301 alias but stal
 Aggregation note (T3): root_cause_code "LEGACY_NEWTON_HOSTNAME" is a candidate SYSTEMIC
 pattern — "newton" references are likely to linger in more than one place across the
 ecosystem (other docs, links, env config). If a second defect surfaces with the same code,
-do NOT file per-app: open ONE systemic issue and route it upstream (docs/config). To see
+do NOT file per-app: open ONE shared-root-cause issue and route it upstream (docs/config). To see
 the group at any time:
     grep -rl 'root_cause_code: "LEGACY_NEWTON_HOSTNAME"' defects/
 -->

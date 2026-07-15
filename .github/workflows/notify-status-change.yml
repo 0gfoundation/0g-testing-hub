@@ -52,7 +52,7 @@ jobs:
           has() { case " $LABELS " in *" $1 "*) return 0 ;; *) return 1 ;; esac }
 
           ACCEPTED_MSG="✅ **Accepted** — triage reproduced and confirmed this defect. It counts toward your reward tier (rewards are on **accepted, deduped** core findings). See [LEVELS.md](../../blob/main/docs/LEVELS.md)."
-          if has "area:ecosystem" || has "coverage-log"; then
+          if has "area:ecosystem"; then
             ACCEPTED_MSG="✅ **Ecosystem coverage accepted** — thanks for confirming this. It helps ecosystem follow-up, but the higher L1–L3 rewards come from accepted **0G App Suite** and **0G Infra** bugs. If actionable, please also report it to the dApp's own channel. See [LEVELS.md](../../blob/main/docs/LEVELS.md)."
           elif has "area:0g-infra"; then
             ACCEPTED_MSG="✅ **Accepted** — triage reproduced and confirmed this **0G Infra** defect. Note: an Infra bug alone does **not** clear L1 (that needs an accepted **App Suite** bug); paired with one it gets you to L2. See [LEVELS.md](../../blob/main/docs/LEVELS.md)."
@@ -109,7 +109,7 @@ jobs:
           LABELS=$(gh issue view "$ISSUE_NUMBER" --repo "$REPO" --json labels --jq '.labels[].name' | tr '\n' ' ')
           has() { case " $LABELS " in *" $1 "*) return 0 ;; *) return 1 ;; esac }
 
-          if has "area:ecosystem" || has "coverage-log"; then
+          if has "area:ecosystem"; then
             echo "Ecosystem coverage is outside the core reward ladder; skipping reward progress preview."
             exit 0
           fi
@@ -147,7 +147,6 @@ jobs:
           TOTAL=$(jq -r '.acceptedDeduped // 0' <<<"$ROW")
           APP_SUITE=$(jq -r '.appSuite // 0' <<<"$ROW")
           INFRA=$(jq -r '.infra // 0' <<<"$ROW")
-          SYSTEMIC=$(jq -r '.systemic // 0' <<<"$ROW")
           CANONICAL=$(jq -r '.canonicalIssues // ""' <<<"$ROW")
 
           if [ -z "$LEVEL" ]; then
@@ -181,8 +180,6 @@ jobs:
           Accepted, deduped core findings: **$TOTAL**
           - App Suite: **$APP_SUITE**
           - 0G Infra: **$INFRA**
-          - Systemic: **$SYSTEMIC**
-
           Canonical issues: ${CANONICAL:-none yet}
 
           Next gate: $NEXT

@@ -2,10 +2,10 @@
 # Apply/refresh on GitHub with: scripts/setup-labels-and-board.sh
 # Human-readable guide (testers + maintainers): docs/LABELS.md
 #
-# Axes are orthogonal: every triaged defect carries one area:, one sev:, a
-# status:, and (when derivable from the form) one product:. A closed defect
-# also carries exactly one resolution:. `rc:` labels are created on demand to
-# group a shared root cause.
+# Axes are orthogonal: every triaged defect carries one area:, one status:, and
+# (when derivable from the form) one product:. A closed defect also carries
+# exactly one resolution:. `rc:` labels are created on demand to group a shared
+# root cause.
 
 # --- Area (routing bucket) ---
 - name: "area:app-suite"
@@ -74,20 +74,6 @@
   color: "bfd4f2"
   description: "Merkl (Ecosystem)"
 
-# --- Severity (impact-based; see defects/SEVERITY.md) ---
-- name: "sev:P1"
-  color: "b60205"
-  description: "Blocker — core flow halted / correctness / security / funds"
-- name: "sev:P2"
-  color: "d93f0b"
-  description: "Major — key feature broken, but completable another way"
-- name: "sev:P3"
-  color: "fbca04"
-  description: "Minor — degraded/recoverable, doesn't block core flow"
-- name: "sev:P4"
-  color: "c2e0c6"
-  description: "Trivial — cosmetic only, zero functional impact"
-
 # --- Status (defect state machine) ---
 - name: "status:filed"
   color: "ededed"
@@ -127,12 +113,6 @@
 - name: "defect"
   color: "e99695"
   description: "Bug Report in the defect pipeline (auto-applied at intake; confirmation happens at status:accepted)"
-- name: "coverage-log"
-  color: "bfdadc"
-  description: "Ecosystem dApp coverage log"
-- name: "systemic"
-  color: "fef2c0"
-  description: "Confirmed cross-app root cause — the one issue N duplicates collapse into"
 - name: "needs:manual-label"
   color: "d4c5f9"
   description: "Auto-labeller could not derive an area from the form — triage by hand"

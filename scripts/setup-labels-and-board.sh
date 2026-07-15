@@ -118,13 +118,14 @@ if [ "$created" = "1" ]; then
   STATUS_FIELD_ID=$(gh api graphql \
     -f query='query($p:ID!){node(id:$p){... on ProjectV2{field(name:"Status"){... on ProjectV2SingleSelectField{id}}}}}' \
     -F p="$PROJECT_ID" --jq '.data.node.field.id')
-  echo "==> Setting columns: Triage / Accepted / Routed / Closed"
+  echo "==> Setting columns: Triage / Needs Info / Accepted / Routed / Closed"
   gh api graphql -f query="
     mutation {
       updateProjectV2Field(input:{
         fieldId:\"$STATUS_FIELD_ID\"
         singleSelectOptions:[
           {name:\"Triage\",   color:GRAY,   description:\"New, unvalidated (status:filed)\"}
+          {name:\"Needs Info\", color:ORANGE, description:\"Waiting on tester (status:needs-info)\"}
           {name:\"Accepted\", color:GREEN,  description:\"Real + reproducible\"}
           {name:\"Routed\",   color:BLUE,   description:\"Tagged with ownership, sent upstream\"}
           {name:\"Closed\",   color:PURPLE, description:\"Closed — resolution:* label says why\"}
@@ -133,7 +134,7 @@ if [ "$created" = "1" ]; then
     }" >/dev/null
 fi
 
-read -r STATUS_FIELD_ID TRIAGE_OPTION_ID ACCEPTED_OPTION_ID ROUTED_OPTION_ID CLOSED_OPTION_ID < <(
+read_status_options() {
   gh api graphql -f query='
     query($p:ID!){
       node(id:$p){
@@ -146,14 +147,40 @@ read -r STATUS_FIELD_ID TRIAGE_OPTION_ID ACCEPTED_OPTION_ID ROUTED_OPTION_ID CLO
     }' -F p="$PROJECT_ID" \
     --jq '.data.node.field as $f | [
       $f.id,
-      ($f.options[] | select(.name=="Triage") | .id),
-      ($f.options[] | select(.name=="Accepted") | .id),
-      ($f.options[] | select(.name=="Routed") | .id),
-      ($f.options[] | select(.name=="Closed") | .id)
-    ] | @tsv'
+      ([$f.options[] | select(.name=="Triage") | .id][0] // ""),
+      ([$f.options[] | select(.name=="Needs Info") | .id][0] // ""),
+      ([$f.options[] | select(.name=="Accepted") | .id][0] // ""),
+      ([$f.options[] | select(.name=="Routed") | .id][0] // ""),
+      ([$f.options[] | select(.name=="Closed") | .id][0] // "")
+    ] | join("\u001f")'
+}
+
+IFS=$'\037' read -r STATUS_FIELD_ID TRIAGE_OPTION_ID NEEDS_INFO_OPTION_ID ACCEPTED_OPTION_ID ROUTED_OPTION_ID CLOSED_OPTION_ID < <(
+  read_status_options
 )
 
-if [ -z "${STATUS_FIELD_ID:-}" ] || [ -z "${TRIAGE_OPTION_ID:-}" ] || [ -z "${ACCEPTED_OPTION_ID:-}" ] || [ -z "${ROUTED_OPTION_ID:-}" ] || [ -z "${CLOSED_OPTION_ID:-}" ]; then
+if [ -n "${STATUS_FIELD_ID:-}" ] && [ -n "${TRIAGE_OPTION_ID:-}" ] && [ -z "${NEEDS_INFO_OPTION_ID:-}" ] && [ -n "${ACCEPTED_OPTION_ID:-}" ] && [ -n "${ROUTED_OPTION_ID:-}" ] && [ -n "${CLOSED_OPTION_ID:-}" ]; then
+  echo "==> Adding Needs Info column to existing Status field"
+  gh api graphql -f query="
+    mutation {
+      updateProjectV2Field(input:{
+        fieldId:\"$STATUS_FIELD_ID\"
+        singleSelectOptions:[
+          {id:\"$TRIAGE_OPTION_ID\", name:\"Triage\", color:GRAY, description:\"New, unvalidated (status:filed)\"}
+          {name:\"Needs Info\", color:ORANGE, description:\"Waiting on tester (status:needs-info)\"}
+          {id:\"$ACCEPTED_OPTION_ID\", name:\"Accepted\", color:GREEN, description:\"Real + reproducible\"}
+          {id:\"$ROUTED_OPTION_ID\", name:\"Routed\", color:BLUE, description:\"Tagged with ownership, sent upstream\"}
+          {id:\"$CLOSED_OPTION_ID\", name:\"Closed\", color:PURPLE, description:\"Closed — resolution:* label says why\"}
+        ]
+      }){ projectV2Field { ... on ProjectV2SingleSelectField { id } } }
+    }" >/dev/null
+
+  IFS=$'\037' read -r STATUS_FIELD_ID TRIAGE_OPTION_ID NEEDS_INFO_OPTION_ID ACCEPTED_OPTION_ID ROUTED_OPTION_ID CLOSED_OPTION_ID < <(
+    read_status_options
+  )
+fi
+
+if [ -z "${STATUS_FIELD_ID:-}" ] || [ -z "${TRIAGE_OPTION_ID:-}" ] || [ -z "${NEEDS_INFO_OPTION_ID:-}" ] || [ -z "${ACCEPTED_OPTION_ID:-}" ] || [ -z "${ROUTED_OPTION_ID:-}" ] || [ -z "${CLOSED_OPTION_ID:-}" ]; then
   echo "Could not resolve the Project Status field/options — is the board configured?" >&2
   exit 1
 fi
@@ -203,8 +230,8 @@ done < <(gh issue list --repo "$REPO" --label "feedback" --state open --json num
 
 project_option_for_status() {
   case "$1" in
-    # needs-info is pre-acceptance, so it parks in the Triage column.
-    "status:filed"|"status:needs-info") printf '%s' "$TRIAGE_OPTION_ID" ;;
+    "status:filed") printf '%s' "$TRIAGE_OPTION_ID" ;;
+    "status:needs-info") printf '%s' "$NEEDS_INFO_OPTION_ID" ;;
     "status:accepted") printf '%s' "$ACCEPTED_OPTION_ID" ;;
     "status:routed") printf '%s' "$ROUTED_OPTION_ID" ;;
     "status:closed") printf '%s' "$CLOSED_OPTION_ID" ;;
@@ -248,7 +275,7 @@ while IFS= read -r number; do
       esac ;;
   esac
   case "$area" in
-    "area:ecosystem") gh issue edit "$number" --repo "$REPO" --add-label "area:ecosystem" --add-label "coverage-log" >/dev/null 2>&1 || true ;;
+    "area:ecosystem") gh issue edit "$number" --repo "$REPO" --add-label "area:ecosystem" >/dev/null 2>&1 || true ;;
     "area:"*) gh issue edit "$number" --repo "$REPO" --add-label "$area" >/dev/null 2>&1 || true ;;
   esac
   # Product → product:* map — keep in lockstep with add-defects-to-board.yml
@@ -276,15 +303,6 @@ while IFS= read -r number; do
   if [ -n "$product_label" ]; then
     gh issue edit "$number" --repo "$REPO" --add-label "$product_label" >/dev/null 2>&1 || true
   fi
-  # Legacy old-form bodies carried a tester-picked Severity; the Submit
-  # Feedback form has none — sev:* is maintainer-applied at triage.
-  severity=$(get_issue_field "$body" "Severity")
-  case "$severity" in
-    "P1"*) gh issue edit "$number" --repo "$REPO" --add-label "sev:P1" >/dev/null 2>&1 || true ;;
-    "P2"*) gh issue edit "$number" --repo "$REPO" --add-label "sev:P2" >/dev/null 2>&1 || true ;;
-    "P3"*) gh issue edit "$number" --repo "$REPO" --add-label "sev:P3" >/dev/null 2>&1 || true ;;
-    "P4"*) gh issue edit "$number" --repo "$REPO" --add-label "sev:P4" >/dev/null 2>&1 || true ;;
-  esac
 done < <(gh issue list --repo "$REPO" --label "defect" --state open --json number --jq '.[].number')
 
 echo "==> Adding open 'defect' issues to the board"
@@ -343,6 +361,7 @@ echo "    added/synced $count issue(s)"
 cat <<EOF
 ==> Board ready: https://github.com/orgs/$OWNER/projects
     New reports are handled by .github/workflows/add-defects-to-board.yml.
+    Recommended View 1 columns: Title | Status | Assignees | Labels | Updated | Created.
     Do not enable duplicate UI auto-add workflows; rerun this script only for
     label refresh or safe backfill of missed open feedback/defect issues.
 EOF

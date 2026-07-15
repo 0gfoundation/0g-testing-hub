@@ -45,8 +45,8 @@ The reward system depends on this chain. Do not bypass it:
 1. **Sign-up issue** (created from the README registration link and labelled `signup`) registers the tester. The **issue author** is the authenticated **GitHub username** — the identity join key, captured automatically so it can't be mistyped — and the **0G mainnet EVM wallet** is recorded in the issue body (public). `confirm-signup.yml` validates the wallet, normalizes the title to `[signup]: <author>`, and comments the L0 next steps. Reward export reads these signup issues via `--signups-from-issues`, so no external signup form is needed.
 2. **L0 survey bridge** — the two external Google surveys each run an Apps Script (`automation/l0-feedback-bridge.gs`) that labels the tester's sign-up issue `l0:studio-done` / `l0:pc-done` by GitHub username; `mark-l0-cleared.yml` comments partial progress when only one survey has arrived, then sets `l0:cleared` and points the tester toward L1 once both arrive. See [`automation/README.md`](./automation/README.md).
 3. **Submit Feedback form** creates GitHub issues labelled `feedback`, with four tester fields: **Category** (Bug Report / Feature Request / Other), **Product**, **Details**, **Evidence**.
-4. **Workflow** (`add-defects-to-board.yml`) routes each `feedback` issue by Category: **Bug Report** is promoted to `defect` + `status:filed`, gets an `area:*` and a `product:*` derived from Product (map below; ecosystem also gets `coverage-log` and an ecosystem-routing notice), and lands on Project #19 in Triage. **Feature Request** gets `feature-request`; **Other** stays plain `feedback` — neither ever enters the defect pipeline or reward export. `sev:*` is never auto-applied. If no area can be derived (Product = Other, or an unparseable body), it applies `needs:manual-label` so the gap is visible instead of silently shipping unlabelled.
-5. **Triage** moves issues through `status:accepted` and `status:routed`, with `status:needs-info` when the repro needs tester input; a close carries exactly one `resolution:*` (`fixed` keeps reward credit, `rejected`/`duplicate` do not). The maintainer confirms/corrects the `area:*`/`product:*`, applies one `sev:*`, optional `rc:*`, and `systemic` when appropriate — severity, routing, dedup, and reward eligibility are maintainer calls, never tester input.
+4. **Workflow** (`add-defects-to-board.yml`) routes each `feedback` issue by Category: **Bug Report** is promoted to `defect` + `status:filed`, gets an `area:*` and a `product:*` derived from Product (map below; ecosystem also gets an ecosystem-routing notice), and lands on Project #19 in Triage. **Feature Request** gets `feature-request`; **Other** stays plain `feedback` — neither ever enters the defect pipeline or reward export. If no area can be derived (Product = Other, or an unparseable body), it applies `needs:manual-label` so the gap is visible instead of silently shipping unlabelled.
+5. **Triage** moves issues through `status:accepted` and `status:routed`, with `status:needs-info` when the repro needs tester input; a close carries exactly one `resolution:*` (`fixed` keeps reward credit, `rejected`/`duplicate` do not). The maintainer confirms/corrects the `area:*`/`product:*` and applies optional `rc:*` when defects share a root cause — routing, dedup, and reward eligibility are maintainer calls, never tester input.
 6. **Route evidence** is required before `status:routed`: add a comment containing `Routed to:` and `Upstream link:`. Look up the upstream owner in [`data/owners.json`](./data/owners.json) so routing doesn't depend on tribal knowledge.
 7. **Reward preview + export** — `notify-status-change.yml` comments an advisory reward progress preview on the tester's signup issue when rewardable core defects reach `status:accepted` / `status:routed`; final payout still comes from `node scripts/export-reward-report.mjs --signups-from-issues --format csv --out rewards.csv`. Before payout, run the same export with `--blockers-out rewards.blockers.json --audit-out rewards.audit.json --strict` (see [`docs/REWARD_PREFLIGHT.md`](./docs/REWARD_PREFLIGHT.md)) so structured blockers are visible. The export reads `signup` issues directly (author = GitHub username, body = wallet), counts accepted + deduped App Suite / 0G Infra defects, and credits L0 from the `l0:cleared` label. `--strict` blocks payout on unmatched issue authors, duplicate signup usernames, **duplicate wallets (Sybil)**, or rewardable users missing a wallet; lightweight accepted-issue quality gaps are warnings for maintainer cleanup. (A legacy `--signups <csv>` / `--l0 <csv>` path remains for non-GitHub data.)
 
@@ -62,7 +62,7 @@ node scripts/check-routed-evidence.mjs --repo 0gfoundation/0g-testing-hub
 
 - **Duplicates** or **not-reproducible** "felt off" reports.
 - **Feature requests** - recorded under Category `Feature Request`, never rewarded (unless the docs already promised the behavior — then it's a bug).
-- **P4 cosmetics** with no reproducible P1/P2.
+- **Cosmetic-only reports** with no reproducible functional impact.
 - **Ecosystem dApp findings** - useful as ecosystem coverage, but not part of the L1-L3 core reward ladder. If an Ecosystem bug is actionable, ask the tester to comment the dApp's own report link (`needs:dapp-report-url` is maintainer-applied at triage).
 - **Funds / keys** - never sign or send; stop at the transaction-confirmation screen on swap / bridge / faucet / sign flows.
 
@@ -81,7 +81,7 @@ node scripts/check-targets-drift.mjs
 
 ## Submit Feedback form
 
-The [Submit Feedback form](https://github.com/0gfoundation/0g-testing-hub/issues/new?template=submit-feedback.yml) collects exactly four tester fields — everything else (area, severity, root cause, routing) is maintainer triage work. The same structure lives in [`defects/TEMPLATE.md`](./defects/TEMPLATE.md); the maintainer severity rubric is [`defects/SEVERITY.md`](./defects/SEVERITY.md).
+The [Submit Feedback form](https://github.com/0gfoundation/0g-testing-hub/issues/new?template=submit-feedback.yml) collects exactly four tester fields — everything else (area, root cause, routing) is maintainer triage work. The same structure lives in [`defects/TEMPLATE.md`](./defects/TEMPLATE.md).
 
 ```text
 Category: Bug Report | Feature Request | Other
@@ -96,7 +96,7 @@ Product → area mapping (applied by automation, corrected by maintainers; keep 
 |---|---|
 | 0G App / Genome / 0G Chat / PandaClaw | `area:app-suite` |
 | 0G Hub / 0G Storage Scan / Chain Scan / 0G Code to Coin | `area:0g-infra` |
-| TradeGPT / Jaine / Oku / AI Arena / CARV / Cygnus Finance / DataHive / Khalani / Merkl | `area:ecosystem` (+ `coverage-log`, outside core rewards) |
+| TradeGPT / Jaine / Oku / AI Arena / CARV / Cygnus Finance / DataHive / Khalani / Merkl | `area:ecosystem` (outside core rewards) |
 | Other | none — `needs:manual-label`, maintainer assigns at triage |
 
-At triage the maintainer adds what the form no longer asks for: one `sev:*`, the `status:*` transitions, and `rc:*` when defects share a root cause. `Feature Request` / `Other` submissions never enter reward statistics; `Bug Report` counts only after it is accepted and deduped.
+At triage the maintainer adds what the form no longer asks for: the `status:*` transitions and `rc:*` when defects share a root cause. `Feature Request` / `Other` submissions never enter reward statistics; `Bug Report` counts only after it is accepted and deduped.
