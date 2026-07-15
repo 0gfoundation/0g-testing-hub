@@ -31,7 +31,7 @@ flowchart TD
       M2{"Reproducible &<br/>in bounds?"}
       M3["status:accepted<br/>★ counts toward reward"]
       M4["status:closed + resolution:*<br/>(fixed / rejected / duplicate)"]
-      M5["Dedup — find-duplicate-candidates.mjs<br/>rc: code · systemic · collapse to first filer"]
+      M5["Dedup — find-duplicate-candidates.mjs<br/>rc: code · collapse to first filer"]
       M6["Route — check-routed-evidence.mjs<br/>Routed to / Upstream link → status:routed"]
       M7["export-reward-report.mjs<br/>join username → wallet · tally L0–L3"]
     end
@@ -84,7 +84,7 @@ it triggers) is how the tester learns whether the report counted.
 ## Reward ladder (what the export computes)
 
 Payout = Credit of the **highest level reached**. Counts **accepted + deduped** core
-(App Suite / 0G Infra) findings; Ecosystem coverage logs are valuable but excluded from core reward tiers. The L0–L3 table
+(App Suite / 0G Infra) findings; Ecosystem coverage is valuable but excluded from core reward tiers. The L0–L3 table
 and pass conditions are the evergreen spec in [`LEVELS.md`](./LEVELS.md), mirrored on the
 [landing page](../README.md#test-report-reward) — not repeated here so the numbers can't drift.
 
@@ -97,7 +97,7 @@ and pass conditions are the evergreen spec in [`LEVELS.md`](./LEVELS.md), mirror
   the board without resetting it back to Triage.
 - **The accept comment tells the truth per area.** `notify-status-change.yml` branches the
   message: App Suite accept counts; an **0G Infra** accept alone does **not** clear L1
-  (needs a paired App Suite bug → L2); an **Ecosystem** coverage log helps follow-up
+  (needs a paired App Suite bug → L2); an **Ecosystem** issue helps follow-up
   but does **not** count toward the core reward ladder.
 - **The signup issue is the tester's tracker.** The README registration link creates it,
   signup confirmation normalizes the title from the issue author, L0 survey automation comments partial / cleared states, and

@@ -65,15 +65,15 @@ Full runbook: [`.github/TRIAGE.md`](../.github/TRIAGE.md). The invariants:
   back to `status:filed`.
 - **`rc:<CODE>` groups, `resolution:duplicate` closes.** Duplicates get the shared
   `rc:` code + `resolution:duplicate` + a comment linking the canonical (earliest)
-  issue, which gets `systemic` and is routed once. Register every code in
+  issue, which is routed once. Register every code in
   [`data/root-causes.json`](../data/root-causes.json) first.
 - **`needs:*` means a human must act**: `needs:manual-label` (maintainer — automation
   couldn't derive the area), `needs:dapp-report-url` (tester — bot notifies them; clear
   it once the link is posted).
 - **Automation owns the first pass**: `feedback`, `defect`, `status:filed`, `area:*`,
-  `product:*`, `coverage-log`, and everything on signup issues (`signup`,
+  `product:*`, and everything on signup issues (`signup`,
   `signup:needs-fix`, `signup:duplicate`, `l0:*`) are applied by workflows. Status
-  transitions, `rc:*`, `systemic`, and `resolution:*` are yours alone.
+  transitions, `rc:*`, and `resolution:*` are yours alone.
 
 ### Colors are per-axis on purpose
 

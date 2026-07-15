@@ -43,7 +43,7 @@ New `feedback` issues are routed by their **Category** by the
 [`add-defects-to-board`](./workflows/add-defects-to-board.yml) GitHub Action (it replaces
 the UI-only built-in Projects workflows, which have no API): a **Bug Report** is promoted
 to `defect` + `status:filed`, gets a first-pass `area:*` derived from **Product** (ecosystem
-also gets `coverage-log` and an ecosystem-routing notice), is added to the board, and set to
+also gets an ecosystem-routing notice), is added to the board, and set to
 **Triage**. **Feature Request** gets `feature-request`; **Other** stays plain `feedback` —
 neither enters the defect pipeline.
 
@@ -115,7 +115,7 @@ Category, Product, Details, and Evidence.
    `status:closed` so the bot posts the precise outcome instead of the generic one.
 3. **Root cause** — when defects share an underlying cause, apply an `rc:<CODE>` label
    (create it once: `gh label create 'rc:CHAIN_ID_MISSING' --color ededed -d 'shared root cause'`).
-4. **Ecosystem coverage** — keep `area:ecosystem`, add `coverage-log` (automation does both), and do not count it toward the L1-L3 core reward ladder. If the bug is actionable, apply `needs:dapp-report-url` and ask the tester to comment the dApp's own issue / form / support link; clear the label once that link is posted.
+4. **Ecosystem coverage** — keep `area:ecosystem` and do not count it toward the L1-L3 core reward ladder. If the bug is actionable, apply `needs:dapp-report-url` and ask the tester to comment the dApp's own issue / form / support link; clear the label once that link is posted.
 5. **Feature Request / Other** — stay out of the defect pipeline entirely (`feature-request` / plain `feedback`); they are never counted toward rewards.
 
 ## Routed evidence
@@ -146,11 +146,11 @@ to be on triage. (Those values are still `TBD` — fill them in as owners are co
 
 When several issues share an `rc:` code they are **one** finding, not N:
 
-1. Pick the **earliest** issue as the canonical one; add the `systemic` label.
+1. Pick the **earliest** issue as the canonical one.
 2. Label the rest with the same `rc:` code plus `resolution:duplicate`, then close them
    (`status:closed`, comment linking the canonical issue — the bot tells the filer the
    credit went to the first reporter).
-3. Route the canonical `systemic` issue upstream once — not per app.
+3. Route the canonical issue upstream once — not per app.
 
 To find what to collapse, run the read-only finder — it lists issues already sharing
 an `rc:` code, candidate duplicates (same area + overlapping titles, no `rc:` yet), and
@@ -175,7 +175,7 @@ These replace the old grep-on-files one-liners (kept for reference in
 [`defects/README.md`](../defects/README.md)). `--label` is AND-only; use `--search` for OR/negation.
 
 ```bash
-# Everything sharing a root cause — the systemic-pattern view
+# Everything sharing a root cause
 gh issue list --label 'rc:CHAIN_ID_MISSING' --state all
 
 # Accepted-but-not-yet-routed
@@ -193,8 +193,8 @@ gh issue list --search 'label:"status:closed" -label:"resolution:fixed" -label:"
 # Waiting on testers — sweep for the ~7-day needs-info timeout
 gh issue list --label 'status:needs-info'
 
-# Confirmed systemic findings
-gh issue list --label 'systemic' --state all
+# Confirmed shared-root-cause findings
+gh issue list --search 'label:"defect" label:"status:accepted" label:"rc:CHAIN_ID_MISSING"'
 ```
 
 ## Reward export
@@ -233,6 +233,6 @@ then close #3. (Maintainer action — not automated.)
 | Intake | Picks Category + Product, writes Details / Evidence → Bug Reports auto-promoted to `defect` (Triage) | — |
 | Classify | — | Automation derives first-pass `area:*` / `product:*` from Product; maintainer corrects them if needed |
 | Verify | — | `status:accepted` if reproducible, else close with a reason |
-| Dedup | — | `rc:`/`systemic` labels; collapse duplicates to one |
+| Dedup | — | `rc:` labels; collapse duplicates to one |
 | Route | — | Add routed evidence comment, then `status:routed`, send upstream once |
 | Reward | Supplies GitHub username + wallet through signup | Runs `scripts/export-reward-report.mjs`; counts **accepted + deduped** defects per GitHub username and exports wallet |

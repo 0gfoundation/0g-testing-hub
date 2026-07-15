@@ -275,7 +275,7 @@ while IFS= read -r number; do
       esac ;;
   esac
   case "$area" in
-    "area:ecosystem") gh issue edit "$number" --repo "$REPO" --add-label "area:ecosystem" --add-label "coverage-log" >/dev/null 2>&1 || true ;;
+    "area:ecosystem") gh issue edit "$number" --repo "$REPO" --add-label "area:ecosystem" >/dev/null 2>&1 || true ;;
     "area:"*) gh issue edit "$number" --repo "$REPO" --add-label "$area" >/dev/null 2>&1 || true ;;
   esac
   # Product → product:* map — keep in lockstep with add-defects-to-board.yml

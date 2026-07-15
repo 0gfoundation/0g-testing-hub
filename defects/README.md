@@ -13,13 +13,13 @@ is now **reference only**:
 
 ## Aggregation moved to the issue tracker
 
-The high-value end state is **routed systemic intel**, not a pile of per-app tickets.
+The high-value end state is **routed shared-root-cause intel**, not a pile of per-app tickets.
 That grouping used to mean grepping YAML front-matter across files; it's now `gh` against
 labels, with no hand-copy from intake. The `area:`, `status:`, and `rc:<CODE>`
 labels are the axes you aggregate on:
 
 ```bash
-# every issue sharing a root cause — the systemic-pattern view
+# every issue sharing a root cause
 gh issue list --label 'rc:CHAIN_ID_MISSING' --state all
 
 # accepted but not routed (--label is AND-only; use --search for negation)

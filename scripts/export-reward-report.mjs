@@ -5,7 +5,7 @@
  * Data chain:
  *   signup export (must include GitHub username + wallet)
  *     + GitHub issue author
- *     + status/area/systemic/rc labels
+ *     + status/area/rc labels
  *     -> accepted + deduped reward report
  *
  * Usage:
@@ -417,7 +417,6 @@ function buildReport(issues, signups, l0Done = new Set()) {
     user.acceptedDeduped += 1;
     if (hasLabel(canonical, 'area:app-suite')) user.appSuite += 1;
     if (hasLabel(canonical, 'area:0g-infra')) user.infra += 1;
-    if (group.some((issue) => hasLabel(issue, 'systemic'))) user.systemic += 1;
     user.issues.push(issueRef(canonical, key, group.length));
   }
 
@@ -602,7 +601,6 @@ function buildAuditReport(report, blockers) {
       acceptedDeduped: row.acceptedDeduped,
       appSuite: row.appSuite,
       infra: row.infra,
-      systemic: row.systemic,
       canonicalIssues: row.canonicalIssues,
       notes: row.notes,
       blockers: blockers.filter((item) => item.subjectType === 'tester' && item.subjectId === row.githubUsername),
@@ -637,7 +635,6 @@ function emptyUser(username, registered, wallet = '', l0Done = false) {
     acceptedDeduped: 0,
     appSuite: 0,
     infra: 0,
-    systemic: 0,
     issues: [],
   };
 }
@@ -775,7 +772,6 @@ function renderCsv(rows) {
     'accepted_deduped',
     'app_suite',
     'infra',
-    'systemic',
     'canonical_issues',
     'notes',
   ];
@@ -791,7 +787,6 @@ function renderCsv(rows) {
         row.acceptedDeduped,
         row.appSuite,
         row.infra,
-        row.systemic,
         row.canonicalIssues,
         row.notes,
       ].map(csvEscape).join(','),
@@ -817,11 +812,11 @@ function renderMarkdown(report) {
   lines.push(`Signup users: ${report.totals.signupUsers}`);
   lines.push(`L0 survey completions: ${report.totals.l0Completions}`);
   lines.push('');
-  lines.push('| GitHub | Wallet | Registered | Issue level | Credit | Accepted deduped | App Suite | Infra | Systemic | Issues | Notes |');
-  lines.push('|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|');
+  lines.push('| GitHub | Wallet | Registered | Issue level | Credit | Accepted deduped | App Suite | Infra | Issues | Notes |');
+  lines.push('|---|---|---:|---:|---:|---:|---:|---:|---|---|');
   for (const row of report.rows) {
     lines.push(
-      `| ${row.githubUsername} | ${row.wallet || '-'} | ${row.registered ? 'yes' : 'no'} | ${row.issueLevel || '-'} | ${row.issueCredit} | ${row.acceptedDeduped} | ${row.appSuite} | ${row.infra} | ${row.systemic} | ${row.canonicalIssues || '-'} | ${row.notes || '-'} |`,
+      `| ${row.githubUsername} | ${row.wallet || '-'} | ${row.registered ? 'yes' : 'no'} | ${row.issueLevel || '-'} | ${row.issueCredit} | ${row.acceptedDeduped} | ${row.appSuite} | ${row.infra} | ${row.canonicalIssues || '-'} | ${row.notes || '-'} |`,
     );
   }
   return `${lines.join('\n')}\n`;

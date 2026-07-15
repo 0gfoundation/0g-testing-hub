@@ -24,7 +24,7 @@ permissions:
 jobs:
   add-to-board:
     # Act on intake events plus status transitions. Avoid firing on unrelated
-    # later labels (area:*, product:*, rc:*, systemic…), but keep Project Status in
+    # later labels (area:*, product:*, rc:*…), but keep Project Status in
     # sync when a maintainer changes the issue's single `status:*` label.
     # Re-runs are idempotent and do not re-stamp `status:filed` when one status
     # label already exists. If a maintainer accidentally leaves multiple
@@ -166,7 +166,7 @@ jobs:
 
           if [ "$AREA" = "area:ecosystem" ]; then
             IS_ECOSYSTEM=1
-            gh issue edit "$ISSUE_NUMBER" --repo "$REPO" --add-label "area:ecosystem" --add-label "coverage-log" >/dev/null
+            gh issue edit "$ISSUE_NUMBER" --repo "$REPO" --add-label "area:ecosystem" >/dev/null
           elif [ -n "$AREA" ]; then
             gh issue edit "$ISSUE_NUMBER" --repo "$REPO" --add-label "$AREA" >/dev/null
           fi

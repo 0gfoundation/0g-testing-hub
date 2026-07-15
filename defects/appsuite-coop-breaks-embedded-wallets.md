@@ -72,7 +72,7 @@ auth origin/route, or COEP allowlisting (CORP) for the Privy endpoint.
 
 <!--
 Aggregation note (T3): root_cause_code "COOP_BREAKS_EMBEDDED_WALLET" spans 4 App Suite
-products that share one header config — this is ALREADY the systemic view. Do NOT file
+products that share one header config — this is already the shared-root-cause view. Do NOT file
 four per-app tickets; route this ONE finding upstream to the shared frontend/header
 config owner. Group at any time:
     grep -rl 'root_cause_code: "COOP_BREAKS_EMBEDDED_WALLET"' defects/
