@@ -88,8 +88,17 @@ jobs:
               echo "Unhandled label: $LABEL"; exit 0 ;;
           esac
 
-          gh issue comment "$ISSUE_NUMBER" --repo "$REPO" --body "$MSG"
-          echo "Commented on #$ISSUE_NUMBER for $LABEL."
+          MARKER="<!-- og-status-notify:${LABEL} -->"
+          BODY=$(printf '%s\n\n%s' "$MARKER" "$MSG")
+          COMMENT_ID=$(gh api "repos/$REPO/issues/$ISSUE_NUMBER/comments" --paginate --jq ".[] | select(.body | contains(\"$MARKER\")) | .id" | head -n 1)
+
+          if [ -n "$COMMENT_ID" ]; then
+            gh api --method PATCH "repos/$REPO/issues/comments/$COMMENT_ID" -f body="$BODY" >/dev/null
+            echo "Updated existing comment on #$ISSUE_NUMBER for $LABEL."
+          else
+            gh api --method POST "repos/$REPO/issues/$ISSUE_NUMBER/comments" -f body="$BODY" >/dev/null
+            echo "Commented on #$ISSUE_NUMBER for $LABEL."
+          fi
 
       - name: Update signup progress preview
         # status:closed / resolution:* are included so the preview refreshes
@@ -172,7 +181,10 @@ jobs:
             fi
           fi
 
-          gh issue comment "$SIGNUP_NUMBER" --repo "$REPO" --body-file - <<EOF
+          MARKER="<!-- og-reward-progress-preview -->"
+          BODY=$(cat <<EOF
+          $MARKER
+
           📊 **Reward progress preview** (advisory)
 
           Current level: **$LEVEL** ($CREDIT 0G Compute Credit)
@@ -186,5 +198,14 @@ jobs:
 
           Final payout still comes from the reward export after triage and de-duplication.
           EOF
+          )
 
-          echo "Updated signup #$SIGNUP_NUMBER with reward progress preview for @$AUTHOR."
+          COMMENT_ID=$(gh api "repos/$REPO/issues/$SIGNUP_NUMBER/comments" --paginate --jq ".[] | select(.body | contains(\"$MARKER\")) | .id" | head -n 1)
+
+          if [ -n "$COMMENT_ID" ]; then
+            gh api --method PATCH "repos/$REPO/issues/comments/$COMMENT_ID" -f body="$BODY" >/dev/null
+            echo "Updated existing signup #$SIGNUP_NUMBER reward progress preview for @$AUTHOR."
+          else
+            gh api --method POST "repos/$REPO/issues/$SIGNUP_NUMBER/comments" -f body="$BODY" >/dev/null
+            echo "Updated signup #$SIGNUP_NUMBER with reward progress preview for @$AUTHOR."
+          fi
