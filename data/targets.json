@@ -1,5 +1,5 @@
 {
-  "note": "Single source of truth for README -> Test targets. Edit here, then run `node scripts/render-targets-readme.mjs --write`.",
+  "note": "Single source of truth for README -> Test targets. Edit here, then run `node scripts/render-targets-readme.mjs --write`. Each item's productLabel drives the product:* label; legacyAliases lists retired names still parsed from old issue bodies.",
   "intro": "Test the core user flow for each target, including one happy path and one error path. File reproducible DX friction: confusing setup, unclear errors, broken docs, wallet/network issues, blocked flows, or behavior that diverges from what the product promises.",
   "buckets": [
     {
@@ -21,22 +21,29 @@
         {
           "name": "0G App",
           "desc": "flagship app builder, live on mainnet",
-          "url": "https://app.0g.ai/"
+          "url": "https://app.0g.ai/",
+          "productLabel": "0g-app"
         },
         {
           "name": "Genome",
           "desc": "paste a URL/screenshot, produces production-grade design DNA",
-          "url": "https://app.0g.ai/genome"
+          "url": "https://app.0g.ai/genome",
+          "productLabel": "genome"
         },
         {
           "name": "0G Chat",
           "desc": "end-to-end encrypted private chat (UI still WIP)",
-          "url": "https://app.0g.ai/private-chat"
+          "url": "https://app.0g.ai/private-chat",
+          "productLabel": "0g-chat"
         },
         {
           "name": "Agent launchpad",
           "desc": "agent launchpad + skill marketplace (Hermes + OpenClaw harness)",
-          "url": "https://app.0g.ai/agent-launchpad"
+          "url": "https://app.0g.ai/agent-launchpad",
+          "productLabel": "agent-launchpad",
+          "legacyAliases": [
+            "PandaClaw"
+          ]
         }
       ]
     },
@@ -52,23 +59,27 @@
         {
           "name": "0G Hub",
           "desc": "bridge / swap / faucet / portfolio",
-          "url": "https://hub.0g.ai/"
+          "url": "https://hub.0g.ai/",
+          "productLabel": "0g-hub"
         },
         {
           "name": "0G Storage Scan",
           "desc": "storage explorer",
-          "url": "https://storagescan-newton.0g.ai/"
+          "url": "https://storagescan-newton.0g.ai/",
+          "productLabel": "storage-scan"
         },
         {
           "name": "Chain Scan",
           "desc": "block explorer",
-          "url": "https://chainscan.0g.ai/"
+          "url": "https://chainscan.0g.ai/",
+          "productLabel": "chain-scan"
         },
         {
           "name": "0G Code to Coin (0g-cc)",
           "desc": "MCP server for AI inference / storage on 0G Compute",
           "url": "https://www.npmjs.com/package/@0gfoundation/0g-cc",
-          "note": "`0g-cc` is a CLI / MCP server, not a web app. Add it (`claude mcp add 0g-cc npx @0gfoundation/0g-cc`), then walk one inference / storage flow plus one error path. The funds/keys boundary still applies."
+          "note": "`0g-cc` is a CLI / MCP server, not a web app. Add it (`claude mcp add 0g-cc npx @0gfoundation/0g-cc`), then walk one inference / storage flow plus one error path. The funds/keys boundary still applies.",
+          "productLabel": "0g-cc"
         }
       ]
     },
@@ -84,47 +95,56 @@
         {
           "name": "TradeGPT",
           "desc": "AI-driven DEX",
-          "url": "https://tradegpt.finance/"
+          "url": "https://tradegpt.finance/",
+          "productLabel": "tradegpt"
         },
         {
           "name": "Jaine",
           "desc": "DEX/liquidity (LIC)",
-          "url": "https://jaine.fi/"
+          "url": "https://jaine.fi/",
+          "productLabel": "jaine"
         },
         {
           "name": "Oku",
           "desc": "concentrated liquidity DEX",
-          "url": "https://oku.trade/"
+          "url": "https://oku.trade/",
+          "productLabel": "oku"
         },
         {
           "name": "AI Arena",
           "desc": "PvP, train AI agents",
-          "url": "https://aiarena.io/"
+          "url": "https://aiarena.io/",
+          "productLabel": "ai-arena"
         },
         {
           "name": "CARV",
           "desc": "gamer identity",
-          "url": "https://carv.io/"
+          "url": "https://carv.io/",
+          "productLabel": "carv"
         },
         {
           "name": "Cygnus Finance",
           "desc": "RWA stablecoin",
-          "url": "https://cygnus.finance/"
+          "url": "https://cygnus.finance/",
+          "productLabel": "cygnus"
         },
         {
           "name": "DataHive",
           "desc": "personal data economy",
-          "url": "https://datahive.network/"
+          "url": "https://datahive.network/",
+          "productLabel": "datahive"
         },
         {
           "name": "Khalani",
           "desc": "bridge to 0G",
-          "url": "https://hub.0g.ai/khalani/transfer?network=mainnet"
+          "url": "https://hub.0g.ai/khalani/transfer?network=mainnet",
+          "productLabel": "khalani"
         },
         {
           "name": "Merkl",
           "desc": "claim LIC rewards",
-          "url": "https://app.merkl.xyz/"
+          "url": "https://app.merkl.xyz/",
+          "productLabel": "merkl"
         }
       ]
     }

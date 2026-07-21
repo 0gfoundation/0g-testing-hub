@@ -1,22 +1,37 @@
 name: Check targets drift
 
-# data/targets.json is the single source of truth for the site's test-target
-# wall. This guards it against drifting from README.md → Test targets. Runs only
-# when either side changes; pure read-only check, never writes back.
+# data/targets.json is the single source of truth for every surface that lists
+# or maps products. This guards five edges against drift: the README targets
+# block, the Submit Feedback Product dropdown, the Product → area / product:*
+# maps in add-defects-to-board.yml and setup-labels-and-board.sh, and
+# data/owners.json + the product:* labels in labels.yml. Runs when any side
+# changes; pure read-only check, never writes back.
 
 on:
   push:
     paths:
       - data/targets.json
+      - data/owners.json
       - README.md
+      - .github/ISSUE_TEMPLATE/submit-feedback.yml
+      - .github/workflows/add-defects-to-board.yml
+      - .github/workflows/check-drift.yml
+      - .github/labels.yml
       - scripts/check-targets-drift.mjs
       - scripts/render-targets-readme.mjs
+      - scripts/setup-labels-and-board.sh
   pull_request:
     paths:
       - data/targets.json
+      - data/owners.json
       - README.md
+      - .github/ISSUE_TEMPLATE/submit-feedback.yml
+      - .github/workflows/add-defects-to-board.yml
+      - .github/workflows/check-drift.yml
+      - .github/labels.yml
       - scripts/check-targets-drift.mjs
       - scripts/render-targets-readme.mjs
+      - scripts/setup-labels-and-board.sh
 
 jobs:
   check:
