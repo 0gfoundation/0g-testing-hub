@@ -121,7 +121,9 @@ jobs:
             "0G App") PRODUCT_LABEL="product:0g-app" ;;
             "Genome") PRODUCT_LABEL="product:genome" ;;
             "0G Chat") PRODUCT_LABEL="product:0g-chat" ;;
-            "PandaClaw") PRODUCT_LABEL="product:pandaclaw" ;;
+            "Agent launchpad") PRODUCT_LABEL="product:agent-launchpad" ;;
+            # Legacy dropdown option — renamed to Agent launchpad; old bodies still parse.
+            "PandaClaw") PRODUCT_LABEL="product:agent-launchpad" ;;
             "0G Hub") PRODUCT_LABEL="product:0g-hub" ;;
             "0G Storage Scan") PRODUCT_LABEL="product:storage-scan" ;;
             "Chain Scan") PRODUCT_LABEL="product:chain-scan" ;;
@@ -141,7 +143,7 @@ jobs:
           fi
 
           case "$PRODUCT" in
-            "0G App"|"Genome"|"0G Chat"|"PandaClaw")
+            "0G App"|"Genome"|"0G Chat"|"Agent launchpad"|"PandaClaw")
               AREA="area:app-suite" ;;
             "0G Hub"|"0G Storage Scan"|"Chain Scan"|"0G Code to Coin"*)
               AREA="area:0g-infra" ;;

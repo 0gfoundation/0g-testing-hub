@@ -75,7 +75,7 @@ node scripts/render-targets-readme.mjs --write
 node scripts/check-targets-drift.mjs
 ```
 
-- **0G App Suite · core (L0-L1)** - 0G App, Genome, 0G Chat, PandaClaw.
+- **0G App Suite · core (L0-L1)** - 0G App, Genome, 0G Chat, Agent launchpad.
 - **0G Infra · core (L2)** - 0G Hub, 0G Storage Scan, Chain Scan, 0G Code to Coin (0g-cc).
 - **0G Ecosystem dApp** - TradeGPT, Jaine, Oku, AI Arena, CARV, Cygnus Finance, DataHive, Khalani, Merkl.
 
@@ -94,7 +94,7 @@ Product → area mapping (applied by automation, corrected by maintainers; keep 
 
 | Product | Area label |
 |---|---|
-| 0G App / Genome / 0G Chat / PandaClaw | `area:app-suite` |
+| 0G App / Genome / 0G Chat / Agent launchpad | `area:app-suite` |
 | 0G Hub / 0G Storage Scan / Chain Scan / 0G Code to Coin | `area:0g-infra` |
 | TradeGPT / Jaine / Oku / AI Arena / CARV / Cygnus Finance / DataHive / Khalani / Merkl | `area:ecosystem` (outside core rewards) |
 | Other | none — `needs:manual-label`, maintainer assigns at triage |

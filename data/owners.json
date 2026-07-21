@@ -4,7 +4,7 @@
     { "product": "0G App", "area": "app-suite", "owner": "TBD — App Suite product team", "channel": "TBD", "tracker": "" },
     { "product": "Genome", "area": "app-suite", "owner": "TBD — App Suite product team", "channel": "TBD", "tracker": "" },
     { "product": "0G Chat", "area": "app-suite", "owner": "TBD — App Suite product team", "channel": "TBD", "tracker": "" },
-    { "product": "PandaClaw", "area": "app-suite", "owner": "TBD — App Suite product team", "channel": "TBD", "tracker": "" },
+    { "product": "Agent launchpad", "area": "app-suite", "owner": "TBD — App Suite product team", "channel": "TBD", "tracker": "" },
     { "product": "0G Hub", "area": "0g-infra", "owner": "TBD — Infra team", "channel": "TBD", "tracker": "" },
     { "product": "0G Storage Scan", "area": "0g-infra", "owner": "TBD — Infra team", "channel": "TBD", "tracker": "" },
     { "product": "Chain Scan", "area": "0g-infra", "owner": "TBD — Infra team", "channel": "TBD", "tracker": "" },
