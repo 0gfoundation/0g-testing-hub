@@ -261,7 +261,7 @@ while IFS= read -r number; do
   product=$(get_issue_field "$body" "Product")
   area=""
   case "$product" in
-    "0G App"|"Genome"|"0G Chat"|"PandaClaw") area="area:app-suite" ;;
+    "0G App"|"Genome"|"0G Chat"|"Agent launchpad"|"PandaClaw") area="area:app-suite" ;;
     "0G Hub"|"0G Storage Scan"|"Chain Scan"|"0G Code to Coin"*) area="area:0g-infra" ;;
     "TradeGPT"|"Jaine"|"Oku"|"AI Arena"|"CARV"|"Cygnus Finance"|"DataHive"|"Khalani"|"Merkl") area="area:ecosystem" ;;
     "Other Ecosystem dApp"*) area="area:ecosystem" ;;
@@ -285,7 +285,9 @@ while IFS= read -r number; do
     "0G App") product_label="product:0g-app" ;;
     "Genome") product_label="product:genome" ;;
     "0G Chat") product_label="product:0g-chat" ;;
-    "PandaClaw") product_label="product:pandaclaw" ;;
+    "Agent launchpad") product_label="product:agent-launchpad" ;;
+    # Legacy dropdown option — renamed to Agent launchpad; old bodies still parse.
+    "PandaClaw") product_label="product:agent-launchpad" ;;
     "0G Hub") product_label="product:0g-hub" ;;
     "0G Storage Scan") product_label="product:storage-scan" ;;
     "Chain Scan") product_label="product:chain-scan" ;;

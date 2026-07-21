@@ -4,7 +4,7 @@
     {
       "code": "COOP_BREAKS_EMBEDDED_WALLET",
       "description": "Cross-Origin-Opener-Policy header on the shared App Suite hosting breaks embedded / popup wallet connect.",
-      "products": ["0G App", "Genome", "0G Chat", "PandaClaw"],
+      "products": ["0G App", "Genome", "0G Chat", "Agent launchpad"],
       "systemic": true
     },
     {
