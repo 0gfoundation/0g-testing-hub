@@ -139,10 +139,14 @@ jobs:
           fi
           summary ""
           summary "### B. State-machine consistency"
+          # Explicit ifs, not `[ ... ] && summary`: a failing test as the step's
+          # last executed command would become the step's exit code and fail the
+          # run even though every check completed (seen live: run 29888442931).
           if [ "$consistency_total" -gt 0 ]; then
-            [ "$b1_count" -gt 0 ] && summary "- ${b1_count} open + \`status:closed\`:${b1_nums}"
-            [ "$b2_count" -gt 0 ] && summary "- ${b2_count} closed defect(s) missing \`resolution:*\`:${b2_nums}"
-            [ "$b3_count" -gt 0 ] && summary "- ${b3_count} closed defect(s) with a non-closed \`status:*\`:${b3_nums}"
+            if [ "$b1_count" -gt 0 ]; then summary "- ${b1_count} open + \`status:closed\`:${b1_nums}"; fi
+            if [ "$b2_count" -gt 0 ]; then summary "- ${b2_count} closed defect(s) missing \`resolution:*\`:${b2_nums}"; fi
+            if [ "$b3_count" -gt 0 ]; then summary "- ${b3_count} closed defect(s) with a non-closed \`status:*\`:${b3_nums}"; fi
           else
             summary "- 0 inconsistencies found."
           fi
+          echo "Sweep done: needs-info scanned=${NEEDS_INFO_TOTAL} stale=${stale_count}; closed defects scanned=${CLOSED_DEFECTS_TOTAL} inconsistencies=${consistency_total}."
