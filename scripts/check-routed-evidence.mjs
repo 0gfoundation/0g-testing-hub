@@ -12,6 +12,7 @@
  */
 import { execFileSync } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
+import { hasRoutedEvidence } from './lib/routed-evidence.mjs';
 
 const args = parseArgs(process.argv.slice(2));
 if (args.help) {
@@ -102,13 +103,6 @@ async function loadIssues(file, repoName, limit) {
       ),
     ),
   }));
-}
-
-function hasRoutedEvidence(issue) {
-  return (issue.comments || []).some((comment) => {
-    const body = typeof comment === 'string' ? comment : comment.body || '';
-    return /^Routed to:\s*\S+/im.test(body) && /^Upstream link:\s*\S+/im.test(body);
-  });
 }
 
 function labelNames(issue) {
