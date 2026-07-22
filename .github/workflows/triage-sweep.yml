@@ -1,0 +1,148 @@
+name: Triage sweep
+
+# A daily janitor for triage state that the event-driven workflows can't catch,
+# because they only fire on live label/issue events:
+#
+#   Sweep A — needs-info timeout: TRIAGE.md gives a tester ~7 days to reply to a
+#   status:needs-info issue before it is closed as resolution:rejected. Nothing
+#   fires on "time passed", so a stale needs-info issue would sit silently. This
+#   posts a dedup'd reminder (it does NOT auto-close — a human still decides).
+#
+#   Sweep B — state-machine consistency: the status:closed label and the issue's
+#   real open/closed state are independent actions and can drift. This flags the
+#   drift with needs:manual-label + an explanation comment for a maintainer.
+#
+# Read-only against the board: this uses the default GITHUB_TOKEN (issues:write)
+# to comment and label only — it never touches Projects v2, so no PROJECT_PAT.
+
+on:
+  schedule:
+    - cron: "0 9 * * *" # daily 09:00 UTC (offset from check-project-token's 07:00)
+  workflow_dispatch:
+    inputs:
+      stale_days:
+        description: "Days without an update before a needs-info issue is reminded"
+        required: false
+        default: "7"
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  sweep:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      REPO: ${{ github.repository }}
+      STALE_DAYS: ${{ github.event.inputs.stale_days || '7' }}
+    steps:
+      - name: Sweep needs-info timeouts and state-machine consistency
+        run: |
+          set -euo pipefail
+
+          # Post or update a marker-deduped comment (PATCH-or-POST, same pattern
+          # as notify-status-change.yml) so daily re-runs refresh in place instead
+          # of piling new comments on the issue.
+          post_or_update() {
+            number="$1"; marker="$2"; msg="$3"
+            body=$(printf '%s\n\n%s' "$marker" "$msg")
+            cid=$(gh api "repos/$REPO/issues/$number/comments" --paginate \
+              --jq ".[] | select(.body | contains(\"$marker\")) | .id" | head -n 1)
+            if [ -n "$cid" ]; then
+              gh api --method PATCH "repos/$REPO/issues/comments/$cid" -f body="$body" >/dev/null
+            else
+              gh api --method POST "repos/$REPO/issues/$number/comments" -f body="$body" >/dev/null
+            fi
+          }
+
+          summary() { printf '%s\n' "$1" >>"$GITHUB_STEP_SUMMARY"; }
+
+          # ---- Sweep A: needs-info timeout reminders --------------------------
+          CUTOFF=$(date -u -d "$STALE_DAYS days ago" +%s)
+          NEEDS_INFO_JSON=$(gh issue list --repo "$REPO" --state open \
+            --label "status:needs-info" --limit 500 --json number,updatedAt,title)
+          NEEDS_INFO_TOTAL=$(printf '%s' "$NEEDS_INFO_JSON" | jq 'length')
+
+          stale_nums=""
+          stale_count=0
+          # Tab-separated number<TAB>updatedAt so titles with spaces don't split.
+          while IFS=$'\t' read -r num updated; do
+            [ -z "$num" ] && continue
+            updated_epoch=$(date -u -d "$updated" +%s)
+            if [ "$updated_epoch" -le "$CUTOFF" ]; then
+              post_or_update "$num" "<!-- og-triage-sweep:needs-info-stale -->" \
+                "⏰ **Reminder — this bug is waiting on more info.** It was moved to \`status:needs-info\` and has had no update in over **${STALE_DAYS} days**. Per [TRIAGE.md](../../blob/main/.github/TRIAGE.md), a needs-info issue with no reply is closed as \`resolution:rejected\` — a reply with the missing repro details (exact steps, environment, screenshots/recording) keeps your potential reward credit alive. This is an automated reminder; it does **not** auto-close the issue."
+              stale_nums="$stale_nums #$num"
+              stale_count=$((stale_count + 1))
+            fi
+          done < <(printf '%s' "$NEEDS_INFO_JSON" | jq -r '.[] | [(.number|tostring), .updatedAt] | @tsv')
+
+          # ---- Sweep B: state-machine consistency ----------------------------
+          # B1: open issue carrying status:closed (label says closed, issue isn't).
+          OPEN_CLOSED=$(gh issue list --repo "$REPO" --state open \
+            --label "status:closed" --limit 500 --json number --jq '.[].number')
+
+          # Closed defects, for B2/B3 label checks.
+          CLOSED_DEFECTS=$(gh issue list --repo "$REPO" --state closed \
+            --label "defect" --limit 1000 --json number,labels)
+          CLOSED_DEFECTS_TOTAL=$(printf '%s' "$CLOSED_DEFECTS" | jq 'length')
+
+          # B2: closed defect with no resolution:* label.
+          NO_RESOLUTION=$(printf '%s' "$CLOSED_DEFECTS" | jq -r \
+            '.[] | select([.labels[].name | startswith("resolution:")] | any | not) | .number')
+
+          # B3: closed defect carrying a status:* label that is not status:closed.
+          STALE_STATUS=$(printf '%s' "$CLOSED_DEFECTS" | jq -r \
+            '.[] | select(any(.labels[].name; startswith("status:") and . != "status:closed")) | .number')
+
+          flag() { # number, marker, message
+            gh issue edit "$1" --repo "$REPO" --add-label "needs:manual-label" >/dev/null
+            post_or_update "$1" "$2" "$3"
+          }
+
+          b1_nums=""; b1_count=0
+          for n in $OPEN_CLOSED; do
+            [ -z "$n" ] && continue
+            flag "$n" "<!-- og-triage-sweep:open-with-closed -->" \
+              "🏷️ **State mismatch — open issue labelled \`status:closed\`.** The \`status:closed\` label and the issue's real open/closed state have drifted. **Maintainer:** either close this issue (if it is truly done) or remove \`status:closed\` and set the correct \`status:*\`, then remove \`needs:manual-label\`."
+            b1_nums="$b1_nums #$n"; b1_count=$((b1_count + 1))
+          done
+
+          b2_nums=""; b2_count=0
+          for n in $NO_RESOLUTION; do
+            [ -z "$n" ] && continue
+            flag "$n" "<!-- og-triage-sweep:closed-no-resolution -->" \
+              "🏷️ **Closed defect without a resolution.** This defect is closed but carries no \`resolution:*\` label, so the tester was never told whether it counted. **Maintainer:** add exactly one \`resolution:fixed\` / \`resolution:rejected\` / \`resolution:duplicate\` per [TRIAGE.md](../../blob/main/.github/TRIAGE.md), then remove \`needs:manual-label\`."
+            b2_nums="$b2_nums #$n"; b2_count=$((b2_count + 1))
+          done
+
+          b3_nums=""; b3_count=0
+          for n in $STALE_STATUS; do
+            [ -z "$n" ] && continue
+            flag "$n" "<!-- og-triage-sweep:closed-stale-status -->" \
+              "🏷️ **Closed defect with a non-closed status label.** This issue is closed but still carries a \`status:*\` other than \`status:closed\`. **Maintainer:** set \`status:closed\` (adding a new \`status:*\` auto-removes the stale one) or reopen the issue, then remove \`needs:manual-label\`."
+            b3_nums="$b3_nums #$n"; b3_count=$((b3_count + 1))
+          done
+
+          # ---- Summary (anti-empty-green: always report what was scanned) -----
+          consistency_total=$((b1_count + b2_count + b3_count))
+          summary "## Triage sweep"
+          summary ""
+          summary "Scanned **${NEEDS_INFO_TOTAL}** open \`status:needs-info\` issue(s) and **${CLOSED_DEFECTS_TOTAL}** closed defect(s)."
+          summary ""
+          summary "### A. needs-info timeouts (≥ ${STALE_DAYS} days)"
+          if [ "$stale_count" -gt 0 ]; then
+            summary "- ${stale_count} reminded:${stale_nums}"
+          else
+            summary "- 0 stale needs-info issues."
+          fi
+          summary ""
+          summary "### B. State-machine consistency"
+          if [ "$consistency_total" -gt 0 ]; then
+            [ "$b1_count" -gt 0 ] && summary "- ${b1_count} open + \`status:closed\`:${b1_nums}"
+            [ "$b2_count" -gt 0 ] && summary "- ${b2_count} closed defect(s) missing \`resolution:*\`:${b2_nums}"
+            [ "$b3_count" -gt 0 ] && summary "- ${b3_count} closed defect(s) with a non-closed \`status:*\`:${b3_nums}"
+          else
+            summary "- 0 inconsistencies found."
+          fi
