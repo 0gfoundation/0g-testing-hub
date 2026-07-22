@@ -75,10 +75,19 @@ through labels and routed evidence instead of local PR/sub-issue workflows.
 Triage (filed) ⇄ Needs Info → Accepted → Routed → Closed (+ one resolution:*)
 ```
 
+**Changing status is a one-label action.** `status:*` labels are mutually exclusive —
+just **add** the new one and the [`add-defects-to-board`](./workflows/add-defects-to-board.yml)
+automation removes every other `status:*` and re-syncs the board. No manual "remove the
+old label" step. If you remove a status label and leave the issue with **zero**, automation
+restores `status:filed` and puts it back in **Triage**, so a defect always carries exactly
+one status. Two status changes that genuinely race are flagged with `needs:manual-label`
+plus an explanation comment (remove the stale label and it re-syncs). The daily
+[`triage-sweep`](#triage-sweep-daily-safety-net) catches any drift the live events miss.
+
 | Column / status label | Meaning | What triage does |
 |---|---|---|
 | `status:filed` (**Triage**) | New, unvalidated | Confirm/correct the auto-derived `area:*` and `product:*`. Try the repro from Details. |
-| `status:needs-info` (**Needs Info**) | Waiting on the tester | Repro incomplete but plausible — swap `status:filed` for this; the bot asks the tester to reply. No reply in **~7 days** → close as `resolution:rejected`. Reply arrives → back to `status:filed`. |
+| `status:needs-info` (**Needs Info**) | Waiting on the tester | Repro incomplete but plausible — add this label (automation drops the old status); the bot asks the tester to reply. No reply in **~7 days** → the daily sweep reminds, then close as `resolution:rejected`. Reply arrives → back to `status:filed`. |
 | `status:accepted` (**Accepted**) | Real + reproducible | Confirmed. **This is the state that counts toward rewards.** |
 | `status:routed` (**Routed**) | Sent upstream | Owner notified (SDK / docs / config / the product team). |
 | `status:closed` (**Closed**) | Closed — resolution says why | Apply exactly one `resolution:*` **before or together with** `status:closed`, plus a one-line reason. The bot turns the resolution into a precise message for the tester. |
@@ -95,6 +104,26 @@ to know whether their report counted):
 Area is about routing and reward scope: Ecosystem dApp issues are useful coverage
 outside the core reward ladder, while App Suite and 0G Infra are the core reward path.
 
+## Triage sweep (daily safety net)
+
+The live workflows only fire on label/issue events, so anything that depends on **time
+passing** or on **state drifting silently** needs a scheduled check. The
+[`triage-sweep`](./workflows/triage-sweep.yml) Action runs daily (**09:00 UTC**) and can be
+run on demand from the Actions tab (**Run workflow** → optional `stale_days`, default `7`).
+It only comments and labels — it never closes issues or touches the board, and it uses the
+default `GITHUB_TOKEN` (no `PROJECT_PAT`).
+
+- **needs-info timeouts** — for every open `status:needs-info` issue with no update in
+  ≥ `stale_days` days, it posts a deduped reminder that an unanswered needs-info issue is
+  closed as `resolution:rejected`. It **does not** auto-close — a maintainer still decides.
+- **State-machine consistency** — it flags, with `needs:manual-label` and an explanation
+  comment, any issue where the label state and the real state have drifted: an **open** issue
+  labelled `status:closed`; a **closed** defect with **no** `resolution:*`; or a **closed**
+  defect still carrying a `status:*` other than `status:closed`.
+
+Every run writes a summary (counts + issue numbers, or an explicit "0 found" with how many
+issues were scanned) to the workflow run's summary page.
+
 ## Labelling on intake
 
 Root cause and routing are **maintainer responsibilities** — the tester only supplies
@@ -108,9 +137,11 @@ Category, Product, Details, and Evidence.
    - 0G Hub / 0G Storage Scan / Chain Scan / 0G Code to Coin → `area:0g-infra`
    - TradeGPT / Jaine / Oku / AI Arena / CARV / Cygnus Finance / DataHive / Khalani / Merkl → `area:ecosystem`
    - Product = Other → no auto area/product; the issue carries `needs:manual-label` — assign by hand.
-2. **Status** — move `status:filed` → `status:accepted` once you reproduce it. If the repro
-   is incomplete but plausible, swap in `status:needs-info` (the bot asks the tester; ~7 days
-   without a reply → close as `resolution:rejected`). When closing, apply exactly one
+2. **Status** — just **add** the target `status:*` label; automation removes the previous one
+   and re-syncs the board (they are mutually exclusive — no manual un-labelling). Add
+   `status:accepted` once you reproduce it. If the repro is incomplete but plausible, add
+   `status:needs-info` (the bot asks the tester; ~7 days without a reply → the daily sweep
+   reminds, then close as `resolution:rejected`). When closing, apply exactly one
    `resolution:*` (`fixed` / `rejected` / `duplicate`) **before or together with**
    `status:closed` so the bot posts the precise outcome instead of the generic one.
 3. **Root cause** — when defects share an underlying cause, apply an `rc:<CODE>` label

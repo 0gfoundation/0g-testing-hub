@@ -16,7 +16,7 @@ name: Add defects to board
 
 on:
   issues:
-    types: [opened, labeled]
+    types: [opened, labeled, unlabeled]
 
 permissions:
   contents: read
@@ -27,15 +27,21 @@ jobs:
     # later labels (area:*, product:*, rc:*…), but keep Project Status in
     # sync when a maintainer changes the issue's single `status:*` label.
     # Re-runs are idempotent and do not re-stamp `status:filed` when one status
-    # label already exists. If a maintainer accidentally leaves multiple
-    # `status:*` labels, the job flags `needs:manual-label` and skips board sync.
+    # label already exists. Adding a `status:*` label auto-removes the others
+    # (status labels are mutually exclusive); those removals arrive as
+    # `unlabeled` events, which this job also handles — re-reading the remaining
+    # `status:*` and re-syncing the board (0 left → restore `status:filed`).
+    # If multiple `status:*` labels genuinely coexist (a concurrent race), the
+    # job flags `needs:manual-label`, comments why, and skips board sync.
     if: >-
       (contains(github.event.issue.labels.*.name, 'feedback') ||
        contains(github.event.issue.labels.*.name, 'defect')) &&
       (github.event.action == 'opened' ||
-       github.event.label.name == 'feedback' ||
-       github.event.label.name == 'defect' ||
-       startsWith(github.event.label.name, 'status:'))
+       (github.event.action == 'labeled' &&
+        (github.event.label.name == 'feedback' ||
+         github.event.label.name == 'defect')) ||
+       ((github.event.action == 'labeled' || github.event.action == 'unlabeled') &&
+        startsWith(github.event.label.name, 'status:')))
     runs-on: ubuntu-latest
     env:
       GH_TOKEN: ${{ secrets.PROJECT_PAT }}
@@ -45,11 +51,30 @@ jobs:
       ISSUE_NODE_ID: ${{ github.event.issue.node_id }}
       ISSUE_NUMBER: ${{ github.event.issue.number }}
       EVENT_ACTION: ${{ github.event.action }}
+      TRIGGER_LABEL: ${{ github.event.label.name }}
       HAS_DEFECT: ${{ contains(github.event.issue.labels.*.name, 'defect') }}
     steps:
       - name: Route by Category and add Bug Reports to the board
         run: |
           set -euo pipefail
+
+          # Post (or update) an explanation comment whenever `needs:manual-label`
+          # is applied, so the reason lives on the issue — not only in the Actions
+          # log. Deduped by an HTML marker: the same PATCH-or-POST pattern as
+          # notify-status-change.yml, so re-runs update in place instead of piling
+          # up. The latest reason replaces any earlier one.
+          MANUAL_LABEL_MARKER="<!-- og-manual-label-reason -->"
+          comment_manual_label_reason() {
+            reason="$1"
+            body=$(printf '%s\n\n%s' "$MANUAL_LABEL_MARKER" "$reason")
+            cid=$(gh api "repos/$REPO/issues/$ISSUE_NUMBER/comments" --paginate \
+              --jq ".[] | select(.body | contains(\"$MANUAL_LABEL_MARKER\")) | .id" | head -n 1)
+            if [ -n "$cid" ]; then
+              gh api --method PATCH "repos/$REPO/issues/comments/$cid" -f body="$body" >/dev/null
+            else
+              gh api --method POST "repos/$REPO/issues/$ISSUE_NUMBER/comments" -f body="$body" >/dev/null
+            fi
+          }
 
           # Parse GitHub issue-form markdown: field labels render as "### <Label>"
           # headings, so these strings must match the form labels byte-for-byte.
@@ -84,10 +109,36 @@ jobs:
             esac
           fi
 
+          # Status labels are mutually exclusive: a defect carries exactly one
+          # `status:*` at a time. When a maintainer ADDS a `status:*` label, drop
+          # every other `status:*` here so the board never sees ambiguous state —
+          # no more "remove the old one by hand". Each removal fires an
+          # `unlabeled` event that re-enters this job, but by then only one status
+          # remains, so that re-run just re-syncs the board (no label writes) and
+          # the single-status state is the fixed point — no loop.
+          if [ "$EVENT_ACTION" = "labeled" ]; then
+            case "$TRIGGER_LABEL" in
+              status:*)
+                current_status=$(gh issue view "$ISSUE_NUMBER" --repo "$REPO" --json labels --jq '.labels[].name' | grep '^status:' || true)
+                while IFS= read -r s; do
+                  [ -z "$s" ] && continue
+                  if [ "$s" != "$TRIGGER_LABEL" ]; then
+                    gh issue edit "$ISSUE_NUMBER" --repo "$REPO" --remove-label "$s" >/dev/null
+                    echo "Removed superseded status label '$s' (kept '$TRIGGER_LABEL')."
+                  fi
+                done <<<"$current_status"
+                ;;
+            esac
+          fi
+
           # Keep label state in sync with the board state. This is idempotent and
           # covers issues that were manually labelled `defect` outside the form,
           # without adding a second status or pushing already-triaged issues back
-          # to Triage.
+          # to Triage. Re-read after any mutex removal above so the counts are
+          # current. This block also handles the `unlabeled` path: after a
+          # `status:*` is removed, 1 left → sync to it; 0 left → restore
+          # `status:filed` (Triage) to keep the single-status invariant; ≥2 left
+          # (a genuine race) → flag `needs:manual-label` and skip board sync.
           LABELS=$(gh issue view "$ISSUE_NUMBER" --repo "$REPO" --json labels --jq '.labels[].name' | tr '\n' ' ')
           status_labels=$(printf '%s\n' "$LABELS" | tr ' ' '\n' | grep '^status:' || true)
           status_count=$(printf '%s\n' "$status_labels" | sed '/^$/d' | wc -l | tr -d ' ')
@@ -102,6 +153,7 @@ jobs:
             status_list=$(printf '%s' "$status_labels" | tr '\n' ' ' | sed -E 's/[[:space:]]+$//')
             echo "::warning::Issue has multiple status labels: $status_list"
             gh issue edit "$ISSUE_NUMBER" --repo "$REPO" --add-label "needs:manual-label" >/dev/null
+            comment_manual_label_reason "🏷️ **Needs a manual status label.** This issue currently carries multiple \`status:*\` labels ($status_list). A defect must have exactly one — this usually means two status changes raced. **Maintainer:** remove the stale \`status:*\` label(s) so only the correct one remains; the board Status and the tester notification will then re-sync automatically."
             board_status=""
           fi
 
@@ -175,6 +227,7 @@ jobs:
 
           if [ "$NEEDS_MANUAL" -eq 1 ]; then
             gh issue edit "$ISSUE_NUMBER" --repo "$REPO" --add-label "needs:manual-label" >/dev/null
+            comment_manual_label_reason "🏷️ **Needs a manual area label.** Automation could not derive an \`area:*\` from this issue's Product (\`${PRODUCT:-unset}\`) — either Product is *Other* or the field did not match the known map. **Maintainer:** add the correct \`area:*\` (\`area:app-suite\` · \`area:0g-infra\` · \`area:ecosystem\`) and a \`product:*\` per [TRIAGE.md](../../blob/main/.github/TRIAGE.md#labelling-on-intake), then remove \`needs:manual-label\`."
           fi
 
           # Ecosystem dApp findings are useful coverage, but higher reward tiers
@@ -227,6 +280,7 @@ jobs:
             *)
               echo "::warning::Unknown status label: $board_status"
               gh issue edit "$ISSUE_NUMBER" --repo "$REPO" --add-label "needs:manual-label" >/dev/null
+              comment_manual_label_reason "🏷️ **Needs a manual status label.** The status label \`$board_status\` does not map to a known board column. **Maintainer:** replace it with one of \`status:filed\` · \`status:needs-info\` · \`status:accepted\` · \`status:routed\` · \`status:closed\`, then remove \`needs:manual-label\`."
               exit 0 ;;
           esac
 

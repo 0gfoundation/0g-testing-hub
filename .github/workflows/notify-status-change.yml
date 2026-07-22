@@ -51,6 +51,24 @@ jobs:
           LABELS=$(gh issue view "$ISSUE_NUMBER" --repo "$REPO" --json labels --jq '.labels[].name' | tr '\n' ' ')
           has() { case " $LABELS " in *" $1 "*) return 0 ;; *) return 1 ;; esac }
 
+          # Guard against the multi-status race window. add-defects-to-board.yml
+          # keeps status:* labels mutually exclusive, but during a two-change race
+          # the issue can transiently carry more than one. If this is a status:*
+          # notification and >1 status label is present, defer — commenting now
+          # could announce a status that is about to be auto-removed. Once the
+          # mutex converges to a single status, the resulting label event re-fires
+          # this workflow with a consistent picture. (resolution:* /
+          # needs:dapp-report-url notifications are unaffected.)
+          case "$LABEL" in
+            status:*)
+              STATUS_COUNT=$(printf '%s' "$LABELS" | tr ' ' '\n' | grep -c '^status:' || true)
+              if [ "${STATUS_COUNT:-0}" -gt 1 ]; then
+                echo "Issue #$ISSUE_NUMBER has $STATUS_COUNT status labels; deferring status comment until they converge."
+                exit 0
+              fi
+              ;;
+          esac
+
           ACCEPTED_MSG="✅ **Accepted** — triage reproduced and confirmed this defect. It counts toward your reward tier (rewards are on **accepted, deduped** core findings). See [LEVELS.md](../../blob/main/docs/LEVELS.md)."
           if has "area:ecosystem"; then
             ACCEPTED_MSG="✅ **Ecosystem coverage accepted** — thanks for confirming this. It helps ecosystem follow-up, but the higher L1–L3 rewards come from accepted **0G App Suite** and **0G Infra** bugs. If actionable, please also report it to the dApp's own channel. See [LEVELS.md](../../blob/main/docs/LEVELS.md)."
