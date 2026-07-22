@@ -4,8 +4,11 @@ name: Check targets drift
 # or maps products. This guards five edges against drift: the README targets
 # block, the Submit Feedback Product dropdown, the Product → area / product:*
 # maps in add-defects-to-board.yml and setup-labels-and-board.sh, and
-# data/owners.json + the product:* labels in labels.yml. Runs when any side
-# changes; pure read-only check, never writes back.
+# data/owners.json + the product:* labels in labels.yml.
+#
+# PRs always run this read-only check so it can be used as a required status
+# check. Pushes stay path-filtered to avoid redundant runs on unrelated branch
+# updates.
 
 on:
   push:
@@ -21,17 +24,6 @@ on:
       - scripts/render-targets-readme.mjs
       - scripts/setup-labels-and-board.sh
   pull_request:
-    paths:
-      - data/targets.json
-      - data/owners.json
-      - README.md
-      - .github/ISSUE_TEMPLATE/submit-feedback.yml
-      - .github/workflows/add-defects-to-board.yml
-      - .github/workflows/check-drift.yml
-      - .github/labels.yml
-      - scripts/check-targets-drift.mjs
-      - scripts/render-targets-readme.mjs
-      - scripts/setup-labels-and-board.sh
 
 jobs:
   check:
