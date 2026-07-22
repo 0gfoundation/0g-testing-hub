@@ -34,7 +34,6 @@ body:
       description: "Which product is this about? If it's not listed, pick Other and name it in Details."
       options:
         - "0G App"
-        - "Genome"
         - "0G Chat"
         - "Agent launchpad"
         - "0G Hub"
