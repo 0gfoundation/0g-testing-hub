@@ -4,34 +4,19 @@ name: Check targets drift
 # or maps products. This guards five edges against drift: the README targets
 # block, the Submit Feedback Product dropdown, the Product → area / product:*
 # maps in add-defects-to-board.yml and setup-labels-and-board.sh, and
-# data/owners.json + the product:* labels in labels.yml. Runs when any side
-# changes; pure read-only check, never writes back.
+# data/owners.json + the product:* labels in labels.yml. Pure read-only check,
+# never writes back.
+#
+# Runs on EVERY pull request (no paths filter): the `check` job is a required
+# status check on main, and a paths-filtered required check would leave
+# non-matching PRs stuck on "Expected" forever. The job costs seconds. The push
+# trigger only re-verifies main after a merge (branch pushes are already
+# covered by their PR run).
 
 on:
   push:
-    paths:
-      - data/targets.json
-      - data/owners.json
-      - README.md
-      - .github/ISSUE_TEMPLATE/submit-feedback.yml
-      - .github/workflows/add-defects-to-board.yml
-      - .github/workflows/check-drift.yml
-      - .github/labels.yml
-      - scripts/check-targets-drift.mjs
-      - scripts/render-targets-readme.mjs
-      - scripts/setup-labels-and-board.sh
+    branches: [main]
   pull_request:
-    paths:
-      - data/targets.json
-      - data/owners.json
-      - README.md
-      - .github/ISSUE_TEMPLATE/submit-feedback.yml
-      - .github/workflows/add-defects-to-board.yml
-      - .github/workflows/check-drift.yml
-      - .github/labels.yml
-      - scripts/check-targets-drift.mjs
-      - scripts/render-targets-readme.mjs
-      - scripts/setup-labels-and-board.sh
 
 jobs:
   check:
