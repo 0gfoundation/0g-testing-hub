@@ -15,6 +15,7 @@
  */
 import { execFileSync } from 'node:child_process';
 import { readFile, writeFile } from 'node:fs/promises';
+import { hasRoutedEvidence } from './lib/routed-evidence.mjs';
 
 const args = parseArgs(process.argv.slice(2));
 
@@ -26,6 +27,10 @@ if (args.help) {
 const repo = args.repo || process.env.REPO || '0gfoundation/0g-testing-hub';
 const format = args.format || 'md';
 const issues = await loadIssues(args.issues, repo, args.limit || '1000');
+// When issues come from gh (not an offline --issues fixture), the list query
+// does not carry comments, so routed_missing_evidence could never fire. Pull
+// comments for the small status:routed subset so the evidence check is real.
+if (!args.issues) hydrateRoutedComments(issues, repo);
 const signupSource = await loadSignupSource(args, repo);
 const { users: signups, duplicates: signupDuplicates } = signupSource;
 // L0 completion: an explicit --l0 export wins; otherwise derive it from `l0:cleared`
@@ -64,7 +69,7 @@ if (problemCount) {
     for (const row of diagnostics.unmatchedAuthors) console.error(`    - ${row.githubUsername} → ${row.canonicalIssues}`);
   }
   if (diagnostics.signupDuplicates.length) {
-    console.error(`  ${diagnostics.signupDuplicates.length} duplicate signup username(s) (last row wins): ${diagnostics.signupDuplicates.join(', ')}`);
+    console.error(`  ${diagnostics.signupDuplicates.length} duplicate signup username(s) (folded to earliest signup issue): ${diagnostics.signupDuplicates.join(', ')}`);
   }
   if (diagnostics.missingWallet.length) {
     console.error(`  ${diagnostics.missingWallet.length} rewardable user(s) missing a wallet: ${diagnostics.missingWallet.map((r) => r.githubUsername).join(', ')}`);
@@ -73,26 +78,47 @@ if (problemCount) {
     console.error(`  ${diagnostics.duplicateWallets.length} wallet(s) shared by multiple sign-ups (possible Sybil — verify before paying):`);
     for (const dup of diagnostics.duplicateWallets) console.error(`    - ${dup.wallet} ← ${dup.users.join(', ')}`);
   }
-  if (args.strict && blockers.some((blocker) => blocker.severity === 'error')) {
-    console.error('\n--strict: exiting non-zero because of the diagnostics above.');
-    process.exit(1);
-  }
+}
+
+// --strict is a payout gate keyed off the structured blockers, decoupled from the
+// stderr diagnostics print above. Any error-severity blocker fails the run, even
+// codes that never feed the diagnostics problemCount, so a new error-level check
+// can never be silently let through.
+const hasErrorBlockers = blockers.some((blocker) => blocker.severity === 'error');
+if (args.strict && hasErrorBlockers) {
+  const errorCount = blockers.filter((blocker) => blocker.severity === 'error').length;
+  console.error(`\n--strict: exiting non-zero because ${errorCount} error-severity payout blocker${errorCount === 1 ? '' : 's'} present. See --blockers-out for details.`);
+  process.exit(1);
 }
 
 function parseArgs(argv) {
+  // Flags that take a following value. Anything else is a boolean switch, so a
+  // value-taking flag with a missing value (`--out --strict`, or `--out` at the
+  // end) is a usage error instead of silently swallowing the next flag / setting
+  // the option to `true` and later crashing in writeFile(true, ...).
+  const VALUE_ARGS = new Set([
+    'repo', 'format', 'issues', 'signups', 'signup-issues', 'l0',
+    'root-causes', 'out', 'blockers-out', 'audit-out', 'limit',
+  ]);
   const parsed = {};
   for (let i = 0; i < argv.length; i += 1) {
     const arg = argv[i];
     if (arg === '--help' || arg === '-h') {
       parsed.help = true;
-    } else if (arg.startsWith('--')) {
-      const key = arg.slice(2);
+      continue;
+    }
+    if (!arg.startsWith('--')) continue;
+    const key = arg.slice(2);
+    if (VALUE_ARGS.has(key)) {
       const next = argv[i + 1];
-      if (!next || next.startsWith('--')) parsed[key] = true;
-      else {
-        parsed[key] = next;
-        i += 1;
+      if (next === undefined || next.startsWith('--')) {
+        console.error(`Error: --${key} requires a value (got ${next === undefined ? 'nothing' : `\`${next}\``}).`);
+        process.exit(2);
       }
+      parsed[key] = next;
+      i += 1;
+    } else {
+      parsed[key] = true;
     }
   }
   return parsed;
@@ -117,11 +143,14 @@ Inputs:
   --blockers-out Write structured payout blockers / warnings to JSON.
   --audit-out Write the generated reward report plus row-level blockers to JSON.
   --preflight Render blocker JSON to stdout instead of the reward report.
-  --strict   Exit non-zero if diagnostics find unmatched issue authors, duplicate signup
-             usernames, duplicate wallets, or rewardable users missing a wallet. Use as a
-             pre-payout CI gate. Lightweight quality warnings do not fail strict mode.
+  --strict   Exit non-zero when any error-severity payout blocker is present (e.g.
+             missing_signup, missing_wallet, duplicate_wallet). Use as a pre-payout CI
+             gate. Warning-severity blockers (duplicate_signup_folded, accepted_missing_rc,
+             closed_missing_resolution, routed_missing_evidence, …) do not fail strict mode.
 
 Notes:
+  CSV columns: github_username, wallet, registered, l0_done, issue_level, issue_credit,
+  accepted_deduped, app_suite, infra, canonical_issues, notes. (l0_done mirrors audit l0Done.)
   Rewardable issues are core App Suite / 0G Infra issues with status:accepted or status:routed
   (or status:closed + resolution:fixed — a fixed defect keeps its credit).
   Issues sharing the same rc:<CODE> label collapse to the earliest canonical issue.
@@ -159,6 +188,26 @@ async function loadIssues(file, repoName, limit) {
   return JSON.parse(raw);
 }
 
+// The defect list query does not include comments, so fetch them for the small
+// status:routed subset. Routed issues are few and this runs serially. Uses the
+// same shape check-routed-evidence.mjs consumes so the evidence check matches.
+function hydrateRoutedComments(issues, repoName) {
+  for (const issue of issues) {
+    if (!hasLabel(issue, 'status:routed') || Array.isArray(issue.comments)) continue;
+    try {
+      issue.comments = JSON.parse(
+        execFileSync(
+          'gh',
+          ['issue', 'view', String(issue.number), '--repo', repoName, '--json', 'comments', '--jq', '.comments'],
+          { encoding: 'utf8' },
+        ),
+      );
+    } catch {
+      issue.comments = [];
+    }
+  }
+}
+
 async function loadSignupSource(args, repoName) {
   if (typeof args['signup-issues'] === 'string') return loadSignupsFromIssues(args['signup-issues'], repoName, args.limit || '1000');
   if (args['signups-from-issues']) return loadSignupsFromIssues(null, repoName, args.limit || '1000');
@@ -184,15 +233,26 @@ async function loadSignupsFromIssues(file, repoName, limit) {
     signupIssues = JSON.parse(raw);
   }
 
+  // gh returns issues newest-first, so a plain overwrite would make the winner
+  // depend on gh's ordering. Sort ascending by issue number and keep the first
+  // (earliest) signup per author so the retained wallet is deterministic. A
+  // signup:duplicate-labelled re-registration by the same author still folds in
+  // here and is surfaced as a duplicate_signup_folded warning (not a hard error).
+  const ordered = [...signupIssues].sort((a, b) => (a.number || 0) - (b.number || 0));
   const users = new Map();
   const duplicates = new Set();
   const l0Done = new Set();
-  for (const issue of signupIssues) {
+  for (const issue of ordered) {
     const normalized = normalizeUser(authorLogin(issue));
     if (!normalized) continue;
-    if (users.has(normalized)) duplicates.add(normalized);
-    users.set(normalized, { row: issue, wallet: walletFromBody(issue.body) });
+    // L0 clearance can be set on any of the author's signup issues, so track it
+    // before the dedupe short-circuit below.
     if (hasLabel(issue, 'l0:cleared')) l0Done.add(normalized);
+    if (users.has(normalized)) {
+      duplicates.add(normalized);
+      continue;
+    }
+    users.set(normalized, { row: issue, wallet: walletFromBody(issue.body) });
   }
   return { users, duplicates: [...duplicates], l0Done };
 }
@@ -464,7 +524,26 @@ function buildBlockers(issues, diagnostics, rootCauseRegistry) {
   return [
     ...diagnosticBlockers(diagnostics),
     ...qualityWarningBlockers(issues, rootCauseRegistry),
+    ...closedResolutionBlockers(issues),
   ];
+}
+
+// A closed defect with no resolution:* label earns no credit AND is invisible to
+// payout review (it is neither accepted/routed nor a fixed close). Surface it so
+// a maintainer adds the missing resolution label instead of it vanishing.
+function closedResolutionBlockers(issues) {
+  const blockers = [];
+  for (const issue of issues) {
+    if (isClosedDefect(issue) && !hasResolutionLabel(issue) && !isRewardableState(issue)) {
+      blockers.push(issueBlocker(
+        issue,
+        'closed_missing_resolution',
+        'warning',
+        'Closed defect has no resolution:* label, so it earns no reward and is currently invisible to payout — add a resolution label (fixed/rejected/duplicate).',
+      ));
+    }
+  }
+  return blockers;
 }
 
 function diagnosticBlockers(diagnostics) {
@@ -494,11 +573,11 @@ function diagnosticBlockers(diagnostics) {
 
   for (const username of diagnostics.signupDuplicates) {
     blockers.push(blocker({
-      code: 'duplicate_signup',
-      severity: 'error',
+      code: 'duplicate_signup_folded',
+      severity: 'warning',
       subjectType: 'tester',
       subjectId: username,
-      message: `${username} has multiple signup issues; the last row currently wins.`,
+      message: `${username} has multiple signup issues; folded to the earliest and the rest ignored — verify the retained wallet before payout.`,
       evidenceUrl: signupEvidenceUrl(diagnostics.signups, username),
     }));
   }
@@ -706,11 +785,14 @@ function issueUrl(issue) {
   return issue?.url || '';
 }
 
-function hasRoutedEvidence(issue) {
-  return (issue.comments || []).some((comment) => {
-    const body = String(comment.body || comment || '');
-    return body.includes('Routed to:') && body.includes('Upstream link:');
-  });
+function hasResolutionLabel(issue) {
+  return labelNames(issue).some((label) => label.startsWith('resolution:'));
+}
+
+// A defect is "closed" for reward purposes when GitHub state is CLOSED or the
+// status:closed label is present.
+function isClosedDefect(issue) {
+  return String(issue.state || '').toUpperCase() === 'CLOSED' || hasLabel(issue, 'status:closed');
 }
 
 function authorLogin(issue) {
@@ -767,6 +849,7 @@ function renderCsv(rows) {
     'github_username',
     'wallet',
     'registered',
+    'l0_done',
     'issue_level',
     'issue_credit',
     'accepted_deduped',
@@ -782,6 +865,7 @@ function renderCsv(rows) {
         row.githubUsername,
         row.wallet,
         row.registered,
+        row.l0Done,
         row.issueLevel,
         row.issueCredit,
         row.acceptedDeduped,

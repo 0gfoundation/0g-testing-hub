@@ -40,23 +40,31 @@ node scripts/export-reward-report.mjs \
 `error` blockers are payout-critical. With `--strict`, any error blocker exits
 non-zero.
 
-Initial error blockers:
+Error blockers:
 
 - `missing_signup`
 - `missing_wallet`
-- `duplicate_signup`
 - `duplicate_wallet`
 
 `warning` blockers are maintainer cleanup items. They do not fail `--strict` in
 the lightweight version.
 
-Initial warning blockers:
+Warning blockers:
 
 - `accepted_missing_rc`
 - `accepted_missing_area`
 - `unregistered_rc`
 - `ecosystem_counted_attempt`
-- `routed_missing_evidence` when issue comments are available to the exporter
+- `routed_missing_evidence` — a routed defect whose comments lack a line carrying
+  both `Routed to:` and `Upstream link:`. The exporter now pulls comments for the
+  `status:routed` subset itself, so this fires in the normal gh-backed run. The
+  same Markdown-prefix-tolerant detection backs `scripts/check-routed-evidence.mjs`.
+- `duplicate_signup_folded` — an author has more than one signup issue. Entries
+  fold to the earliest (lowest issue number) and the retained wallet should be
+  verified. Replaces the former error-level `duplicate_signup`: folding is now
+  deterministic, so this is a review note rather than a payout stop.
+- `closed_missing_resolution` — a closed defect with no `resolution:*` label. It
+  earns no credit and is invisible to payout; add a resolution label.
 
 ## Maintainer Use
 
