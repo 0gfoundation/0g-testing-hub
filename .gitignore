@@ -11,3 +11,7 @@ local-setup-notes/
 
 # Internal collaboration notes — local only, never published
 docs-internal/
+
+# Local agent handoff / task artifacts — never published
+.handoff-*.md
+.issue-*.json
