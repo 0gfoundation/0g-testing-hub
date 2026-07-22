@@ -239,8 +239,10 @@ App Suite / 0G Infra findings:
 node scripts/export-reward-report.mjs --signups-from-issues --format csv --out rewards.csv
 ```
 
-Add `--strict` to block payout on unmatched authors, duplicate usernames, duplicate
-wallets (Sybil), or rewardable users missing a wallet. (A legacy `--signups <csv>` /
+Add `--strict` to block payout on any error-severity blocker — unmatched authors,
+duplicate wallets (Sybil), or rewardable users missing a wallet. Repeat sign-ups fold
+to the earliest issue and surface as a `duplicate_signup_folded` warning (the bot
+already closes duplicates against the canonical issue). (A legacy `--signups <csv>` /
 `--l0 <csv>` path remains for non-GitHub data; schema in
 [`docs/signups.example.csv`](../docs/signups.example.csv).)
 
