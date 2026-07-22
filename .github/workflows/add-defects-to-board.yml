@@ -63,18 +63,28 @@ jobs:
           # log. Deduped by an HTML marker: the same PATCH-or-POST pattern as
           # notify-status-change.yml, so re-runs update in place instead of piling
           # up. The latest reason replaces any earlier one.
-          MANUAL_LABEL_MARKER="<!-- og-manual-label-reason -->"
-          comment_manual_label_reason() {
-            reason="$1"
-            body=$(printf '%s\n\n%s' "$MANUAL_LABEL_MARKER" "$reason")
+          post_marker_comment() {
+            marker="$1"; msg="$2"
+            body=$(printf '%s\n\n%s' "$marker" "$msg")
             cid=$(gh api "repos/$REPO/issues/$ISSUE_NUMBER/comments" --paginate \
-              --jq ".[] | select(.body | contains(\"$MANUAL_LABEL_MARKER\")) | .id" | head -n 1)
+              --jq ".[] | select(.body | contains(\"$marker\")) | .id" | head -n 1)
             if [ -n "$cid" ]; then
               gh api --method PATCH "repos/$REPO/issues/comments/$cid" -f body="$body" >/dev/null
             else
               gh api --method POST "repos/$REPO/issues/$ISSUE_NUMBER/comments" -f body="$body" >/dev/null
             fi
           }
+
+          MANUAL_LABEL_MARKER="<!-- og-manual-label-reason -->"
+          comment_manual_label_reason() {
+            post_marker_comment "$MANUAL_LABEL_MARKER" "$1"
+          }
+
+          # Intake acknowledgement: tell the filer their submission landed and
+          # what happens next, instead of leaving them a bare label trail. Only
+          # on `opened` — label-event re-fires must not repost — and deduped by
+          # marker anyway, so even a re-run edits in place.
+          INTAKE_ACK_MARKER="<!-- og-intake-ack -->"
 
           # Parse GitHub issue-form markdown: field labels render as "### <Label>"
           # headings, so these strings must match the form labels byte-for-byte.
@@ -101,9 +111,15 @@ jobs:
               "Bug Report"*) ;;
               "Feature Request"*)
                 gh issue edit "$ISSUE_NUMBER" --repo "$REPO" --add-label "feature-request" >/dev/null
+                if [ "$EVENT_ACTION" = "opened" ]; then
+                  post_marker_comment "$INTAKE_ACK_MARKER" "📝 **Recorded — thanks for the feature request.** It's logged for the product team. Note: feature requests aren't part of the L1–L3 reward ladder (accepted bug reports are) — unless the docs already promised the behavior, in which case triage may reclassify it as a bug."
+                fi
                 echo "Feature Request recorded — not entering the defect pipeline."
                 exit 0 ;;
               *)
+                if [ "$EVENT_ACTION" = "opened" ]; then
+                  post_marker_comment "$INTAKE_ACK_MARKER" "📝 **Recorded — thanks for the feedback.** It's logged for the team. If this was actually a reproducible bug, file it again with Category = **Bug Report** so it can enter triage."
+                fi
                 echo "Category [$CATEGORY] recorded as plain feedback — not entering the defect pipeline."
                 exit 0 ;;
             esac
@@ -228,6 +244,20 @@ jobs:
           if [ "$NEEDS_MANUAL" -eq 1 ]; then
             gh issue edit "$ISSUE_NUMBER" --repo "$REPO" --add-label "needs:manual-label" >/dev/null
             comment_manual_label_reason "🏷️ **Needs a manual area label.** Automation could not derive an \`area:*\` from this issue's Product (\`${PRODUCT:-unset}\`) — either Product is *Other* or the field did not match the known map. **Maintainer:** add the correct \`area:*\` (\`area:app-suite\` · \`area:0g-infra\` · \`area:ecosystem\`) and a \`product:*\` per [TRIAGE.md](../../blob/main/.github/TRIAGE.md#labelling-on-intake), then remove \`needs:manual-label\`."
+          fi
+
+          # Intake acknowledgement for a freshly filed Bug Report: labels are on,
+          # so tell the filer where their report stands and what each next state
+          # means. Gated on `opened` — label-event re-fires must not repost.
+          if [ "$EVENT_ACTION" = "opened" ]; then
+            post_marker_comment "$INTAKE_ACK_MARKER" "📥 **Received — your bug report is in Triage.**
+          A maintainer will try to reproduce it from your steps. What happens next:
+          - \`status:accepted\` — confirmed; core **App Suite / 0G Infra** bugs count toward your reward tier
+          - \`status:needs-info\` — we couldn't reproduce it yet; **reply on this issue** with the missing details
+          - closed + \`resolution:*\` — the resolution comment explains whether it counted
+
+          You'll get a comment here at every status change — no need to watch the board. Label guide: [LABELS.md](../../blob/main/docs/LABELS.md).
+          Tip: before your next report, [search existing reports](https://github.com/0gfoundation/0g-testing-hub/issues?q=is%3Aissue+label%3Afeedback) (filter by \`product:*\`) — duplicates credit the first reporter."
           fi
 
           # Ecosystem dApp findings are useful coverage, but higher reward tiers
