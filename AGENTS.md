@@ -100,3 +100,14 @@ Product → area mapping (applied by automation, corrected by maintainers; keep 
 | Other | none — `needs:manual-label`, maintainer assigns at triage |
 
 At triage the maintainer adds what the form no longer asks for: the `status:*` transitions and `rc:*` when defects share a root cause. `Feature Request` / `Other` submissions never enter reward statistics; `Bug Report` counts only after it is accepted and deduped.
+
+## Builder Hub landing page sync
+
+The 0G Builder Hub ([`0gfoundation/developer-hub`](https://github.com/0gfoundation/developer-hub)) renders a public landing page for this program at `/testing` (`app/testing/page.tsx` plus the `testing.*` strings in `messages/en.json` / `messages/zh.json`). It duplicates:
+
+- **Test targets** from `data/targets.json` (names, descriptions, URLs, buckets, the 0g-cc install command).
+- **Reward levels** from `docs/LEVELS.md` and the README reward table (titles, criteria, credit amounts).
+- **Triage labels** from the README status-label list.
+- **Canonical links** from the JSON block above (signup, surveys, Submit Feedback form, repo).
+
+When any of these change here, update the Builder Hub testing page in the same sweep, and vice versa. The Builder Hub's `AGENTS.md` carries the matching rule pointing back at this repo.
