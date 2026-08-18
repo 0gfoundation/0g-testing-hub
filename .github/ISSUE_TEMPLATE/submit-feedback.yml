@@ -41,15 +41,13 @@ body:
         - "0G Storage Scan"
         - "Chain Scan"
         - "0G Code to Coin (0g-cc)"
-        - "TradeGPT"
+        - "Zia"
         - "Jaine"
         - "Oku"
         - "AI Arena"
         - "CARV"
         - "Cygnus Finance"
         - "DataHive"
-        - "Khalani"
-        - "Merkl"
         - "Other"
     validations:
       required: true

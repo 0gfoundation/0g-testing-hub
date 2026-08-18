@@ -77,7 +77,7 @@ node scripts/check-targets-drift.mjs
 
 - **0G App Suite · core (L0-L1)** - 0G App, Genome, 0G Chat, Agent launchpad.
 - **0G Infra · core (L2)** - 0G Hub, 0G Storage Scan, Chain Scan, 0G Code to Coin (0g-cc).
-- **0G Ecosystem dApp** - TradeGPT, Jaine, Oku, AI Arena, CARV, Cygnus Finance, DataHive, Khalani, Merkl.
+- **0G Ecosystem dApp** - Zia, Jaine, Oku, AI Arena, CARV, Cygnus Finance, DataHive.
 
 ## Submit Feedback form
 
@@ -96,7 +96,7 @@ Product → area mapping (applied by automation, corrected by maintainers; keep 
 |---|---|
 | 0G App / Genome / 0G Chat / Agent launchpad | `area:app-suite` |
 | 0G Hub / 0G Storage Scan / Chain Scan / 0G Code to Coin | `area:0g-infra` |
-| TradeGPT / Jaine / Oku / AI Arena / CARV / Cygnus Finance / DataHive / Khalani / Merkl | `area:ecosystem` (outside core rewards) |
+| Zia / Jaine / Oku / AI Arena / CARV / Cygnus Finance / DataHive | `area:ecosystem` (outside core rewards) |
 | Other | none — `needs:manual-label`, maintainer assigns at triage |
 
 At triage the maintainer adds what the form no longer asks for: the `status:*` transitions and `rc:*` when defects share a root cause. `Feature Request` / `Other` submissions never enter reward statistics; `Bug Report` counts only after it is accepted and deduped.

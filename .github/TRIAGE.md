@@ -135,7 +135,7 @@ Category, Product, Details, and Evidence.
    `add-defects-to-board.yml` and `scripts/setup-labels-and-board.sh`):
    - 0G App / Genome / 0G Chat / Agent launchpad → `area:app-suite`
    - 0G Hub / 0G Storage Scan / Chain Scan / 0G Code to Coin → `area:0g-infra`
-   - TradeGPT / Jaine / Oku / AI Arena / CARV / Cygnus Finance / DataHive / Khalani / Merkl → `area:ecosystem`
+   - Zia / Jaine / Oku / AI Arena / CARV / Cygnus Finance / DataHive → `area:ecosystem`
    - Product = Other → no auto area/product; the issue carries `needs:manual-label` — assign by hand.
 2. **Status** — just **add** the target `status:*` label; automation removes the previous one
    and re-syncs the board (they are mutually exclusive — no manual un-labelling). Add

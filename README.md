@@ -64,15 +64,13 @@ Test the core user flow for each target, including one happy path and one error 
 
 ### 0G Ecosystem dApp
 
-- [**TradeGPT**](https://tradegpt.finance/) - AI-driven DEX
+- [**Zia**](https://tradegpt.finance/) - natural language DEX on 0G
 - [**Jaine**](https://jaine.fi/) - DEX/liquidity (LIC)
 - [**Oku**](https://oku.trade/) - concentrated liquidity DEX
 - [**AI Arena**](https://aiarena.io/) - PvP, train AI agents
 - [**CARV**](https://carv.io/) - gamer identity
 - [**Cygnus Finance**](https://cygnus.finance/) - RWA stablecoin
 - [**DataHive**](https://datahive.network/) - personal data economy
-- [**Khalani**](https://hub.0g.ai/khalani/transfer?network=mainnet) - bridge to 0G
-- [**Merkl**](https://app.merkl.xyz/) - claim LIC rewards
 
 <!-- targets:end -->
 
