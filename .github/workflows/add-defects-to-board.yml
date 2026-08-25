@@ -196,15 +196,13 @@ jobs:
             "0G Storage Scan") PRODUCT_LABEL="product:storage-scan" ;;
             "Chain Scan") PRODUCT_LABEL="product:chain-scan" ;;
             "0G Code to Coin"*) PRODUCT_LABEL="product:0g-cc" ;;
-            "TradeGPT") PRODUCT_LABEL="product:tradegpt" ;;
+            "Zia"|"TradeGPT") PRODUCT_LABEL="product:zia" ;;
             "Jaine") PRODUCT_LABEL="product:jaine" ;;
             "Oku") PRODUCT_LABEL="product:oku" ;;
             "AI Arena") PRODUCT_LABEL="product:ai-arena" ;;
             "CARV") PRODUCT_LABEL="product:carv" ;;
             "Cygnus Finance") PRODUCT_LABEL="product:cygnus" ;;
             "DataHive") PRODUCT_LABEL="product:datahive" ;;
-            "Khalani") PRODUCT_LABEL="product:khalani" ;;
-            "Merkl") PRODUCT_LABEL="product:merkl" ;;
           esac
           if [ -n "$PRODUCT_LABEL" ]; then
             gh issue edit "$ISSUE_NUMBER" --repo "$REPO" --add-label "$PRODUCT_LABEL" >/dev/null
@@ -215,7 +213,7 @@ jobs:
               AREA="area:app-suite" ;;
             "0G Hub"|"0G Storage Scan"|"Chain Scan"|"0G Code to Coin"*)
               AREA="area:0g-infra" ;;
-            "TradeGPT"|"Jaine"|"Oku"|"AI Arena"|"CARV"|"Cygnus Finance"|"DataHive"|"Khalani"|"Merkl")
+            "Zia"|"TradeGPT"|"Jaine"|"Oku"|"AI Arena"|"CARV"|"Cygnus Finance"|"DataHive")
               AREA="area:ecosystem" ;;
             "Other Ecosystem dApp"*)
               # Legacy old-form option.

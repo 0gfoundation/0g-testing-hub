@@ -263,7 +263,7 @@ while IFS= read -r number; do
   case "$product" in
     "0G App"|"Genome"|"0G Chat"|"Agent launchpad"|"PandaClaw") area="area:app-suite" ;;
     "0G Hub"|"0G Storage Scan"|"Chain Scan"|"0G Code to Coin"*) area="area:0g-infra" ;;
-    "TradeGPT"|"Jaine"|"Oku"|"AI Arena"|"CARV"|"Cygnus Finance"|"DataHive"|"Khalani"|"Merkl") area="area:ecosystem" ;;
+    "Zia"|"TradeGPT"|"Jaine"|"Oku"|"AI Arena"|"CARV"|"Cygnus Finance"|"DataHive") area="area:ecosystem" ;;
     "Other Ecosystem dApp"*) area="area:ecosystem" ;;
     "Other"*) : ;; # maintainer assigns the area at triage
     *)
@@ -292,15 +292,13 @@ while IFS= read -r number; do
     "0G Storage Scan") product_label="product:storage-scan" ;;
     "Chain Scan") product_label="product:chain-scan" ;;
     "0G Code to Coin"*) product_label="product:0g-cc" ;;
-    "TradeGPT") product_label="product:tradegpt" ;;
+    "Zia"|"TradeGPT") product_label="product:zia" ;;
     "Jaine") product_label="product:jaine" ;;
     "Oku") product_label="product:oku" ;;
     "AI Arena") product_label="product:ai-arena" ;;
     "CARV") product_label="product:carv" ;;
     "Cygnus Finance") product_label="product:cygnus" ;;
     "DataHive") product_label="product:datahive" ;;
-    "Khalani") product_label="product:khalani" ;;
-    "Merkl") product_label="product:merkl" ;;
   esac
   if [ -n "$product_label" ]; then
     gh issue edit "$number" --repo "$REPO" --add-label "$product_label" >/dev/null 2>&1 || true

@@ -93,10 +93,13 @@
       "recordOnly": true,
       "items": [
         {
-          "name": "TradeGPT",
-          "desc": "AI-driven DEX",
+          "name": "Zia",
+          "desc": "natural language DEX on 0G",
           "url": "https://tradegpt.finance/",
-          "productLabel": "tradegpt"
+          "productLabel": "zia",
+          "legacyAliases": [
+            "TradeGPT"
+          ]
         },
         {
           "name": "Jaine",
@@ -133,18 +136,6 @@
           "desc": "personal data economy",
           "url": "https://datahive.network/",
           "productLabel": "datahive"
-        },
-        {
-          "name": "Khalani",
-          "desc": "bridge to 0G",
-          "url": "https://hub.0g.ai/khalani/transfer?network=mainnet",
-          "productLabel": "khalani"
-        },
-        {
-          "name": "Merkl",
-          "desc": "claim LIC rewards",
-          "url": "https://app.merkl.xyz/",
-          "productLabel": "merkl"
         }
       ]
     }

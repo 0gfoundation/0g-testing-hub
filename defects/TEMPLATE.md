@@ -10,7 +10,7 @@ title: ""                       # one line, imperative ("Bridge confirm screen n
 
 # --- Tester input (mirrors the Submit Feedback form) ---
 category: ""                    # Bug Report | Feature Request | Other
-product: ""                     # which app, e.g. "0G Hub", "TradeGPT", or Other
+product: ""                     # which app, e.g. "0G Hub", "Zia", or Other
 
 # --- Maintainer-only (filled at triage, never tester input) ---
 area: ""                        # app-suite | 0g-infra | ecosystem — derived from product, corrected at triage
