@@ -11,8 +11,12 @@ name: Add defects to board
 # Manually adding `defect` (including to legacy old-form issues) routes through
 # the same board logic.
 #
-# Requires a repo secret `PROJECT_PAT` — a token with `project` + `repo` +
-# `read:org` scope. The default GITHUB_TOKEN cannot write an org Projects v2 board.
+# Token split. Intake — labels, Category routing, and the tester-facing
+# acknowledgement comments — runs on the default GITHUB_TOKEN. Only the Projects
+# v2 board writes use the `PROJECT_PAT` secret (`project` + `repo` + `read:org`),
+# because the default token cannot write an org board. When PROJECT_PAT is dead
+# the board sync degrades to a warning and intake still completes — see #66 for
+# what happened when it could not.
 
 on:
   issues:
@@ -20,6 +24,7 @@ on:
 
 permissions:
   contents: read
+  issues: write # intake (labels + acknowledgement comments) runs on GITHUB_TOKEN
 
 jobs:
   add-to-board:
@@ -44,7 +49,11 @@ jobs:
         startsWith(github.event.label.name, 'status:')))
     runs-on: ubuntu-latest
     env:
-      GH_TOKEN: ${{ secrets.PROJECT_PAT }}
+      # Two tokens, never mixed. GH_TOKEN is the default token and covers every
+      # intake action; PROJECT_PAT is passed explicitly to the board mutations
+      # at the end and nowhere else.
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      PROJECT_PAT: ${{ secrets.PROJECT_PAT }}
       OWNER: 0gfoundation
       REPO: ${{ github.repository }}
       PROJECT_NUMBER: "19"
@@ -270,11 +279,53 @@ jobs:
             echo "Issue has ambiguous status labels; skipped board Status update."
             exit 0
           fi
+          # Map the status label to its board column. Pure bash — no token, no
+          # network. An unknown status is an INTAKE problem (a bad label), so it
+          # is flagged here on GITHUB_TOKEN and never reaches the board sync.
+          case "$board_status" in
+            "status:filed")      BOARD_COLUMN="Triage" ;;
+            "status:needs-info") BOARD_COLUMN="Needs Info" ;;
+            "status:accepted")   BOARD_COLUMN="Accepted" ;;
+            "status:routed")     BOARD_COLUMN="Routed" ;;
+            "status:closed")     BOARD_COLUMN="Closed" ;;
+            *)
+              echo "::warning::Unknown status label: $board_status"
+              gh issue edit "$ISSUE_NUMBER" --repo "$REPO" --add-label "needs:manual-label" >/dev/null
+              comment_manual_label_reason "🏷️ **Needs a manual status label.** The status label \`$board_status\` does not map to a known board column. **Maintainer:** replace it with one of \`status:filed\` · \`status:needs-info\` · \`status:accepted\` · \`status:routed\` · \`status:closed\`, then remove \`needs:manual-label\`."
+              exit 0 ;;
+          esac
 
-          # Resolve the board id, Status field id, and Status option ids at runtime,
-          # so this keeps working even if the board is recreated.
-          IFS=$'\037' read -r PROJECT_ID FIELD_ID TRIAGE_OPTION_ID NEEDS_INFO_OPTION_ID ACCEPTED_OPTION_ID ROUTED_OPTION_ID CLOSED_OPTION_ID < <(
-            gh api graphql -f query='
+          # ---- Board sync — the ONLY part that needs PROJECT_PAT --------------
+          # Everything above has already landed: labels, routing, and the
+          # tester-facing acknowledgement. So a dead PAT must degrade the BOARD
+          # ONLY.
+          #
+          # It did not use to. PROJECT_PAT was this job's top-level GH_TOKEN, so
+          # when it expired on 2026-07-23 the very first `gh issue view` returned
+          # 401 and `set -e` killed the run before any of the above ran — a
+          # tester's bug report got no labels, no acknowledgement, nothing at all,
+          # for 36 days (#66). Board failure must never become intake failure.
+          board_skip() {
+            echo "::warning::Board sync skipped for #$ISSUE_NUMBER: $1"
+            {
+              echo "- **#$ISSUE_NUMBER** — intake completed (labels + acknowledgement); **board sync skipped**: $1"
+              echo "  - Back-fill once PROJECT_PAT is restored: \`bash scripts/setup-labels-and-board.sh\`"
+            } >>"${GITHUB_STEP_SUMMARY:-/dev/null}"
+          }
+
+          sync_board() {
+            if [ -z "${PROJECT_PAT:-}" ]; then
+              board_skip "PROJECT_PAT is empty or unset"
+              return 0
+            fi
+
+            # Resolve the board id, Status field id, and Status options at runtime,
+            # so this keeps working even if the board is recreated. Options come
+            # back as name=id pairs and are matched in bash, because `gh --jq`
+            # takes no arguments to pass the wanted column into.
+            local raw PROJECT_ID FIELD_ID OPTION_ID ITEM_ID kv
+            local -a parts
+            if ! raw=$(GH_TOKEN="$PROJECT_PAT" gh api graphql -f query='
               query($l:String!,$n:Int!){
                 organization(login:$l){ projectV2(number:$n){
                   id
@@ -283,49 +334,51 @@ jobs:
                   }
                 }}
               }' -F l="$OWNER" -F n="$PROJECT_NUMBER" \
-              --jq '.data.organization.projectV2 as $p | [
-                $p.id,
-                $p.field.id,
-                ([$p.field.options[] | select(.name=="Triage") | .id][0] // ""),
-                ([$p.field.options[] | select(.name=="Needs Info") | .id][0] // ""),
-                ([$p.field.options[] | select(.name=="Accepted") | .id][0] // ""),
-                ([$p.field.options[] | select(.name=="Routed") | .id][0] // ""),
-                ([$p.field.options[] | select(.name=="Closed") | .id][0] // "")
-              ] | join("\u001f")'
-          )
+              --jq '.data.organization.projectV2 as $p
+                    | [$p.id, $p.field.id] + [$p.field.options[] | .name + "=" + .id]
+                    | join("\u001f")' 2>&1); then
+              board_skip "PROJECT_PAT could not query Project #$PROJECT_NUMBER (revoked, expired, or missing project+read:org scope)"
+              return 0
+            fi
 
-          if [ -z "${PROJECT_ID:-}" ] || [ -z "${FIELD_ID:-}" ] || [ -z "${TRIAGE_OPTION_ID:-}" ] || [ -z "${NEEDS_INFO_OPTION_ID:-}" ] || [ -z "${ACCEPTED_OPTION_ID:-}" ] || [ -z "${ROUTED_OPTION_ID:-}" ] || [ -z "${CLOSED_OPTION_ID:-}" ]; then
-            echo "Could not resolve the board Status field/options — is the board configured?" >&2
-            exit 1
-          fi
+            IFS=$'\037' read -r -a parts <<<"$raw" || true
+            PROJECT_ID="${parts[0]:-}"
+            FIELD_ID="${parts[1]:-}"
+            OPTION_ID=""
+            # Explicit if, not `[ ... ] && x=y`: a false test as the loop's last
+            # command becomes the loop's exit code and trips errexit (E007/#35).
+            for kv in "${parts[@]:2}"; do
+              if [ "${kv%%=*}" = "$BOARD_COLUMN" ]; then OPTION_ID="${kv#*=}"; fi
+            done
 
-          case "$board_status" in
-            "status:filed") OPTION_ID="$TRIAGE_OPTION_ID" ;;
-            "status:needs-info") OPTION_ID="$NEEDS_INFO_OPTION_ID" ;;
-            "status:accepted") OPTION_ID="$ACCEPTED_OPTION_ID" ;;
-            "status:routed") OPTION_ID="$ROUTED_OPTION_ID" ;;
-            "status:closed") OPTION_ID="$CLOSED_OPTION_ID" ;;
-            *)
-              echo "::warning::Unknown status label: $board_status"
-              gh issue edit "$ISSUE_NUMBER" --repo "$REPO" --add-label "needs:manual-label" >/dev/null
-              comment_manual_label_reason "🏷️ **Needs a manual status label.** The status label \`$board_status\` does not map to a known board column. **Maintainer:** replace it with one of \`status:filed\` · \`status:needs-info\` · \`status:accepted\` · \`status:routed\` · \`status:closed\`, then remove \`needs:manual-label\`."
-              exit 0 ;;
-          esac
+            if [ -z "$PROJECT_ID" ] || [ -z "$FIELD_ID" ] || [ -z "$OPTION_ID" ]; then
+              board_skip "could not resolve the board Status field or its '$BOARD_COLUMN' column — token scope, or the board was reconfigured"
+              return 0
+            fi
 
-          # Add the issue (no-op if already on the board) and capture the item id.
-          ITEM_ID=$(gh api graphql -f query='
-            mutation($p:ID!,$c:ID!){
-              addProjectV2ItemById(input:{projectId:$p,contentId:$c}){ item { id } }
-            }' -F p="$PROJECT_ID" -F c="$ISSUE_NODE_ID" \
-            --jq '.data.addProjectV2ItemById.item.id')
+            # Add the issue (no-op if already on the board) and capture the item id.
+            if ! ITEM_ID=$(GH_TOKEN="$PROJECT_PAT" gh api graphql -f query='
+              mutation($p:ID!,$c:ID!){
+                addProjectV2ItemById(input:{projectId:$p,contentId:$c}){ item { id } }
+              }' -F p="$PROJECT_ID" -F c="$ISSUE_NODE_ID" \
+              --jq '.data.addProjectV2ItemById.item.id' 2>&1) || [ -z "$ITEM_ID" ]; then
+              board_skip "could not add #$ISSUE_NUMBER to the board"
+              return 0
+            fi
 
-          # Sync board Status to the issue status label.
-          gh api graphql -f query='
-            mutation($p:ID!,$i:ID!,$f:ID!,$o:String!){
-              updateProjectV2ItemFieldValue(input:{
-                projectId:$p, itemId:$i, fieldId:$f,
-                value:{ singleSelectOptionId:$o }
-              }){ projectV2Item { id } }
-            }' -F p="$PROJECT_ID" -F i="$ITEM_ID" -F f="$FIELD_ID" -F o="$OPTION_ID" >/dev/null
+            # Sync board Status to the issue status label.
+            if ! GH_TOKEN="$PROJECT_PAT" gh api graphql -f query='
+              mutation($p:ID!,$i:ID!,$f:ID!,$o:String!){
+                updateProjectV2ItemFieldValue(input:{
+                  projectId:$p, itemId:$i, fieldId:$f,
+                  value:{ singleSelectOptionId:$o }
+                }){ projectV2Item { id } }
+              }' -F p="$PROJECT_ID" -F i="$ITEM_ID" -F f="$FIELD_ID" -F o="$OPTION_ID" >/dev/null 2>&1; then
+              board_skip "could not set board Status to '$BOARD_COLUMN' for #$ISSUE_NUMBER"
+              return 0
+            fi
 
-          echo "Issue #$ISSUE_NUMBER added to the board with Status synced from $board_status."
+            echo "Issue #$ISSUE_NUMBER added to the board with Status '$BOARD_COLUMN' (from $board_status)."
+          }
+
+          sync_board

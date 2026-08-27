@@ -1,11 +1,25 @@
 name: Check PROJECT_PAT health
 
-# add-defects-to-board.yml depends on the PROJECT_PAT secret to write the org
-# Projects v2 board. If that token is revoked or expires, auto-add silently stops
-# (issues still get the `defect` label, they just never reach the board). This
-# workflow makes that failure loud: a daily read-only probe of Project #19 that
-# fails visibly — and can email the repo admins via the normal Actions
-# failure notification — when the token can no longer reach the board.
+# add-defects-to-board.yml needs the PROJECT_PAT secret to write the org
+# Projects v2 board; the default GITHUB_TOKEN cannot. If that token is revoked
+# or expires, board sync degrades — so this daily read-only probe of Project #19
+# checks it before a tester does.
+#
+# The probe alone was not enough. It ran red for 36 consecutive days
+# (2026-07-23 → 2026-08-27) with `gh: Bad credentials (HTTP 401)` and nobody
+# noticed, because a red run only exists on the Actions page. A health check
+# with no outlet is not a health check. So the probe now also OPENS AN ISSUE
+# when the token is unhealthy, and closes it again once the token recovers.
+#
+# Two tokens, never mixed:
+#   PROJECT_PAT  — the probe itself (the thing under test)
+#   GITHUB_TOKEN — the alert issue (open / update / close)
+#
+# The alert issue deliberately carries NO labels. `feedback` / `defect` would
+# pull it into add-defects-to-board.yml, `signup` (or a `[signup]` title prefix)
+# into confirm-signup.yml, and `status:*` / `resolution:*` into
+# notify-status-change.yml. A CI alert must not enter the tester pipeline or the
+# reward export.
 #
 # Rotate with: gh secret set PROJECT_PAT --repo 0gfoundation/0g-testing-hub
 # then re-run scripts/setup-labels-and-board.sh to safely back-fill missed open
@@ -18,46 +32,106 @@ on:
 
 permissions:
   contents: read
+  issues: write
 
 jobs:
   probe:
     runs-on: ubuntu-latest
     env:
-      GH_TOKEN: ${{ secrets.PROJECT_PAT }}
+      PROJECT_PAT: ${{ secrets.PROJECT_PAT }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      REPO: ${{ github.repository }}
       OWNER: 0gfoundation
       PROJECT_NUMBER: "19"
+      RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
     steps:
       - name: Probe Project #19 with PROJECT_PAT
         run: |
-          set -euo pipefail
+          # No `-e`: a failed probe is the interesting case and must still reach
+          # the alerting block below. The step's exit code is set explicitly at
+          # the end so a broken token still shows up red in Actions.
+          set -uo pipefail
 
-          if [ -z "${GH_TOKEN:-}" ]; then
-            echo "::error::PROJECT_PAT is empty or unset — auto-add to the board cannot work." >&2
+          FAIL_REASON=""
+
+          # Read-only: resolve the board id and the Triage option — exactly what
+          # add-defects-to-board.yml needs at runtime, so a green probe means the
+          # board-sync path has a working token.
+          if [ -z "${PROJECT_PAT:-}" ]; then
+            FAIL_REASON="PROJECT_PAT is empty or unset — the secret is missing from this repository."
+          elif ! PROBE_OUT=$(GH_TOKEN="$PROJECT_PAT" gh api graphql -f query='
+            query($l:String!,$n:Int!){
+              organization(login:$l){ projectV2(number:$n){
+                id
+                field(name:"Status"){
+                  ... on ProjectV2SingleSelectField { options { id name } }
+                }
+              }}
+            }' -F l="$OWNER" -F n="$PROJECT_NUMBER" \
+            --jq '.data.organization.projectV2 | "\(.id) \(.field.options[] | select(.name=="Triage") | .id)"' 2>&1); then
+            FAIL_REASON="PROJECT_PAT could not query Project #${PROJECT_NUMBER} — token likely revoked, expired, or missing project+read:org scope. API said: $(printf '%s' "$PROBE_OUT" | head -c 300)"
+          else
+            read -r PROJECT_ID OPTION_ID <<<"$PROBE_OUT" || true
+            if [ -z "${PROJECT_ID:-}" ] || [ -z "${OPTION_ID:-}" ]; then
+              FAIL_REASON="Resolved an empty project/Triage id — token may lack scope or the board was reconfigured."
+            fi
+          fi
+
+          # Find a still-open alert from an earlier run. Marker-in-body rather
+          # than a label (see header) or GitHub search (which does not index HTML
+          # comments); the repo's open-issue count is small enough to scan.
+          MARKER="<!-- og-pat-health-alert -->"
+          existing=$(gh issue list --repo "$REPO" --state open --limit 100 --json number,body \
+            --jq "[.[] | select(.body | contains(\"$MARKER\")) | .number] | first // empty")
+
+          if [ -n "$FAIL_REASON" ]; then
+            body=$(cat <<EOF
+          $MARKER
+
+          ⚠️ **PROJECT_PAT cannot reach Project #${PROJECT_NUMBER} — board automation is degraded.**
+
+          - **Reason:** ${FAIL_REASON}
+          - **Last probe:** ${RUN_URL}
+
+          ### Impact
+
+          New Bug Reports still get their labels and their intake acknowledgement
+          (that path runs on \`GITHUB_TOKEN\`), but they do **not** reach the board.
+          Triage has to work from the issue list until the token is restored.
+
+          ### Fix
+
+          1. Mint a replacement token:
+             - **Classic PAT** — scopes \`repo\` + \`project\` + \`read:org\`, or
+             - **Fine-grained PAT** — resource owner \`${OWNER}\`, *Repository permissions → Issues: Read and write*, *Organization permissions → Projects: Read and write*.
+          2. \`gh secret set PROJECT_PAT --repo ${REPO}\`
+          3. Back-fill what was missed: \`bash scripts/setup-labels-and-board.sh\`
+             (safe — it does not downgrade existing status labels).
+
+          This issue updates itself on each failed probe and **closes automatically**
+          once a probe succeeds.
+          EOF
+          )
+            if [ -n "$existing" ]; then
+              gh issue edit "$existing" --repo "$REPO" --body "$body" >/dev/null
+              echo "Updated existing alert issue #${existing}."
+            else
+              created=$(gh issue create --repo "$REPO" \
+                --title "chore(ci): PROJECT_PAT is unhealthy — board automation degraded" \
+                --body "$body")
+              echo "Opened alert issue: ${created}"
+            fi
+            echo "::error::${FAIL_REASON}" >&2
             exit 1
           fi
 
-          # Read-only: resolve the board id, Status field, and the Triage option.
-          # This is exactly what add-defects-to-board.yml needs at runtime, so if it
-          # succeeds here the auto-add path has a working token.
-          read -r PROJECT_ID OPTION_ID < <(
-            gh api graphql -f query='
-              query($l:String!,$n:Int!){
-                organization(login:$l){ projectV2(number:$n){
-                  id
-                  field(name:"Status"){
-                    ... on ProjectV2SingleSelectField { options { id name } }
-                  }
-                }}
-              }' -F l="$OWNER" -F n="$PROJECT_NUMBER" \
-              --jq '.data.organization.projectV2 | "\(.id) \(.field.options[] | select(.name=="Triage") | .id)"'
-          ) || {
-            echo "::error::PROJECT_PAT could not query Project #$PROJECT_NUMBER — token likely revoked, expired, or missing project+read:org scope." >&2
-            exit 1
-          }
+          echo "PROJECT_PAT healthy: resolved Project #${PROJECT_NUMBER} (${PROJECT_ID}) with a Triage column."
 
-          if [ -z "${PROJECT_ID:-}" ] || [ -z "${OPTION_ID:-}" ]; then
-            echo "::error::Resolved an empty project/Triage id — token may lack scope or the board was reconfigured." >&2
-            exit 1
+          if [ -n "$existing" ]; then
+            gh issue comment "$existing" --repo "$REPO" \
+              --body "✅ **Recovered** — PROJECT_PAT can reach Project #${PROJECT_NUMBER} again. Probe: ${RUN_URL}
+
+          If any defects were filed while the token was down, back-fill the board with \`bash scripts/setup-labels-and-board.sh\`."
+            gh issue close "$existing" --repo "$REPO" >/dev/null
+            echo "Closed alert issue #${existing} — token recovered."
           fi
-
-          echo "PROJECT_PAT healthy: resolved Project #$PROJECT_NUMBER ($PROJECT_ID) with a Triage column."
