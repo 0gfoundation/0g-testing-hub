@@ -56,10 +56,34 @@ the same username they used to open their sign-up issue. The bridge matches on i
    `0gfoundation/0g-testing-hub` is ideal — far less scope than a classic `repo` PAT).
 5. **Triggers** → add trigger → function `onFormSubmit`, source *From form*, type *On form submit*.
 
+## Deploying a change to the bridge
+
+> **`l0-feedback-bridge.gs` in this repo is a source archive, not the running code.**
+> Merging a change to it does **nothing** on its own. To make it take effect you must paste
+> the new version into **both** forms' Apps Script projects (Extensions → Apps Script →
+> replace the file → Save), keeping each form's own `FORM_LABEL` value. There is no
+> deploy automation, and nothing in CI can detect that the two copies have drifted from
+> this file.
+
+After pasting, confirm with one real submission per form and watch the sign-up issue gain
+the expected `l0:*` label.
+
 ## Notes
 
 - The bridge writes **only a label** to the sign-up issue — never the feedback content.
-- If a tester submits an L0 survey but never opened a GitHub sign-up issue, the script logs a
-  warning and skips (nothing to label). They clear L0 once they sign up and the bridge re-runs
-  on their next submit, or you can label the issue by hand.
+- **Unmatched submissions.** If a tester submits an L0 survey with a GitHub username that
+  matches no `signup` issue, the bridge logs the username to the (private) Apps Script
+  execution log and increments an **aggregate count** on a repo issue marked
+  `<!-- og-l0-bridge-unmatched -->`. The username is deliberately **not** published: a typo
+  is the most common cause of this path and can land on a real, unrelated person's handle.
+  To investigate, open Apps Script → *Executions* and read the `console.warn` lines.
+- **Nothing retroactively fixes an unmatched submission.** The bridge only runs on form
+  submit, so a tester who submitted before opening their sign-up issue is not picked up
+  later on their own — they must either submit the survey again or have the `l0:*` label
+  applied by hand. The daily triage sweep nudges open sign-ups that are missing their L0
+  labels, which is how these cases surface.
+- **Canonical sign-up issue.** `findSignupIssue_` pins `sort=created&direction=asc` so it
+  resolves the *earliest* sign-up issue for a user — the same one `confirm-signup.yml`
+  treats as canonical and the reward export reads. Do not drop those parameters; the REST
+  default is `created`/`desc`, which returns the newest instead.
 - Token rotation: update the `GITHUB_TOKEN` script property on each form.

@@ -1,11 +1,18 @@
 name: Check targets drift
 
-# data/targets.json is the single source of truth for every surface that lists
-# or maps products. This guards five edges against drift: the README targets
-# block, the Submit Feedback Product dropdown, the Product → area / product:*
-# maps in add-defects-to-board.yml and setup-labels-and-board.sh, and
-# data/owners.json + the product:* labels in labels.yml. Pure read-only check,
-# never writes back.
+# Guards the repo's two generated surfaces against drift. Pure read-only checks,
+# never write back.
+#
+# 1. data/targets.json — the single source of truth for every surface that lists
+#    or maps products. Five edges: the README targets block, the Submit Feedback
+#    Product dropdown, the Product → area / product:* maps in
+#    add-defects-to-board.yml and setup-labels-and-board.sh, and data/owners.json
+#    + the product:* labels in labels.yml.
+# 2. data/signup-prefill.json — the single source of truth for the sign-up
+#    prefill link, published in README.md, config.yml, and AGENTS.md (twice: prose
+#    plus the JSON block the Builder Hub landing page mirrors). Added after two
+#    different prefill bodies shipped at once and the variant real testers hit was
+#    the unguarded one — see #69.
 #
 # Runs on EVERY pull request (no paths filter): the `check` job is a required
 # status check on main, and a paths-filtered required check would leave
@@ -27,3 +34,4 @@ jobs:
         with:
           node-version: 20
       - run: node scripts/check-targets-drift.mjs
+      - run: node scripts/check-signup-drift.mjs

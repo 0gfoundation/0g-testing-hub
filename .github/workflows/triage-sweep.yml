@@ -12,6 +12,13 @@ name: Triage sweep
 #   real open/closed state are independent actions and can drift. This flags the
 #   drift with needs:manual-label + an explanation comment for a maintainer.
 #
+#   Sweep C — sign-up stalls: a tester registers, then their L0 survey labels
+#   never arrive. Nothing fires on "the surveys didn't come", so both sides went
+#   quiet — the tester never learned they were stuck, and no maintainer learned
+#   anyone was waiting (#64/#65 sat like this for days). This nudges the tester on
+#   their own sign-up issue, and separates the three states that look identical
+#   from the outside: neither survey in, one in, or both in but never combined.
+#
 # Read-only against the board: this uses the default GITHUB_TOKEN (issues:write)
 # to comment and label only — it never touches Projects v2, so no PROJECT_PAT.
 
@@ -24,6 +31,10 @@ on:
         description: "Days without an update before a needs-info issue is reminded"
         required: false
         default: "7"
+      signup_stale_days:
+        description: "Days after registration before a sign-up with no l0:cleared is nudged"
+        required: false
+        default: "3"
 
 permissions:
   contents: read
@@ -36,6 +47,10 @@ jobs:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       REPO: ${{ github.repository }}
       STALE_DAYS: ${{ github.event.inputs.stale_days || '7' }}
+      # Deliberately separate from STALE_DAYS. needs-info's 7 days is "waiting on
+      # a tester to supply details they know we asked for"; a sign-up stall is
+      # "the tester probably doesn't know anything is wrong". Different clocks.
+      SIGNUP_STALE_DAYS: ${{ github.event.inputs.signup_stale_days || '3' }}
     steps:
       - name: Sweep needs-info timeouts and state-machine consistency
         run: |
@@ -125,6 +140,69 @@ jobs:
             b3_nums="$b3_nums #$n"; b3_count=$((b3_count + 1))
           done
 
+          # ---- Sweep C: sign-up stalls ---------------------------------------
+          # An open `signup` issue older than SIGNUP_STALE_DAYS with no
+          # `l0:cleared`. The label pair tells us which of three things happened,
+          # and they need different messages — a blanket "did you do the surveys?"
+          # is useless to someone who already did one, and wrong for someone whose
+          # labels are both in.
+          SIGNUP_CUTOFF=$(date -u -d "$SIGNUP_STALE_DAYS days ago" +%s)
+          SIGNUP_JSON=$(gh issue list --repo "$REPO" --state open \
+            --label "signup" --limit 500 --json number,createdAt,author,labels)
+          SIGNUP_TOTAL=$(printf '%s' "$SIGNUP_JSON" | jq 'length')
+
+          STUDIO_URL="https://forms.gle/ymEdZrdTNs4giEm1A"
+          PC_URL="https://forms.gle/G919xrbRyfVJxPZe8"
+
+          c_none=0; c_partial=0; c_stuck=0; c_nums=""
+          while IFS=$'\t' read -r num created author labels; do
+            [ -z "$num" ] && continue
+
+            # Cleared testers are done — never nudge them.
+            case " $labels " in *" l0:cleared "*) continue ;; esac
+
+            created_epoch=$(date -u -d "$created" +%s)
+            if [ "$created_epoch" -gt "$SIGNUP_CUTOFF" ]; then
+              continue # freshly registered; give them room
+            fi
+
+            has_studio=0; has_pc=0
+            case " $labels " in *" l0:studio-done "*) has_studio=1 ;; esac
+            case " $labels " in *" l0:pc-done "*) has_pc=1 ;; esac
+
+            if [ "$has_studio" -eq 1 ] && [ "$has_pc" -eq 1 ]; then
+              # Both halves arrived but mark-l0-cleared.yml never combined them.
+              # That workflow only fires on `labeled`, so a failed or lost event
+              # leaves this state stuck forever with nobody watching.
+              post_or_update "$num" "<!-- og-triage-sweep:signup-stalled -->" \
+                "🏷️ **Both L0 surveys are in, but \`l0:cleared\` was never applied.** This is on us, not you — the label that combines them did not fire. **Maintainer:** add \`l0:cleared\` to this issue so L0 credit is recorded, and check the \`mark-l0-cleared\` workflow run for this issue."
+              c_stuck=$((c_stuck + 1))
+            elif [ "$has_studio" -eq 1 ] || [ "$has_pc" -eq 1 ]; then
+              if [ "$has_studio" -eq 1 ]; then
+                missing="[0G Private Computer Survey]($PC_URL)"
+                got="0G Studio Survey"
+              else
+                missing="[0G Studio Survey]($STUDIO_URL)"
+                got="0G Private Computer Survey"
+              fi
+              post_or_update "$num" "<!-- og-triage-sweep:signup-stalled -->" \
+                "⏳ **One L0 survey still missing.** We have your **${got}**; L0 also needs the ${missing}. Once both are in, this issue gets \`l0:cleared\` — that's L0 Recruit, **10 0G Compute Credit**."
+              c_partial=$((c_partial + 1))
+            else
+              post_or_update "$num" "<!-- og-triage-sweep:signup-stalled -->" \
+                "⏳ **Neither L0 survey has reached us yet.** You registered more than **${SIGNUP_STALE_DAYS} days** ago and no survey has been matched to this issue. L0 Recruit (**10 0G Compute Credit**) needs both:
+
+          1. [0G Studio Survey]($STUDIO_URL)
+          2. [0G Private Computer Survey]($PC_URL)
+
+          **If you already submitted them**, the usual cause is the GitHub username in the survey not matching this issue's author (\`$author\`) — that is how a submission gets matched back to you. Reply here with the username you entered and a maintainer will reconcile it. Ticking the boxes in the issue body does not register a survey; the \`l0:studio-done\` / \`l0:pc-done\` labels do."
+              c_none=$((c_none + 1))
+            fi
+            c_nums="$c_nums #$num"
+          done < <(printf '%s' "$SIGNUP_JSON" | jq -r '.[] | [(.number|tostring), .createdAt, .author.login, ([.labels[].name] | join(" "))] | @tsv')
+
+          signup_flagged=$((c_none + c_partial + c_stuck))
+
           # ---- Summary (anti-empty-green: always report what was scanned) -----
           consistency_total=$((b1_count + b2_count + b3_count))
           summary "## Triage sweep"
@@ -149,4 +227,16 @@ jobs:
           else
             summary "- 0 inconsistencies found."
           fi
-          echo "Sweep done: needs-info scanned=${NEEDS_INFO_TOTAL} stale=${stale_count}; closed defects scanned=${CLOSED_DEFECTS_TOTAL} inconsistencies=${consistency_total}."
+          summary ""
+          summary "### C. Sign-up stalls (registered ≥ ${SIGNUP_STALE_DAYS} days ago, no \`l0:cleared\`)"
+          # Explicit ifs, never `[ test ] && summary` — a false test as the step's
+          # last executed command becomes the step's exit code (E007 / #35).
+          if [ "$signup_flagged" -gt 0 ]; then
+            summary "- ${signup_flagged} nudged:${c_nums}"
+            if [ "$c_none" -gt 0 ]; then summary "  - ${c_none} with neither survey in"; fi
+            if [ "$c_partial" -gt 0 ]; then summary "  - ${c_partial} with one survey in"; fi
+            if [ "$c_stuck" -gt 0 ]; then summary "  - ${c_stuck} with both surveys in but no \`l0:cleared\` — **needs a maintainer**"; fi
+          else
+            summary "- 0 stalled sign-ups."
+          fi
+          echo "Sweep done: needs-info scanned=${NEEDS_INFO_TOTAL} stale=${stale_count}; closed defects scanned=${CLOSED_DEFECTS_TOTAL} inconsistencies=${consistency_total}; signups scanned=${SIGNUP_TOTAL} nudged=${signup_flagged}."
